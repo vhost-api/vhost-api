@@ -1,0 +1,44 @@
+# project gems (can be installed with bundler from Gemfile)
+/vendor/**
+
+# logfiles and tempfiles
+/log/*
+/tmp/*
+.sass-cache
+
+# RubyMine
+/.idea
+
+# Mac files
+.DS_Store
+
+# VIM files
+/tags
+*.swp
+*.swo
+*.*~
+*.vim
+coverage.vim
+
+# Eclipse files
+.metadata
+.bak
+.swp
+.loadpath
+.buildpath
+.project
+
+# markdown README output
+/README.HTM*
+/README.htm*
+
+# bundler config (e.g. --without gemset option)
+.bundle/config
+
+# rbenv ruby version
+.ruby-version
+
+.\#**
+
+# local development gemfiles
+/Gemfile.local*
