@@ -42,3 +42,7 @@ coverage.vim
 
 # local development gemfiles
 /Gemfile.local*
+
+# project-specific files
+config/database.yaml
+config/app_config.yaml
