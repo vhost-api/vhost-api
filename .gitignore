@@ -44,5 +44,5 @@ coverage.vim
 /Gemfile.local*
 
 # project-specific files
-config/database.yaml
-config/app_config.yaml
+config/database.yml
+config/appconfig.yml
