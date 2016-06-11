@@ -1,0 +1,13 @@
+development:
+  :session:
+    :timeout: 60
+    :domain: localhost
+    :key: rack.session
+    :path: /
+
+production:
+  :session:
+    :timeout: 900
+    :domain: example.com
+    :key: rack.session
+    :path: /

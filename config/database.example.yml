@@ -1,0 +1,14 @@
+development:
+  db_adapter: mysql
+  db_host: db.foobar.com
+  db_user: foo
+  db_pass: bar
+  db_name: vhost-api
+
+production:
+  db_adapter: postgres
+  db_encoding: unicode
+  db_host: db.foobar.com
+  db_user: foo
+  db_pass: bar
+  db_name: vhost-api
