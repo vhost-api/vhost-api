@@ -1,0 +1,61 @@
+%div{class: 'table-wrapper'}
+  %table.table.table-triped
+    %caption
+      DKIM Keys
+    %thead
+      %tr
+        %th= 'enabled'
+        %th= 'selector'
+        %th= 'private_key'
+        %th= 'public_key'
+        %th= 'created_at'
+        %th= 'updated_at'
+        %th= 'domain_id'
+        %th= ''
+    %tbody
+      -# - policy_scope(Dkim).each do |dkim|
+      - @dkims.each do |dkim|
+        %tr
+          %td{class: 'icon'}
+            - enable_href_suffix = dkim.enabled ? 'disable' : 'enable'
+            - enable_class_suffix = dkim.enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - enable_link_text = dkim.enabled ? 'yes' : 'no'
+            %a{href: "/mail/dkim/#{dkim.id}/#{enable_href_suffix}", class: "icon #{enable_class_suffix}"}= " #{enable_link_text}"
+          %td
+            %a{href: "/mail/dkim/#{dkim.id}/edit"}= dkim.selector
+          %td= dkim.private_key[0..15].gsub(/\s\w+\s*$/, '...')
+          %td= dkim.public_key[0..15].gsub(/\s\w+\s*$/, '...')
+          %td= dkim.created_at
+          %td= dkim.updated_at
+          %td= dkim.domain_id
+          %td{class: 'icon item-delete'}
+            %a{href: "/mail/dkim/#{dkim.id}/delete", class: 'item-delete icon icon-trash'}= ' delete'
+
+%div{class: 'table-wrapper'}
+  %table.table.table-triped
+    %caption
+      DKIM Author-Key Associations
+    %thead
+      %tr
+        %th= 'enabled'
+        %th= 'author'
+        %th= 'created_at'
+        %th= 'updated_at'
+        %th= 'dkim_id'
+        %th= ''
+    %tbody
+      -# - policy_scope(DkimSigning).each do |dkimsigning|
+      - @dkimsignings.each do |dkimsigning|
+        %tr
+          %td{class: 'icon'}
+            - enable_href_suffix = dkimsigning.enabled ? 'disable' : 'enable'
+            - enable_class_suffix = dkimsigning.enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - enable_link_text = dkimsigning.enabled ? 'yes' : 'no'
+            %a{href: "/mail/dkimsigning/#{dkimsigning.id}/#{enable_href_suffix}", class: "icon #{enable_class_suffix}"}= " #{enable_link_text}"
+          %td
+            %a{href: "/mail/dkimsigning/#{dkimsigning.id}/edit"}= dkimsigning.author
+          %td= dkimsigning.created_at
+          %td= dkimsigning.updated_at
+          %td= dkimsigning.dkim_id
+          %td{class: 'icon item-delete'}
+            %a{href: "/mail/dkimsigning/#{dkimsigning.id}/delete", class: 'item-delete icon icon-trash'}= ' delete'

@@ -1,0 +1,43 @@
+!!!
+%html{:lang => "en"}
+  %head
+    %meta{charset: "utf-8"}
+    %meta{content: "IE=edge", "http-equiv" => "X-UA-Compatible"}
+    -# %meta{content: "width=device-width, initial-scale=1", name: "viewport"}
+    %meta{content: "width=device-width", name: "viewport"}
+    %meta{content: "", name: "description"}
+    %meta{content: "", name: "author"}
+    %title= @title
+    -# %link{rel: :stylesheet, type: 'text/css', href: '/css/test.css'}
+    -# = css "#{settings.cssdir}/styles".to_sym
+    = "<link href=\"/#{settings.cssdir}/styles.css\" media=\"Screen\" rel=\"stylesheet\" />"
+    = "<link href=\"/#{settings.cssdir}/mobile.css\" media=\"handheld\" rel=\"stylesheet\" />"
+    -# %link{:href => "/css/jquery-ui.min.css", :media => "screen, projection", :rel => "stylesheet"}
+    %script{:src => "/js/jquery.js"}
+    -# %script{:src => "/js/jquery-ui.min.js"}
+    -# %script{:src => "/js/application.js"}
+    %script{:src => "/js/test.js"}
+    %link{:href => "/img/favicon.ico", :rel => "shortcut icon"}
+  %body
+    %header{class: 'header'}
+      %h1
+        Vhost API
+      = haml :nav
+      - unless @user.nil?
+        %h4
+          Welcome #{@user.name}
+    %section{class: 'content'}
+      %div{class: 'content-wrapper'}
+        %div{class: 'row'}
+          %div{class: 'col-12 flash-message'}
+            =find_and_preserve styled_flash
+        %div{class: 'row'}
+          %div{class: 'col-2 sidebar'}=haml :sidebar
+          %div{class: 'col-10'}=yield
+    %footer{class: 'footer'}
+      - if session[:user_id]
+        %a{:href => "/logout"} log out
+        %p
+          (Logged in as #{@user.login})
+      - else
+        %a{:href => "/login"} log in

@@ -1,0 +1,56 @@
+%nav
+  %div{class: 'nav-wrapper row'}
+    %ul
+      %li
+        %a{:href => '/', :title => 'Home', :class => nav_current?}
+          %div{class: 'icon icon-home'}
+          %div{class: 'title'} Home
+      %li
+        %a{:href => '/user', :title => 'User', :class => nav_current?('user')}
+          %div{class: 'icon icon-user'}
+          %div{class: 'title'} User
+      %li
+        %a{:href => '/stats', :title => 'DNS', :class => nav_current?('stats')}
+          %div{class: 'icon icon-stats'}
+          %div{class: 'title'} Stats
+      %li
+        %a{:href => '/domains', :title => 'Domains', :class => nav_current?('domains')}
+          %div{class: 'icon icon-domain'}
+          %div{class: 'title'} Domains
+      %li
+        %a{:href => '/mail', :title => 'Mail', :class => nav_current?('mail')}
+          %div{class: 'icon icon-mail'}
+          %div{class: 'title'} Mail
+      %li
+        %a{:href => '/vhosts', :title => 'VHosts', :class => nav_current?('vhosts')}
+          %div{class: 'icon icon-web'}
+          %div{class: 'title'} VHosts
+      %li
+        %a{:href => '/databases', :title => 'DBs', :class => nav_current?('databases')}
+          %div{class: 'icon icon-database'}
+          %div{class: 'title'} DBs
+      %li
+        %a{:href => '/dns', :title => 'DNS', :class => nav_current?('dns')}
+          %div{class: 'icon icon-dns'}
+          %div{class: 'title'} DNS
+      %li
+        %a{:href => '/settings', :title => 'Settings', :class => nav_current?('settings')}
+          %div{class: 'icon icon-settings'}
+          %div{class: 'title'} Settings
+      %li
+        %a{:href => 'https://webmail.nano-srv.net/', target: '_blank', :title => 'Webmail'}
+          %div{class: 'icon icon-webmail'}
+          %div{class: 'title'} Webmail
+      -# %li
+        -# %a{:href => '/about', :title => 'About', :class => nav_current?('/about')}
+          -# %div{class: 'icon icon-cloud'}
+          -# %div{class: 'title'}
+            -# About
+      -# %li
+        -# %a{:href => '/contact', :title => 'Contact', :class => nav_current?('/contact')}
+          -# %div{class: 'icon icon-contact'}
+          -# %div{class: 'title'} Contact
+      %li
+        %a{href: '/logout', title: 'Logout', class: 'nav-logout'}
+          %div{class: 'icon icon-logout'}
+          %div{class: 'title'} Logout

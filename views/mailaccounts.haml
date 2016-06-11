@@ -1,0 +1,46 @@
+%div{class: 'table-wrapper'}
+  %table.table.table-triped
+    %caption Mailaccounts
+    %thead
+      %tr
+        %th= 'enabled'
+        %th= 'email'
+        %th= 'realname'
+        -# %th= 'size'
+        %th= 'receiving'
+        %th= 'usage'
+        %th= 'quota'
+        %th= ''
+
+    %tbody
+      -# - policy_scope(MailAccount).each do |mailaccount|
+      - @mailaccounts.each do |mailaccount|
+        %tr
+          %td{class: 'icon'}
+            - enable_href_suffix = mailaccount.enabled ? 'disable' : 'enable'
+            - enable_class_suffix = mailaccount.enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - enable_link_text = mailaccount.enabled ? 'yes' : 'no'
+            %a{href: "/mail/accounts/#{mailaccount.id}/#{enable_href_suffix}", class: "icon #{enable_class_suffix}"}= " #{enable_link_text}"
+          %td
+            %a{href: "/mail/accounts/#{mailaccount.id}/edit"}
+              = mailaccount.email
+          %td= mailaccount.realname
+          %td{class: 'icon'}
+            - enable_recv_href_suffix = mailaccount.receiving_enabled ? 'disable_recv' : 'enable_recv'
+            - enable_recv_class_suffix = mailaccount.receiving_enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - enable_recv_link_text = mailaccount.receiving_enabled ? 'yes' : 'no'
+            %a{href: "/mail/accounts/#{mailaccount.id}/#{enable_recv_href_suffix}", class: "icon #{enable_recv_class_suffix}"}= " #{enable_recv_link_text}"
+          %td{class: 'progress'}
+            - progress_class = 'progress-ok'
+            - if (mailaccount.quotausage_rel >= $appconfig[:threshholds][:display][:mailquota_warn])
+              - progress_class = 'progress-warn'
+            - if (mailaccount.quotausage_rel >= $appconfig[:threshholds][:display][:mailquota_crit])
+              - progress_class = 'progress-crit'
+            -# %progress{class: progress_class, max: 100, value: mailaccount.quotausage_rel}
+              -# -# html fallback
+              -# %div{class: 'progress-bar'}
+                -# %span= "Usage: #{mailaccount.quotausage_rel}%"
+            %span{class: progress_class, style: "width:#{mailaccount.quotausage_rel}%"}= Filesize.from("#{mailaccount.quotausage} B").pretty
+          %td{class: 'number'}= Filesize.from("#{mailaccount.quota} B").pretty
+          %td{class: 'icon item-delete'}
+            %a{href: "/mail/accounts/#{mailaccount.id}/delete", class: 'item-delete icon icon-trash'}= ' delete'

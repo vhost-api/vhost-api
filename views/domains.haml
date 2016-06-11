@@ -1,0 +1,34 @@
+%div{class: 'table-wrapper'}
+  %table.table.table-triped
+    %caption
+      Domains
+    %thead
+      %tr
+        %th= 'enabled'
+        %th= 'name'
+        %th= 'email_enabled'
+        %th= 'dns_enabled'
+        %th= ''
+    %tbody
+      -# - policy_scope(Domain).each do |domain|
+      - @domains.each do |domain|
+        %tr
+          %td{class: 'icon'}
+            - enable_href_suffix = domain.enabled ? 'disable' : 'enable'
+            - enable_class_suffix = domain.enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - enable_link_text = domain.enabled ? 'yes' : 'no'
+            %a{href: "/mail/domains/#{domain.id}/#{enable_href_suffix}", class: "icon #{enable_class_suffix}"}= " #{enable_link_text}"
+          %td
+            %a{href: "/mail/domains/#{domain.id}/edit"}= domain.name
+          %td{class: 'icon'}
+            - email_href_suffix = domain.mail_enabled ? 'disable_email' : 'enable_email'
+            - email_class_suffix = domain.mail_enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - email_link_text = domain.mail_enabled ? 'yes' : 'no'
+            %a{href: "/mail/domains/#{domain.id}/#{email_href_suffix}", class: "icon #{email_class_suffix}"}= " #{email_link_text}"
+          %td{class: 'icon'}
+            - dns_href_suffix = domain.dns_enabled ? 'disable_dns' : 'enable_dns'
+            - dns_class_suffix = domain.dns_enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
+            - dns_link_text = domain.dns_enabled ? 'yes' : 'no'
+            %a{href: "/mail/domains/#{domain.id}/#{dns_href_suffix}", class: "icon #{dns_class_suffix}"}= " #{dns_link_text}"
+          %td{class: 'icon item-delete'}
+            %a{href: "/mail/domains/#{domain.id}/delete", class: 'item-delete icon icon-trash'}= ' delete'
