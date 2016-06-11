@@ -1,5 +1,8 @@
 [WIP]
 
+This project is in very early stages of development.
+
+
 
 vhost-api
 =========
@@ -11,7 +14,7 @@ Core features:
 	* managing clients (admin, reseller, client)
 	* managing client-based API tokens for authentication
 	* managing virtual hosts and php-fpm pools (apache2, php5)
-	* managing (s)ftp accounts 
+	* managing sftp accounts 
 	* managing email domains, aliases, send-as permissions (postfix+dovecot)
 	* managing DNS (limited to powerdns http api for now)
 	* managing MySQL databases and users for clients
