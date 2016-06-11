@@ -46,3 +46,4 @@ coverage.vim
 # project-specific files
 config/database.yml
 config/appconfig.yml
+config/session.secret
