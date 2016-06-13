@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require 'json'
 
+# Temporary env class for rendering purposes.
 class Env
   def initialize(name)
     @name = name
@@ -10,7 +12,7 @@ class Env
   end
 
   def to_json
-    {environment: @name}.to_json
+    { environment: @name }.to_json
   end
 
   attr_reader :name

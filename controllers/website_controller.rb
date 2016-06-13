@@ -1,30 +1,17 @@
-class Hash
-  def method_missing(method, *opts)
-    m = method.to_s
-    if self.has_key?(m)
-      return self[m]
-    elsif self.has_key?(m.to_sym)
-      return self[m.to_sym]
-    end
-    super
-  end
-end
-
+# frozen_string_literal: true
 get '/login' do
-    haml :login, layout: :layout_login
+  haml :login, layout: :layout_login
 end
 
 get '/logout' do
-    status, headers, body = call env.merge('PATH_INFO' => '/api/v1/auth/logout')
-    [status, headers, body]
+  status, headers, body = call env.merge('PATH_INFO' => '/api/v1/auth/logout')
+  [status, headers, body]
 end
-
-
 
 namespace '/mail' do
   before do
     @sidebar_title = 'Mail'
-    @sidebar_elements = ['Domains', 'Accounts', 'Aliases', 'Sources', 'Forwardings', 'DKIM']
+    @sidebar_elements = %w(Domains Accounts Aliases Sources Forwardings DKIM)
   end
 
   get do
@@ -35,9 +22,9 @@ namespace '/mail' do
   namespace '/domains' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/domains.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/domains.json')
       @domains = JSON.parse(body[0]).domains
-      [status, headers]
       haml :domains
     end
 
@@ -55,7 +42,7 @@ namespace '/mail' do
 
       get '/edit' do
         authenticate!
-        unless @user.admin? or @user.owner_of?(@domain)
+        unless @user.admin? || @user.owner_of?(@domain)
           @domain = nil
           flash[:error] = 'Not authorized!'
           session[:return_to] = nil
@@ -69,9 +56,9 @@ namespace '/mail' do
   namespace '/accounts' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/mailaccounts.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/mailaccounts.json')
       @mailaccounts = JSON.parse(body[0]).mailaccounts
-      [status, headers]
       haml :mailaccounts
     end
 
@@ -89,7 +76,7 @@ namespace '/mail' do
 
       get '/edit' do
         authenticate!
-        unless @user.admin? or @user.owner_of?(@mailaccount)
+        unless @user.admin? || @user.owner_of?(@mailaccount)
           @mailaccount = nil
           flash[:error] = 'Not authorized!'
           session[:return_to] = nil
@@ -103,9 +90,9 @@ namespace '/mail' do
   namespace '/aliases' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/mailaliases.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/mailaliases.json')
       @mailaliases = JSON.parse(body[0]).mailaliases
-      [status, headers]
       haml :mailaliases
     end
   end
@@ -113,9 +100,9 @@ namespace '/mail' do
   namespace '/sources' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/mailsources.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/mailsources.json')
       @mailsources = JSON.parse(body[0]).mailsources
-      [status, headers]
       haml :mailsources
     end
   end
@@ -123,11 +110,12 @@ namespace '/mail' do
   namespace '/dkim' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/dkims.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/dkims.json')
       @dkims = JSON.parse(body[0]).dkims
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/dkimsignings.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/dkimsignings.json')
       @dkimsignings = JSON.parse(body[0]).dkimsignings
-      [status, headers]
       haml :dkim
     end
 
@@ -145,7 +133,7 @@ namespace '/mail' do
 
       get '/edit' do
         authenticate!
-        unless @user.admin? or @user.owner_of?(@mailaccount)
+        unless @user.admin? || @user.owner_of?(@mailaccount)
           @mailaccount = nil
           flash[:error] = 'Not authorized!'
           session[:return_to] = nil
@@ -165,9 +153,9 @@ namespace '/domains' do
 
   get do
     authenticate!
-    status, headers, body = call env.merge('PATH_INFO' => '/api/v1/domains.json')
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/domains.json')
     @domains = JSON.parse(body[0]).domains
-    [status, headers]
     haml :domains
   end
 end
@@ -175,7 +163,7 @@ end
 namespace '/dns' do
   before do
     @sidebar_title = 'DNS'
-    @sidebar_elements = ['Domains', 'Zones', 'Templates']
+    @sidebar_elements = %w(Domains Zones Templates)
   end
 
   get do
@@ -186,9 +174,9 @@ namespace '/dns' do
   namespace '/domains' do
     get do
       authenticate!
-      status, headers, body = call env.merge('PATH_INFO' => '/api/v1/domains.json')
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/domains.json')
       @domains = JSON.parse(body[0]).domains
-      [status, headers]
       haml :domains
     end
 
@@ -206,7 +194,7 @@ namespace '/dns' do
 
       get '/edit' do
         authenticate!
-        unless @user.admin? or @user.owner_of?(@domain)
+        unless @user.admin? || @user.owner_of?(@domain)
           @domain = nil
           flash[:error] = 'Not authorized!'
           session[:return_to] = nil

@@ -10,7 +10,7 @@ gem 'rake', require: false
 gem 'logger'
 # authorization
 gem 'sinatra-pundit'
-# database 
+# database
 gem 'data_mapper'
 gem 'dm-sqlite-adapter'
 gem 'dm-mysql-adapter'
@@ -25,13 +25,13 @@ gem 'haml'
 gem 'filesize'
 gem 'sass'
 
-
 group :development do
   gem 'shotgun', require: false
 end
 
 group :test, :development do
   gem 'rubocop', require: false
+  gem 'rubocop-rspec', require: false
   gem 'astrolabe', require: false
   gem 'haml-lint', require: false
 end

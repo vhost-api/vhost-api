@@ -1,4 +1,6 @@
+# frozen_string_literal: true
 class MailAccountPolicy < ApplicationPolicy
+  # extend scope
   class Scope < Scope
     def resolve
       if user.admin?

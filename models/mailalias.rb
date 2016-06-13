@@ -1,16 +1,20 @@
+# frozen_string_literal: true
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
 
+# This class holds the email aliases.
 class MailAlias
   include DataMapper::Resource
-  
+
   property :id, Serial, key: true
   property :address, String, required: true, unique_index: true, length: 3..255
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0, required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0, required: false
+  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+                                 required: false
+  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+                                 required: false
   property :enabled, Boolean, default: false
-  
+
   before :create do
     self.created_at = Time.now.to_i
   end
@@ -20,7 +24,7 @@ class MailAlias
   end
 
   belongs_to :domain
-  
+
   has n, :mail_alias_destinations, constraint: :destroy
   has n, :mail_accounts, through: :mail_alias_destinations, constraint: :destroy
 
@@ -29,7 +33,7 @@ class MailAlias
     options = defaults.merge(options)
 
     # fix options array if exclude/only parameters are given
-    if options.include? :only or options.include? :exclude
+    if options.include?(:only) || options.include?(:exclude)
       only_props = Array(options[:only])
       excl_props = Array(options[:exclude])
 
@@ -37,7 +41,8 @@ class MailAlias
         if only_props.include? prop
           false
         else
-          excl_props.include?(prop) || !(only_props.empty? || only_props.include?(prop))
+          excl_props.include?(prop) ||
+            !(only_props.empty? || only_props.include?(prop))
         end
       end
     end
@@ -45,14 +50,14 @@ class MailAlias
   end
 
   def destinations
-    _return = []
-    self.mail_alias_destinations.each do |dest|
-      _return.push(MailAccount.get(dest.mail_account_id).email.to_s)
+    dests = []
+    mail_alias_destinations.each do |dest|
+      dests.push(MailAccount.get(dest.mail_account_id).email.to_s)
     end
-    _return
+    dests
   end
 
   def owner
-    Domain.get(self.domain_id).user_id
+    Domain.get(domain_id).user_id
   end
 end

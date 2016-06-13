@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'bundler/setup'
 
 require 'data_mapper'
@@ -41,7 +42,7 @@ Dir.glob('./{helpers}/*.rb').each { |file| require file }
 
 # load appconfig
 @environment = ENV['RACK_ENV'] || 'development'
-$appconfig = YAML.load(File.read('config/appconfig.yml'))[@environment]
+@appconfig = YAML.load(File.read('config/appconfig.yml'))[@environment]
 
 # finalize db layout when all models have been loaded
 DataMapper.finalize

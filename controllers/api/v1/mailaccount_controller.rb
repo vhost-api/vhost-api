@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailaccounts' do
   helpers do
     def fetch_scoped_mailaccounts
@@ -8,18 +9,6 @@ namespace '/api/v1/mailaccounts' do
   get do
     authenticate!
     fetch_scoped_mailaccounts
-    # @mailaccounts = MailAccount.all(domain_id: 0)
-    # unless @user.nil?
-      # if @user.admin?
-        # @mailaccounts.concat(MailAccount.all)
-      # else
-        # @user.domains.each do |domain|
-          # @mailaccounts.concat(MailAccount.all(domain_id: domain.id))
-        # end
-      # end
-    # end
-    # @mailaccounts = MailAccount.all
-    # @mailaccounts.inspect
     return_resource object: @mailaccounts
   end
 
@@ -30,34 +19,46 @@ namespace '/api/v1/mailaccounts' do
     # halt 400 unless request.body.size > 0
 
     @result = nil
-    begin 
+    begin
       # get json data from request body
       request.body.rewind
       @params = JSON.parse(request.body.read)
 
       # generate dovecot password hash from plaintex
-      params["password"] = gen_doveadm_pwhash(params["password"].to_s);
+      params['password'] = gen_doveadm_pwhash(params['password'].to_s)
 
       @mailaccount = MailAccount.new(params)
       if @mailaccount.save
-        @result = ApiResponseSuccess.new(status_code: 201, data: {object: @mailaccount})
-        response.headers['Location'] = "#{request.base_url}/mailaccounts/#{@mailaccount.id}"
+        @result = ApiResponseSuccess.new(status_code: 201,
+                                         data: { object: @mailaccount })
+        response.headers['Location'] = "#{request.base_url}/mailaccounts" \
+                                       "/#{@mailaccount.id}"
       else
         # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500, error_id: "could not create", message: $!.to_s)
+        @result = ApiResponseError.new(status_code: 500,
+                                       error_id: 'could not create',
+                                       message: $ERROR_INFO.to_s)
       end
     rescue ArgumentError
       # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422, error_id: "invalid request data", message: $!.to_s)
+      @result = ApiResponseError.new(status_code: 422,
+                                     error_id: 'invalid request data',
+                                     message: $ERROR_INFO.to_s)
     rescue JSON::ParserError
       # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400, error_id: "malformed request data", message: $!.to_s)
+      @result = ApiResponseError.new(status_code: 400,
+                                     error_id: 'malformed request data',
+                                     message: $ERROR_INFO.to_s)
     rescue DataObjects::IntegrityError
       # 409 = Conflict
-      @result = ApiResponseError.new(status_code: 409, error_id: "resource conflict", message: $!.to_s)
+      @result = ApiResponseError.new(status_code: 409,
+                                     error_id: 'resource conflict',
+                                     message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
       # 500 = Internal Server Error
-      @result = ApiResponseError.new(status_code: 500, error_id: "could not create", message: $!.to_s)
+      @result = ApiResponseError.new(status_code: 500,
+                                     error_id: 'could not create',
+                                     message: $ERROR_INFO.to_s)
     end
     return_apiresponse @result
   end
@@ -72,12 +73,14 @@ namespace '/api/v1/mailaccounts' do
     delete do
       @result = nil
       begin
-        if @mailaccount.destroy
-          @result = ApiResponseSuccess.new(nil)
-        else
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500, error_id: "could not delete", message: $!.to_s)
-        end
+        @result = if @mailaccount.destroy
+                    ApiResponseSuccess.new(nil)
+                  else
+                    # 500 = Internal Server Error
+                    ApiResponseError.new(status_code: 500,
+                                         error_id: 'could not delete',
+                                         message: $ERROR_INFO.to_s)
+                  end
       end
       return_apiresponse @result
     end
@@ -91,29 +94,37 @@ namespace '/api/v1/mailaccounts' do
       @result = nil
       begin
         # get json data from request body
-        request.body.rewind()
+        request.body.rewind
         @params = JSON.parse(request.body.read)
 
         # generate dovecot password hash from plaintex
-        params["password"] = gen_doveadm_pwhash(params["password"].to_s);
+        params['password'] = gen_doveadm_pwhash(params['password'].to_s)
 
         # halt 400, "#{@params.inspect}"
 
-        if @mailaccount.update(params)
-          @result = ApiResponseSuccess.new(data: {object: @mailaccount})
-        else
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500, error_id: "could not update", message: $!.to_s)
-        end
+        @result = if @mailaccount.update(params)
+                    ApiResponseSuccess.new(data: { object: @mailaccount })
+                  else
+                    # 500 = Internal Server Error
+                    ApiResponseError.new(status_code: 500,
+                                         error_id: 'could not update',
+                                         message: $ERROR_INFO.to_s)
+                  end
       rescue ArgumentError
         # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422, error_id: "invalid request data", message: $!.to_s)
+        @result = ApiResponseError.new(status_code: 422,
+                                       error_id: 'invalid request data',
+                                       message: $ERROR_INFO.to_s)
       rescue JSON::ParserError
         # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400, error_id: "malformed request data", message: $!.to_s)
+        @result = ApiResponseError.new(status_code: 400,
+                                       error_id: 'malformed request data',
+                                       message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
         # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500, error_id: "could not update", message: $!.to_s)
+        @result = ApiResponseError.new(status_code: 500,
+                                       error_id: 'could not update',
+                                       message: $ERROR_INFO.to_s)
       end
       return_apiresponse @result
     end
@@ -125,7 +136,7 @@ namespace '/api/v1/mailaccounts' do
 
     get '/edit' do
       authenticate!
-      unless @user.admin? or @user.owner_of?(@mailaccount)
+      unless @user.admin? || @user.owner_of?(@mailaccount)
         @mailaccount = nil
         flash[:error] = 'Not authorized!'
         session[:return_to] = nil

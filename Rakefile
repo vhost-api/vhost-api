@@ -25,7 +25,9 @@ def setup_dm
 end
 
 # configure RuboCop Tasks
-RuboCop::RakeTask.new
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.options = ['-D', '-S', '-E']
+end
 
 # configure Haml Linter
 HamlLint::RakeTask.new do |t|

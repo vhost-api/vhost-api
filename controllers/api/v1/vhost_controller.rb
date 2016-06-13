@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/vhosts' do
   get do
     @vhosts = Vhost.all

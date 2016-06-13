@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailaliasdestinations' do
   get do
     @mailaliasdestinations = MailAliasDestination.all
@@ -5,7 +6,8 @@ namespace '/api/v1/mailaliasdestinations' do
   end
 
   post do
-    @mailaliasdestination = MailAliasDestination.create!(params[:mailaliasdestination])
+    @mailaliasdestination = MailAliasDestination.create!(params[
+                                                        :mailaliasdestination])
     return_resource object: @mailaliasdestination
   end
 
@@ -19,7 +21,8 @@ namespace '/api/v1/mailaliasdestinations' do
     end
 
     patch do
-      @mailaliasdestination.assign_attributes(params[:mailaliasdestination]).save!
+      @mailaliasdestination.assign_attributes(params[
+                                             :mailaliasdestination]).save!
       return_resource object: @mailaliasdestination
     end
 

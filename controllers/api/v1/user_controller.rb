@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/users' do
   get do
     @users = User.all

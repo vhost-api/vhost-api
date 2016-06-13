@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 def return_json_pretty(json)
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end
@@ -11,16 +12,16 @@ def return_resource(object: nil)
     end
 
     type.json do
-      return_json_pretty({clazz => object}.to_json)
+      return_json_pretty({ clazz => object }.to_json)
     end
   end
 end
 
 def gen_session_json(session: nil)
-  unless session.nil?
-    JSON.pretty_generate(JSON.load(session.to_hash.to_json))
+  if session.nil?
+    '{}'
   else
-    "{}"
+    JSON.pretty_generate(JSON.load(session.to_hash.to_json))
   end
 end
 
@@ -36,36 +37,38 @@ def return_apiresponse(response)
 end
 
 def css(*stylesheets)
-    stylesheets.map do |stylesheet|
-      "<link href=\"/#{stylesheet}.css\" media=\"screen, projection\" rel=\"stylesheet\" />"
-    end.join
+  stylesheets.map do |stylesheet|
+    "<link href=\"/#{stylesheet}.css\" media=\"screen, projection\" " \
+    'rel="stylesheet" />'
+  end.join
 end
 
 def set_title
-  @title ||= $appconfig[:site_title]
+  @title ||= @appconfig[:site_title]
 end
+
 def set_sidebar_title
   @sidebar_title ||= 'Sidebar'
 end
 
 def gen_doveadm_pwhash(password)
-  "{SHA512-CRYPT}" + password.crypt('$6$' + SecureRandom.hex(16))
+  '{SHA512-CRYPT}' + password.crypt('$6$' + SecureRandom.hex(16))
 end
 
 def gen_mysql_pwhash(password)
-  "*" + Digest::SHA1.hexdigest(Digest::SHA1.digest(password)).upcase
+  '*' + Digest::SHA1.hexdigest(Digest::SHA1.digest(password)).upcase
 end
 
 def parse_dovecot_quotausage(file)
   if File.exist?(file)
-   Integer(IO.read(file).match(/priv\/quota\/storage\n(.*)\n/m)[1])
+    Integer(IO.read(file).match(%r{/priv\/quota\/storage\n(.*)\n/m})[1])
   else
     'unknown'
   end
 end
 
 def mailaccount_quotausage(mailaccount)
-  filename = "#{$appconfig[:mail_home]}/" \
+  filename = "#{@appconfig[:mail_home]}/" \
              "#{mailaccount.email.to_s.split('@')[1]}/" \
              "#{mailaccount.email.to_s.split('@')[0]}/.quotausage"
   parse_dovecot_quotausage(filename)
@@ -75,24 +78,16 @@ def authenticate!
   unless is_user?
     flash[:error] = 'You need to be logged in!'
     session[:return_to] = request.path_info
-    redirect '/login' 
+    redirect '/login'
   end
 end
 
-def nav_current?(path='/')
- (request.path.to_s.split('/')[1]==path || request.path.to_s.split('/')[1]==path+'/') ? "current": nil
+def nav_current?(path = '/')
+  req_path = request.path.to_s.split('/')[1]
+  (req_path == path || req_path == path + '/') ? 'current' : nil
 end
 
-def sidebar_current?(path='/')
- (request.path.to_s.split('/')[2]==path || request.path.to_s.split('/')[2]==path+'/') ? "current": nil
+def sidebar_current?(path = '/')
+  req_path = request.path.to_s.split('/')[2]
+  (req_path == path || req_path == path + '/') ? 'current' : nil
 end
-
-def is_user?
-  @user != nil
-end
-
-# @return alphanumeric string of given length
-# def gen_alphanum(length)
-  # return false unless length > 0
-  # [*('a'..'z'), *('A'..'Z'), *('0'..'9')].to_a.shuffle[0, length.to_i].join
-# end

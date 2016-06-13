@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailsourcepermissions' do
   get do
     @mailsourcepermissions = MailSourcePermission.all
@@ -5,7 +6,8 @@ namespace '/api/v1/mailsourcepermissions' do
   end
 
   post do
-    @mailsourcepermission = MailSourcePermission.create!(params[:mailsourcepermission])
+    @mailsourcepermission = MailSourcePermission.create!(params[
+                                                        :mailsourcepermission])
     return_resource object: @mailsourcepermission
   end
 
@@ -19,7 +21,8 @@ namespace '/api/v1/mailsourcepermissions' do
     end
 
     patch do
-      @mailsourcepermission.assign_attributes(params[:mailsourcepermission]).save!
+      @mailsourcepermission.assign_attributes(params[
+                                             :mailsourcepermission]).save!
       return_resource object: @mailsourcepermission
     end
 
