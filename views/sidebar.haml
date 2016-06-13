@@ -3,4 +3,5 @@
   - unless @sidebar_elements.nil?
     - @sidebar_elements.each do |view|
       %li
-        %a{href: "/#{request.path.split('/')[1]}/#{view.downcase}", title: view, class: sidebar_current?(view.downcase)}= view
+        %a{ href: "/#{request.path.split('/')[1]}/#{view.downcase}",
+           title: view, class: sidebar_current?(view.downcase) }= view

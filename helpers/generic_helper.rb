@@ -44,7 +44,7 @@ def css(*stylesheets)
 end
 
 def set_title
-  @title ||= @appconfig[:site_title]
+  @title ||= settings.site_title
 end
 
 def set_sidebar_title
@@ -68,14 +68,14 @@ def parse_dovecot_quotausage(file)
 end
 
 def mailaccount_quotausage(mailaccount)
-  filename = "#{@appconfig[:mail_home]}/" \
+  filename = "#{settings.mail_home}/" \
              "#{mailaccount.email.to_s.split('@')[1]}/" \
              "#{mailaccount.email.to_s.split('@')[0]}/.quotausage"
   parse_dovecot_quotausage(filename)
 end
 
 def authenticate!
-  unless is_user?
+  unless user?
     flash[:error] = 'You need to be logged in!'
     session[:return_to] = request.path_info
     redirect '/login'
