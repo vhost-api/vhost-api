@@ -32,9 +32,9 @@
             %a{href: "/mail/accounts/#{mailaccount.id}/#{enable_recv_href_suffix}", class: "icon #{enable_recv_class_suffix}"}= " #{enable_recv_link_text}"
           %td{class: 'progress'}
             - progress_class = 'progress-ok'
-            - if (mailaccount.quotausage_rel >= $appconfig[:threshholds][:display][:mailquota_warn])
+            - if (mailaccount.quotausage_rel >= @appconfig[:threshholds][:display][:mailquota_warn])
               - progress_class = 'progress-warn'
-            - if (mailaccount.quotausage_rel >= $appconfig[:threshholds][:display][:mailquota_crit])
+            - if (mailaccount.quotausage_rel >= @appconfig[:threshholds][:display][:mailquota_crit])
               - progress_class = 'progress-crit'
             -# %progress{class: progress_class, max: 100, value: mailaccount.quotausage_rel}
               -# -# html fallback
