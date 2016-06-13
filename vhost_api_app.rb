@@ -21,7 +21,7 @@ require_relative './init'
 Dir.glob('./controllers/*.rb').each { |file| require file }
 Dir.glob('./controllers/api/v1/*.rb').each { |file| require file }
 
-@dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
+@dbconfig = YAML.load(File.read('config/database.yml'))[settings.environment.to_s]
 
 # setup database connection
 # DataMapper::Logger.new($stdout, :debug)
@@ -48,6 +48,10 @@ configure do
   enable :coffeescript
   set :cssengine, 'scss'
   set :start_time, Time.now
+  @appconfig = YAML.load(File.read('config/appconfig.yml'))[settings.environment.to_s]
+  @appconfig.keys.each do |key|
+    set key, @appconfig[key]
+  end
 end
 
 configure :development do
@@ -83,10 +87,10 @@ get '/css/*.css' do
 end
 
 use Rack::Session::Cookie, secret: File.read('config/session.secret'),
-                           key: @appconfig[:session][:key].to_s,
-                           domain: @appconfig[:session][:domain].to_s,
-                           expire_after: @appconfig[:session][:timeout],
-                           path: @appconfig[:session][:path].to_s
+                           key: settings.session[:key].to_s,
+                           domain: settings.session[:domain].to_s,
+                           expire_after: settings.session[:timeout],
+                           path: settings.session[:path].to_s
 
 def my_logger
   settings.logger
@@ -97,6 +101,10 @@ before { env['rack.errors'] = error_logger }
 # tell pundit how to find the user
 current_user do
   session[:user]
+end
+
+def user?
+  @user != nil
 end
 
 error Pundit::NotAuthorizedError do

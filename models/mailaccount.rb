@@ -69,11 +69,12 @@ class MailAccount
   end
 
   def quotausage
-    filename = "#{@appconfig[:mail_home]}/" \
+    settings = Sinatra::Application.settings
+    filename = "#{settings.mail_home}/" \
                "#{email.to_s.split('@')[1]}/" \
                "#{email.to_s.split('@')[0]}/.quotausage"
     if File.exist?(filename)
-      Integer(IO.read(filename).match(%r{/priv\/quota\/storage\n(.*)\n/m})[1])
+      Integer(IO.read(filename).match(%r{priv/quota/storage\n(.*)\n}m)[1])
     else
       0
     end
@@ -84,9 +85,10 @@ class MailAccount
   end
 
   def sieveusage
-    filename = "#{@appconfig[:mail_home]}/" \
+    settings = Sinatra::Application.settings
+    filename = "#{settings.mail_home}/" \
                "#{email.to_s.split('@')[1]}/" \
-               "#{email.to_s.split('@')[0]}/#{@appconfig[:sieve_file]}"
+               "#{email.to_s.split('@')[0]}/#{settings.sieve_file}"
     if File.exist?(filename)
       File.size(filename)
     else

@@ -1,4 +1,4 @@
-%div{class: 'table-wrapper'}
+.table-wrapper
   %table.table.table-triped
     %caption Mailaccounts
     %thead
@@ -6,41 +6,48 @@
         %th= 'enabled'
         %th= 'email'
         %th= 'realname'
-        -# %th= 'size'
         %th= 'receiving'
         %th= 'usage'
         %th= 'quota'
-        %th= ''
-
+        %th
     %tbody
       -# - policy_scope(MailAccount).each do |mailaccount|
       - @mailaccounts.each do |mailaccount|
+        - id = mailaccount['id']
         %tr
-          %td{class: 'icon'}
-            - enable_href_suffix = mailaccount.enabled ? 'disable' : 'enable'
-            - enable_class_suffix = mailaccount.enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
-            - enable_link_text = mailaccount.enabled ? 'yes' : 'no'
-            %a{href: "/mail/accounts/#{mailaccount.id}/#{enable_href_suffix}", class: "icon #{enable_class_suffix}"}= " #{enable_link_text}"
+          %td.icon
+            - enable_href_suffix = mailaccount['enabled'] ? 'disable' : 'enable'
+            - en = 'icon-check item-enabled'
+            - dis = 'icon-cross item-disabled'
+            - enable_class_suffix = mailaccount['enabled'] ? en : dis
+            - enable_link_text = mailaccount['enabled'] ? 'yes' : 'no'
+            %a{ href: "/mail/accounts/#{id}/#{enable_href_suffix}",
+              class: "icon #{enable_class_suffix}" }= enable_link_text
           %td
-            %a{href: "/mail/accounts/#{mailaccount.id}/edit"}
-              = mailaccount.email
-          %td= mailaccount.realname
-          %td{class: 'icon'}
-            - enable_recv_href_suffix = mailaccount.receiving_enabled ? 'disable_recv' : 'enable_recv'
-            - enable_recv_class_suffix = mailaccount.receiving_enabled ? 'icon-check item-enabled' : 'icon-cross item-disabled'
-            - enable_recv_link_text = mailaccount.receiving_enabled ? 'yes' : 'no'
-            %a{href: "/mail/accounts/#{mailaccount.id}/#{enable_recv_href_suffix}", class: "icon #{enable_recv_class_suffix}"}= " #{enable_recv_link_text}"
-          %td{class: 'progress'}
+            %a{ href: "/mail/accounts/#{id}/edit" }
+              = mailaccount['email']
+          %td= mailaccount['realname']
+          %td.icon
+            - rcv_enabled = mailaccount['receiving_enabled']
+            - en_recv_href_suf = rcv_enabled ? 'dis_recv' : 'en_recv'
+            - en = 'icon-check item-enabled'
+            - dis = 'icon-cross item-disabled'
+            - en_recv_class_suf = mailaccount['receiving_enabled'] ? en : dis
+            - en_recv_link_txt = mailaccount['receiving_enabled'] ? 'yes' : 'no'
+            %a{ href: "/mail/accounts/#{id}/#{en_recv_href_suf}",
+              class: "icon #{en_recv_class_suf}" }= en_recv_link_txt
+          %td.progress
             - progress_class = 'progress-ok'
-            - if (mailaccount.quotausage_rel >= @appconfig[:threshholds][:display][:mailquota_warn])
+            - thresh_warn = settings.threshholds[:display][:mailquota_warn]
+            - thresh_crit = settings.threshholds[:display][:mailquota_crit]
+            - if mailaccount['quotausage_rel'] >= thresh_warn
               - progress_class = 'progress-warn'
-            - if (mailaccount.quotausage_rel >= @appconfig[:threshholds][:display][:mailquota_crit])
+            - if mailaccount['quotausage_rel'] >= thresh_crit
               - progress_class = 'progress-crit'
-            -# %progress{class: progress_class, max: 100, value: mailaccount.quotausage_rel}
-              -# -# html fallback
-              -# %div{class: 'progress-bar'}
-                -# %span= "Usage: #{mailaccount.quotausage_rel}%"
-            %span{class: progress_class, style: "width:#{mailaccount.quotausage_rel}%"}= Filesize.from("#{mailaccount.quotausage} B").pretty
-          %td{class: 'number'}= Filesize.from("#{mailaccount.quota} B").pretty
-          %td{class: 'icon item-delete'}
-            %a{href: "/mail/accounts/#{mailaccount.id}/delete", class: 'item-delete icon icon-trash'}= ' delete'
+            %span{ class: progress_class,
+              style: "width:#{mailaccount['quotausage_rel']}%" }
+              = Filesize.from("#{mailaccount['quotausage']} B").pretty
+          %td.number= Filesize.from("#{mailaccount['quota']} B").pretty
+          %td.icon.item-delete
+            - delete_path = "/mail/accounts/#{id}/delete"
+            %a.icon.icon-trash.item-delete{ href: delete_path } delete
