@@ -3,6 +3,7 @@ AllCops:
   TargetRubyVersion: 2.3
   Include:
     - ./**/*.rb
+    - '**/Rakefile'
   Exclude:
     - vendor/**/*
     - .vendor/**/*
@@ -40,6 +41,9 @@ Style/HashSyntax:
 
 Style/RedundantReturn:
   Enabled: true
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 Lint/AmbiguousOperator:
   Enabled: true

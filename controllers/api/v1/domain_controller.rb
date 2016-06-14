@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 namespace '/api/v1/domains' do
   helpers do
     def user_domains

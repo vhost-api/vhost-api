@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 namespace '/api/v1/auth' do
   post '/login' do
     params['user'] && params['user']['login'] && params['user']['password']

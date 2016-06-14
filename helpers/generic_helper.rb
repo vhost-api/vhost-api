@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 def return_json_pretty(json)
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end

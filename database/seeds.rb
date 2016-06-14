@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 group_list = [
   ['admin', true]
 ]

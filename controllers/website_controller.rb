@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 get '/login' do
   haml :login, layout: :layout_login
 end

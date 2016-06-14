@@ -1,3 +1,4 @@
+# frozen_string_literal; false
 # require 'bundler/setup'
 require 'yaml'
 # require 'logger'
