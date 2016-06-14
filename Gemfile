@@ -12,9 +12,19 @@ gem 'logger'
 gem 'sinatra-pundit'
 # database 
 gem 'data_mapper'
-gem 'dm-sqlite-adapter'
-gem 'dm-mysql-adapter'
-gem 'dm-postgres-adapter'
+
+group :mysql do
+  gem 'dm-mysql-adapter'
+end
+
+group :sqlite do
+  gem 'dm-sqlite-adapter'
+end
+
+group :postgres do
+  gem 'dm-postgres-adapter'
+end
+
 gem 'dm-constraints'
 # engine
 gem 'puma'
