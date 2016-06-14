@@ -10,7 +10,7 @@ class Vhost
   property :id, Serial, key: true
   property :fqdn, String, required: true, unique_index: true, length: 3..255
   property :quota_vhost_storage, Integer, required: true, min: 0,
-                                          max: (2**64 - 1),
+                                          max: (2**63 - 1),
                                           default: 104_857_600 # 100MiB default
   property :auto_subdomain, Enum[:none, :www, :wildcard], required: false,
                                                           default: :none
@@ -21,9 +21,9 @@ class Vhost
   property :ssl_chain, Text, lazy: false
   property :os_uid, String, required: true, default: 'nobody' # 99 -- nobody
   property :os_gid, String, required: true, default: 'nobody' # 99 -- nobody
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :enabled, Boolean, default: false
 

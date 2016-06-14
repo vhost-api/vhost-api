@@ -19,9 +19,9 @@ class AliasVhost
   property :ssl_crt, Text, lazy: false
   property :ssl_key, Text, lazy: false
   property :ssl_chain, Text, lazy: false
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :enabled, Boolean, default: false
 

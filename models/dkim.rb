@@ -11,9 +11,9 @@ class Dkim
   property :selector, String, required: true, length: 63
   property :private_key, Text, required: false, lazy: false
   property :public_key, Text, required: false, lazy: false
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :enabled, Boolean, default: false
 

@@ -12,9 +12,9 @@ class ShellUser
   property :password, String, required: true, length: 255
   property :uid, Integer, required: true, min: 0, default: 99 # 99 -- nobody
   property :gid, Integer, required: true, min: 0, default: 99 # 99 -- nobody
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :enabled, Boolean, default: false
 

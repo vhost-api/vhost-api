@@ -11,9 +11,9 @@ class SftpUser
   property :username, String, required: true, unique_index: true, length: 3..255
   property :password, String, required: true, length: 255
   property :homedir, String, required: true, length: 255, default: '/bin/false'
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :enabled, Boolean, default: false
 

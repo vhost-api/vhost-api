@@ -20,9 +20,9 @@ class Apikey
                                :mailaccount,
                                :mailaccount_ro], required: true, default: :user
   property :valid_for, Integer, required: true, default: 0
-  property :created_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
-  property :updated_at, Integer, min: 0, max: (2**64 - 1), default: 0,
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :comment, String, required: false, length: 255
   property :enabled, Boolean, default: false
