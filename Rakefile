@@ -13,9 +13,6 @@ require './init'
 
 @log_level = :warn
 
-@environment = ENV['RACK_ENV'] || 'development'
-@dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
-
 def setup_dm
   DataMapper::Logger.new($stdout, @log_level)
   DataMapper::Model.raise_on_save_failure = true
