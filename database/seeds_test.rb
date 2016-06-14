@@ -1,27 +1,25 @@
 # frozen_string_literal; false
 group_list = [
-  [1, 'admin', true],
-  [2, 'reseller', true],
-  [3, 'user', true]
+  ['admin', true],
+  ['reseller', true],
+  ['user', true]
 ]
 group_list.each do |group|
-  Group.new(id: group[0],
-            name: group[1],
-            enabled: group[2]).save
+  Group.new(name: group[0],
+            enabled: group[1]).save
 end
 
 user_list = [
-  [1, 'Admin', 'admin', 'secret', true, 1],
-  [2, 'Thore Bödecker', 'fox', 'geheim', true, 1],
-  [3, 'Max Mustermann', 'max', 'muster', true, 3]
+  ['Admin', 'admin', 'secret', true, 1],
+  ['Thore Bödecker', 'fox', 'geheim', true, 1],
+  ['Max Mustermann', 'max', 'muster', true, 3]
 ]
 user_list.each do |user|
-  User.new(id: user[0],
-           name: user[1],
-           login: user[2],
-           password: user[3],
-           enabled: user[4],
-           group_id: user[5]).save
+  User.new(name: user[0],
+           login: user[1],
+           password: user[2],
+           enabled: user[3],
+           group_id: user[4]).save
 end
 
 domain_list = [
