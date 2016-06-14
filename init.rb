@@ -10,8 +10,14 @@ require 'dm-migrations'
 require 'dm-constraints'
 require 'dm-timestamps'
 require 'dm-serializer'
-require 'dm-mysql-adapter'
-require 'dm-postgres-adapter'
+
+case @dbconfig[:db_adapter].upcase
+when 'POSTGRES'
+    require 'dm-postgres-adapter'
+when 'MYSQL'
+    require 'dm-mysql-adapter'
+end
+
 require 'bcrypt'
 
 # load models and stuff
