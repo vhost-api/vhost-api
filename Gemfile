@@ -17,10 +17,6 @@ group :mysql do
   gem 'dm-mysql-adapter'
 end
 
-group :sqlite do
-  gem 'dm-sqlite-adapter'
-end
-
 group :postgres do
   gem 'dm-postgres-adapter'
 end

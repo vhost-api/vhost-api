@@ -99,9 +99,6 @@ namespace :db do
         system(query.compact.join(' '))
         DataMapper.auto_upgrade!
         DataMapper.auto_migrate!
-      when 'sqlite3'
-        DataMapper.setup(DataMapper.repository.name, config)
-        DataMapper.auto_migrate!
       else
         raise "Adapter #{config[:db_adapter]} not supported for
                creating databases yet."
@@ -131,8 +128,6 @@ namespace :db do
           "DROP DATABASE IF EXISTS #{database}".inspect
         ]
         system(query.compact.join(' '))
-      when 'sqlite3'
-        File.delete(config[:path]) if File.exist?(config[:path])
       else
         raise "Adapter #{config[:db_adapter]} not supported for
                dropping databases yet."
