@@ -54,6 +54,10 @@ class User
   has n, :apikeys, constraint: :destroy
   has n, :ssh_pubkeys, constraint: :destroy
 
+  # reseller relation
+  has n, :customers, self, child_key: :reseller_id
+  belongs_to :reseller, self, required: false
+
   def authenticate(attempted_password)
     # BCrypt automatically hashes the right side of ==
     # when comparing to self.password.
