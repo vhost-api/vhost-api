@@ -21,8 +21,6 @@ require_relative './init'
 Dir.glob('./controllers/*.rb').each { |file| require file }
 Dir.glob('./controllers/api/v1/*.rb').each { |file| require file }
 
-@dbconfig = YAML.load(File.read('config/database.yml'))[settings.environment.to_s]
-
 # setup database connection
 # DataMapper::Logger.new($stdout, :debug)
 DataMapper::Logger.new($stdout, :info)
