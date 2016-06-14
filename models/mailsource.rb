@@ -25,8 +25,7 @@ class MailSource
 
   belongs_to :domain
 
-  has n, :mail_source_permissions, constraint: :destroy
-  has n, :mail_accounts, through: :mail_source_permissions, constraint: :destroy
+  has n, :mail_accounts, through: Resource, constraint: :destroy
 
   def as_json(options = {})
     defaults = { methods: [:allowed_from] }
@@ -51,8 +50,8 @@ class MailSource
 
   def allowed_from
     allowed_senders = []
-    mail_source_permissions.each do |from|
-      allowed_senders.push(MailAccount.get(from.mail_account_id).email.to_s)
+    mail_accounts.each do |acc|
+      allowed_senders.push(acc.email.to_s)
     end
     allowed_senders
   end

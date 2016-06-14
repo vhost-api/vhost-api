@@ -36,11 +36,8 @@ class MailAccount
 
   belongs_to :domain
 
-  has n, :mail_source_permissions, constraint: :destroy
-  has n, :mail_sources, through: :mail_source_permissions, constraint: :destroy
-
-  has n, :mail_alias_destinations, constraint: :destroy
-  has n, :mail_aliases, through: :mail_alias_destinations, constraint: :destroy
+  has n, :mail_sources, through: Resource, constraint: :destroy
+  has n, :mail_aliases, through: Resource, constraint: :destroy
 
   def as_json(options = {})
     defaults = { methods:

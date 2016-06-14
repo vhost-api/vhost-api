@@ -13,9 +13,9 @@ require 'dm-serializer'
 
 case @dbconfig[:db_adapter].upcase
 when 'POSTGRES'
-    require 'dm-postgres-adapter'
+  require 'dm-postgres-adapter'
 when 'MYSQL'
-    require 'dm-mysql-adapter'
+  require 'dm-mysql-adapter'
 end
 
 require 'bcrypt'
@@ -30,8 +30,6 @@ require_relative 'models/dkimsigning'
 require_relative 'models/mailaccount'
 require_relative 'models/mailsource'
 require_relative 'models/mailalias'
-require_relative 'models/mailsourcepermission'
-require_relative 'models/mailaliasdestination'
 require_relative 'models/ipv4address'
 require_relative 'models/ipv6address'
 require_relative 'models/phpruntime'

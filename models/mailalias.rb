@@ -25,8 +25,7 @@ class MailAlias
 
   belongs_to :domain
 
-  has n, :mail_alias_destinations, constraint: :destroy
-  has n, :mail_accounts, through: :mail_alias_destinations, constraint: :destroy
+  has n, :mail_accounts, through: Resource, constraint: :destroy
 
   def as_json(options = {})
     defaults = { methods: [:destinations] }
@@ -51,8 +50,8 @@ class MailAlias
 
   def destinations
     dests = []
-    mail_alias_destinations.each do |dest|
-      dests.push(MailAccount.get(dest.mail_account_id).email.to_s)
+    mail_accounts.each do |acc|
+      dests.push(acc.email.to_s)
     end
     dests
   end

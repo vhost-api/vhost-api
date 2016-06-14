@@ -58,92 +58,57 @@ mailaccount_list.each do |mailaccount|
                   realname: mailaccount[4]).save
 end
 
-mailalias_list = [
-  ['aliastest@foobar.com', 1],
-  ['postmaster@foxxx0.de', 2],
-  ['hostmaster@foxxx0.de', 2],
-  ['webmaster@foxxx0.de', 2],
-  ['abuse@foxxx0.de', 2],
-  ['blog@foxxx0.de', 2],
-  ['b@example.net', 3],
-  ['postmaster@example.net', 3],
-  ['hostmaster@example.net', 3],
-  ['webmaster@example.net', 3],
-  ['abuse@example.net', 3],
-  ['a@example.net', 3]
+mailalias_mailaccount_list = [
+  ['aliastest@foobar.com', %w(me@foobar.com me2@foobar.com me3@foobar.com), 1],
+  ['postmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['hostmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['webmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['abuse@foxxx0.de', 'me@foxxx0.de', 2],
+  ['blog@foxxx0.de', 'me@foxxx0.de', 2],
+  ['b@example.net', 'bob@example.net', 3],
+  ['postmaster@example.net', 'bob@example.net', 3],
+  ['hostmaster@example.net', 'bob@example.net', 3],
+  ['webmaster@example.net', 'bob@example.net', 3],
+  ['abuse@example.net', 'bob@example.net', 3],
+  ['a@example.net', 'alice@example.net', 3]
 ]
-mailalias_list.each do |mailalias|
-  MailAlias.new(address: mailalias[0],
+mailalias_mailaccount_list.each do |mals_macc|
+  MailAlias.new(address: mals_macc[0],
                 enabled: true,
-                domain_id: mailalias[1]).save
+                domain_id: mals_macc[2]).save
+  [*mals_macc[1]].each do |macc|
+    acc = MailAccount.first(email: macc)
+    acc.mail_aliases << MailAlias.first(address: mals_macc[0])
+    acc.save
+  end
 end
 
-mailaliasdestination_list = [
-  [1, 1],
-  [2, 1],
-  [3, 1],
-  [5, 2],
-  [5, 3],
-  [5, 4],
-  [5, 5],
-  [5, 6],
-  [6, 7],
-  [6, 8],
-  [6, 9],
-  [6, 10],
-  [6, 11],
-  [7, 12]
+mailsource_mailaccount_list = [
+  ['me@foobar.com', 'me@foobar.com', 1],
+  ['me2@foobar.com', 'me2@foobar.com', 1],
+  ['me3@foobar.com', 'me3@foobar.com', 1],
+  ['test@foobar.com', %w(me@foobar.com me2@foobar.com me3@foobar.com), 1],
+  ['postmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['hostmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['webmaster@foxxx0.de', 'me@foxxx0.de', 2],
+  ['abuse@foxxx0.de', 'me@foxxx0.de', 2],
+  ['blog@foxxx0.de', 'me@foxxx0.de', 2],
+  ['bob@example.net', 'bob@example.net', 3],
+  ['postmaster@example.net', 'bob@example.net', 3],
+  ['hostmaster@example.net', 'bob@example.net', 3],
+  ['webmaster@example.net', 'bob@example.net', 3],
+  ['abuse@example.net', 'bob@example.net', 3],
+  ['alice@example.net', 'alice@example.net', 3]
 ]
-mailaliasdestination_list.each do |mailaliasdestination|
-  MailAliasDestination.new(mail_account_id: mailaliasdestination[0],
-                           mail_alias_id: mailaliasdestination[1]).save
-end
-
-mailsource_list = [
-  ['me@foobar.com', 1],
-  ['me2@foobar.com', 1],
-  ['me3@foobar.com', 1],
-  ['test@foobar.com', 1],
-  ['postmaster@foxxx0.de', 2],
-  ['hostmaster@foxxx0.de', 2],
-  ['webmaster@foxxx0.de', 2],
-  ['abuse@foxxx0.de', 2],
-  ['blog@foxxx0.de', 2],
-  ['bob@example.net', 3],
-  ['postmaster@example.net', 3],
-  ['hostmaster@example.net', 3],
-  ['webmaster@example.net', 3],
-  ['abuse@example.net', 3],
-  ['alice@example.net', 3]
-]
-mailsource_list.each do |mailsource|
-  MailSource.new(address: mailsource[0],
+mailsource_mailaccount_list.each do |msrc_macc|
+  MailSource.new(address: msrc_macc[0],
                  enabled: true,
-                 domain_id: mailsource[1]).save
-end
-
-mailsourcepermission_list = [
-  [1, 1],
-  [2, 2],
-  [3, 3],
-  [4, 1],
-  [4, 2],
-  [4, 3],
-  [5, 5],
-  [6, 5],
-  [7, 5],
-  [8, 5],
-  [9, 5],
-  [10, 6],
-  [11, 6],
-  [12, 6],
-  [13, 6],
-  [14, 6],
-  [15, 7]
-]
-mailsourcepermission_list.each do |mailsourcepermission|
-  MailSourcePermission.new(mail_source_id: mailsourcepermission[0],
-                           mail_account_id: mailsourcepermission[1]).save
+                 domain_id: msrc_macc[2]).save
+  [*msrc_macc[1]].each do |macc|
+    acc = MailAccount.first(email: macc)
+    acc.mail_sources << MailSource.first(address: msrc_macc[0])
+    acc.save
+  end
 end
 
 # foobar.com
@@ -279,12 +244,12 @@ when 'mysql'
       '`mail_sendas_maps` AS '\
       'SELECT `mail_sources`.`address` AS `source`, '\
       '`mail_accounts`.`email` AS `user` '\
-      'FROM `mail_source_permissions` '\
+      'FROM `mail_account_mail_sources` '\
       'LEFT JOIN `mail_accounts` ON '\
-      '`mail_source_permissions`.`mail_account_id` = `mail_accounts`.`id` '\
+      '`mail_account_mail_sources`.`mail_account_id` = `mail_accounts`.`id` '\
       'AND `mail_accounts`.`enabled` = 1 '\
       'RIGHT JOIN `mail_sources` ON '\
-      '`mail_source_permissions`.`mail_source_id` = `mail_sources`.`id` '\
+      '`mail_account_mail_sources`.`mail_source_id` = `mail_sources`.`id` '\
       'AND `mail_sources`.`enabled` = 1;')
   # mail_alias_maps
   adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW '\
@@ -292,11 +257,11 @@ when 'mysql'
       'SELECT `mail_aliases`.`address` AS `source`, '\
       "GROUP_CONCAT(`mail_accounts`.`email` SEPARATOR ' ') AS `destination` "\
       'FROM (`mail_accounts` '\
-      'RIGHT JOIN (`mail_alias_destinations` '\
+      'RIGHT JOIN (`mail_account_mail_aliases` '\
       'LEFT JOIN `mail_aliases` ON '\
-      '(((`mail_alias_destinations`.`mail_alias_id` = `mail_aliases`.`id`) '\
+      '(((`mail_account_mail_aliases`.`mail_alias_id` = `mail_aliases`.`id`) '\
       'AND (`mail_aliases`.`enabled` = 1)))) ON '\
-      '(((`mail_alias_destinations`.`mail_account_id` = `mail_accounts`.`id`) '\
+      '(((`mail_account_mail_aliases`.`mail_account_id` = `mail_accounts`.`id`) '\
       'AND (`mail_accounts`.`enabled` = 1)))) '\
       'GROUP BY `mail_aliases`.`address`;')
   # dkim_lookup
