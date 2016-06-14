@@ -23,12 +23,11 @@
       %h1 Vhost API
       = haml :nav
       - unless @user.nil?
-        %h4= Welcome @user.name
+        %h4 Welcome #{@user.name}
     %section.content
       .content-wrapper
         .row
-          .col-12.flash-message
-            = find_and_preserve styled_flash
+          .col-12.flash-message= find_and_preserve styled_flash
         .row
           .col-12= yield
     %footer.footer
