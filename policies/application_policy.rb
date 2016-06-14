@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal; false
 # default application policy
 class ApplicationPolicy
   attr_reader :user, :record
