@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailsources' do
   get do
     @mailsources = MailSource.all

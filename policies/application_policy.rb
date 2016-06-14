@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+# default application policy
 class ApplicationPolicy
   attr_reader :user, :record
 
@@ -8,12 +10,13 @@ class ApplicationPolicy
   end
 
   def update?
-    user.admin? or user.owner_of?(record)
+    user.admin? || user.owner_of?(record)
   end
 
+  # default scope
   class Scope
     attr_reader :user, :scope
-    
+
     def initialize(user, scope)
       @user = user
       @scope = scope

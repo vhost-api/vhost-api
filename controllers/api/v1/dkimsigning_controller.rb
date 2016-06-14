@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/dkimsignings' do
   get do
     @dkimsignings = DkimSigning.all

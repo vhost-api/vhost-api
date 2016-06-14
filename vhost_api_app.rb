@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'bundler/setup'
 
 require 'sinatra'
@@ -13,23 +14,25 @@ require 'logger'
 require 'filesize'
 require 'tilt/sass'
 require 'sass'
+require 'English'
 
 # load models and stuff
 require_relative './init'
 Dir.glob('./controllers/*.rb').each { |file| require file }
 Dir.glob('./controllers/api/v1/*.rb').each { |file| require file }
 
-@dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
+@dbconfig = YAML.load(File.read('config/database.yml'))[settings.environment.to_s]
 
 # setup database connection
 # DataMapper::Logger.new($stdout, :debug)
 DataMapper::Logger.new($stdout, :info)
 DataMapper::Property::String.length(255)
 DataMapper::Model.raise_on_save_failure = true
-DataMapper.setup(:default, "#{@dbconfig[:db_adapter]}://#{@dbconfig[:db_user]}:#{@dbconfig[:db_pass]}@#{@dbconfig[:db_host]}/#{@dbconfig[:db_name]}")
+DataMapper.setup(:default, "#{@dbconfig[:db_adapter]}://" \
+                           "#{@dbconfig[:db_user]}:#{@dbconfig[:db_pass]}" \
+                           "@#{@dbconfig[:db_host]}/#{@dbconfig[:db_name]}")
 
-
-::Logger.class_eval { alias :write :'<<' }
+::Logger.class_eval { alias_method :write, :'<<' }
 access_log = "log/#{settings.environment}_access.log"
 access_logger = ::Logger.new(access_log)
 error_log = "log/#{settings.environment}_error.log"
@@ -38,13 +41,17 @@ error_logger.sync = true
 
 configure do
   use ::Rack::CommonLogger, access_logger
-  set :root, File.expand_path('../',__FILE__)
+  set :root, File.expand_path('../', __FILE__)
   set :views, File.expand_path('../views', __FILE__)
   set :jsdir, 'js'
   set :cssdir, 'css'
   enable :coffeescript
   set :cssengine, 'scss'
   set :start_time, Time.now
+  @appconfig = YAML.load(File.read('config/appconfig.yml'))[settings.environment.to_s]
+  @appconfig.keys.each do |key|
+    set key, @appconfig[key]
+  end
 end
 
 configure :development do
@@ -65,36 +72,39 @@ end
 
 get '/js/*.js' do
   pass unless settings.coffeescript?
-  last_modified File.mtime(settings.root+'/views/'+settings.jsdir)
+  last_modified File.mtime(settings.root + '/views/' + settings.jsdir)
   content_type :js
   cache_control :public, :must_revalidate
-  coffee (settings.jsdir + '/' + params[:splat].first).to_sym
+  coffee "#{settings.jsdir}/#{params[:splat].first}".to_sym
 end
 
 get '/css/*.css' do
-  last_modified File.mtime(settings.root+'/views/'+settings.cssdir)
+  last_modified File.mtime(settings.root + '/views/' + settings.cssdir)
   content_type :css
   cache_control :public, :must_revalidate
-  send(settings.cssengine, (settings.cssdir + '/' + params[:splat].first).to_sym)
+  send(settings.cssengine,
+       (settings.cssdir + '/' + params[:splat].first).to_sym)
 end
 
 use Rack::Session::Cookie, secret: File.read('config/session.secret'),
-                           key: "#{$appconfig[:session][:key]}",
-                           domain: "#{$appconfig[:session][:domain]}",
-                           expire_after: "#{$appconfig[:session][:timeout]}".to_i, 
-                           path: "#{$appconfig[:session][:path]}"
+                           key: settings.session[:key].to_s,
+                           domain: settings.session[:domain].to_s,
+                           expire_after: settings.session[:timeout],
+                           path: settings.session[:path].to_s
 
 def my_logger
   settings.logger
 end
 
-before {
-  env['rack.errors'] = error_logger
-}
+before { env['rack.errors'] = error_logger }
 
 # tell pundit how to find the user
 current_user do
   session[:user]
+end
+
+def user?
+  @user != nil
 end
 
 error Pundit::NotAuthorizedError do
@@ -103,7 +113,6 @@ error Pundit::NotAuthorizedError do
   body 'Forbidden'
   # redirect '/'
 end
-
 
 before do
   set_title
@@ -115,11 +124,11 @@ before do
 end
 
 # check if request wants json
-before (/.*/) do
-  if /.json$/ =~ request.path_info
+before %r{/.*/} do
+  if %r{.json$} =~ request.path_info
     content_type :json, charset: 'utf-8'
     request.accept.unshift('application/json')
-    request.path_info = request.path_info.gsub(/.json$/, '')
+    request.path_info = request.path_info.gsub(%r{.json$}, '')
   else
     content_type :html, 'charset' => 'utf-8'
   end
@@ -138,7 +147,7 @@ get '/env' do
     end
 
     type.json do
-      return_json_pretty({environment: settings.environment.to_s}.to_json)
+      return_json_pretty({ environment: settings.environment.to_s }.to_json)
     end
   end
 end

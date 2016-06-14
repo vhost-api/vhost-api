@@ -1,35 +1,36 @@
 %table
   - @mailaccount.attributes.each do |key, value|
-    - p "key: #{key} = #{value}"
     %tr
       %td
-        %label{for: key}= "#{key}:"
+        %label{ for: key } #{key}:
       %td
         - suffix = { key: nil, val: nil }
         - disable_input = false
-        - if ['id', 'created_at', 'updated_at'].include? key.to_s
+        - if %w(id created_at updated_at).include? key.to_s
           - disable_input = true
         - if key.to_s == 'password'
           - input_type = 'password'
           - input_value = ''
-        - elsif !!value == value
+        - elsif [true, false].include?(value)
           - input_type = 'checkbox'
           - input_value = value.to_s
           - if value
             - suffix[:key] = 'checked'
             - suffix[:val] = 'checked'
-        - elsif key.to_s =~ /_at$/
+        - elsif key.to_s =~ %r{_at$}
           - value = Time.at(value)
         - else
           - input_type = 'text'
           - input_value = value
         - if disable_input
           = value
-        - else 
-          - if suffix[:key].nil?
-            %input{id: key, name: key, type: input_type, value: input_value}
-          - else
-            %input{id: key, name: key, type: input_type, value: input_value, suffix[:key].to_sym => suffix[:val]}
+        - elsif suffix[:key].nil?
+          %input{ id: key, name: key, type: input_type, value: input_value }
+        - else
+          %input{ id: key, name: key, type: input_type, value: input_value,
+            suffix[:key].to_sym => suffix[:val] }
   %tr
-    %td{colspan: 2, style: 'text-align: center'}
-      %input{type: 'submit', value: 'Submit', onclick: 'submitMyForm(); return false;', style: 'display:inline-block;'}
+    %td{ colspan: 2, style: 'text-align: center' }
+      %input{ type: 'submit', value: 'Submit',
+        onclick: 'submitMyForm(); return false;',
+        style: 'display:inline-block;' }

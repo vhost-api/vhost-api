@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailaliases' do
   get do
     @mailaliases = MailAlias.all

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/apikeys' do
   get do
     @apikeys = Apikey.all
