@@ -135,7 +135,7 @@ end
 get '/' do
   # my_logger.debug "user ---> #{@user.inspect}"
   # my_logger.error "test"
-  haml :home, layout: :layout_home
+  haml :home, layout: :layout
 end
 
 get '/env' do
