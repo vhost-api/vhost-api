@@ -1,49 +1,42 @@
-%nav
-  .nav-wrapper.row
-    %ul
-      %li
-        %a{ href: '/', title: 'Home', class: nav_current? }
-          .icon.icon-home
-          .title Home
-      %li
-        %a{ href: '/user', title: 'User', class: nav_current?('user') }
-          .icon.icon-user
-          .title User
-      %li
-        %a{ href: '/stats', title: 'DNS', class: nav_current?('stats') }
-          .icon.icon-stats
-          .title Stats
-      %li
-        %a{ href: '/domains', title: 'Domains', class: nav_current?('domains') }
-          .icon.icon-domain
-          .title Domains
-      %li
-        %a{ href: '/mail', title: 'Mail', class: nav_current?('mail') }
-          .icon.icon-mail
-          .title Mail
-      %li
-        %a{ href: '/vhosts', title: 'VHosts', class: nav_current?('vhosts') }
-          .icon.icon-web
-          .title VHosts
-      %li
-        %a{ href: '/databases', title: 'DBs', class: nav_current?('databases') }
-          .icon.icon-database
-          .title DBs
-      %li
-        %a{ href: '/dns', title: 'DNS', class: nav_current?('dns') }
-          .icon.icon-dns
-          .title DNS
-      %li
-        %a{ href: '/settings', title: 'Settings',
-            class: nav_current?('settings') }
-          .icon.icon-settings
-          .title Settings
-      %li
-        %a{ href: 'https://webmail.nano-srv.net/', target: '_blank',
-            title: 'Webmail' }
-          .icon.icon-webmail
-          .title Webmail
-      %li
-        %a.nav-logout{ href: '/logout', title: 'Logout' }
-          .icon.icon-logout
-          .title Logout
+%li
+  %a{ href: '/', title: 'Home', class: nav_current? }
+    .icon.icon-home.icon-title
+    .title Home
+%li
+  %a{ href: '/user', title: 'User', class: nav_current?('user') }
+    .icon.icon-user.icon-title
+    .title User
+%li
+  %a{ href: '/stats', title: 'DNS', class: nav_current?('stats') }
+    .icon.icon-stats.icon-title
+    .title Stats
+%li
+  %a{ href: '/domains', title: 'Domains', class: nav_current?('domains') }
+    .icon.icon-domain.icon-title
+    .title Domains
+%li
+  %a{ href: '/mail', title: 'Mail', class: nav_current?('mail') }
+    .icon.icon-mail.icon-title
+    .title Mail
+%li
+  %a{ href: '/vhosts', title: 'VHosts', class: nav_current?('vhosts') }
+    .icon.icon-web.icon-title
+    .title VHosts
+%li
+  %a{ href: '/databases', title: 'DBs', class: nav_current?('databases') }
+    .icon.icon-database.icon-title
+    .title DBs
+%li
+  %a{ href: '/dns', title: 'DNS', class: nav_current?('dns') }
+    .icon.icon-dns.icon-title
+    .title DNS
+%li
+  %a{ href: '/settings', title: 'Settings',
+      class: nav_current?('settings') }
+    .icon.icon-settings.icon-title
+    .title Settings
+%li
+  %a{ href: 'https://webmail.nano-srv.net/', target: '_blank',
+      title: 'Webmail' }
+    .icon.icon-webmail.icon-title
+    .title Webmail
