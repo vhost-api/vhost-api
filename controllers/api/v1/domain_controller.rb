@@ -9,7 +9,6 @@ namespace '/api/v1/domains' do
 
   get do
     authenticate!
-    # my_logger.debug "user ---> #{@user.inspect}"
     @domains = Domain.all(id: 0)
     user_domains
     # @domains = Domain.all
