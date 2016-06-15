@@ -32,7 +32,32 @@ class Domain
   has n, :mail_sources, constraint: :protect
   has n, :dkims, constraint: :protect
 
+  def as_json(options = {})
+    defaults = { methods: [:customer] }
+    options = defaults.merge(options)
+
+    # Fix options array if exclude/only parameters are given.
+    if options.include?(:only) || options.include?(:exclude)
+      only_props = Array(options[:only])
+      excl_props = Array(options[:exclude])
+
+      options[:methods].delete_if do |prop|
+        if only_props.include? prop
+          false
+        else
+          excl_props.include?(prop) ||
+            !(only_props.empty? || only_props.include?(prop))
+        end
+      end
+    end
+    super(options)
+  end
+
   def owner
     user
+  end
+
+  def customer
+    user.to_json(only: [:id, :name, :login])
   end
 end

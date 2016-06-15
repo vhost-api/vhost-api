@@ -13,7 +13,9 @@ namespace '/api/v1/domains' do
     @domains = Domain.all(id: 0)
     user_domains
     # @domains = Domain.all
-    return_resource object: @domains
+    # return_resource object: @domains
+    permitted_attributes = Pundit.policy(@user, @domains).permitted_attributes
+    return_json_pretty(@domains.to_json(only: permitted_attributes))
   end
 
   post do

@@ -40,8 +40,20 @@ class MailAccount
   has n, :mail_aliases, through: Resource, constraint: :destroy
 
   def as_json(options = {})
-    defaults = { methods:
-                 [:quotausage, :quotausage_rel, :sieveusage, :sieveusage_rel] }
+    defaults = if owner.reseller.nil?
+                 { methods:
+                              [:quotausage,
+                               :quotausage_rel,
+                               :sieveusage,
+                               :sieveusage_rel] }
+               else
+                 { methods:
+                              [:owner,
+                               :quotausage,
+                               :quotausage_rel,
+                               :sieveusage,
+                               :sieveusage_rel] }
+               end
     options = defaults.merge(options)
 
     # Fix options array if exclude/only parameters are given.

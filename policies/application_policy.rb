@@ -30,4 +30,19 @@ class ApplicationPolicy
       end
     end
   end
+
+  # default permissions
+  class ApplicationPermissions
+    attr_accessor :attributes, :errors
+    attr_reader :record
+
+    def initialize(record)
+      @record = record
+      @errors = []
+    end
+
+    def attributes
+      record.attributes.keys
+    end
+  end
 end

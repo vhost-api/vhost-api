@@ -40,16 +40,23 @@ user_list.each do |user|
 end
 
 domain_list = [
-  ['foobar.com', true, true, true, 3],
-  ['foxxx0.de', true, true, true, 2],
-  ['example.net', true, true, true, 1]
+  ['foobar.com', true, true, true, 'admin'],
+  ['foxxx0.de', true, true, true, 'fox'],
+  ['example.net', true, true, true, 'max'],
+  ['herpderp.org', true, true, true, 'customer1'],
+  ['schalala.net', true, true, true, 'customer2'],
+  ['everything.eu', true, true, true, 'customer3'],
+  ['archlinux.sexy', true, true, true, 'reseller1'],
+  ['kernel.org', true, true, true, 'reseller1'],
+  ['serious.business', true, true, true, 'customer4'],
+  ['big.company', true, true, true, 'customer5']
 ]
 domain_list.each do |domain|
   Domain.new(name: domain[0],
              mail_enabled: domain[1],
              dns_enabled: domain[2],
              enabled: domain[3],
-             user_id: domain[4]).save
+             user: User.first(login: domain[4])).save
 end
 
 mailaccount_list = [

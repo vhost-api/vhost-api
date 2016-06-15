@@ -23,6 +23,21 @@ namespace '/user' do
   end
 end
 
+namespace '/domains' do
+  before do
+    @sidebar_title = 'Domains'
+    @sidebar_elements = ['Domains']
+  end
+
+  get do
+    authenticate!
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/domains.json')
+    @domains = JSON.parse(body[0])['domains']
+    haml :domains
+  end
+end
+
 namespace '/mail' do
   before do
     @sidebar_title = 'Mail'
@@ -157,21 +172,6 @@ namespace '/mail' do
         haml :edit_mailaccount
       end
     end
-  end
-end
-
-namespace '/domains' do
-  before do
-    @sidebar_title = 'Domains'
-    @sidebar_elements = ['Domains']
-  end
-
-  get do
-    authenticate!
-    _status, _headers, body = call env.merge('PATH_INFO' =>
-                                           '/api/v1/domains.json')
-    @domains = JSON.parse(body[0])['domains']
-    haml :domains
   end
 end
 
