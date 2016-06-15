@@ -33,6 +33,6 @@ class Domain
   has n, :dkims, constraint: :protect
 
   def owner
-    user_id
+    user
   end
 end

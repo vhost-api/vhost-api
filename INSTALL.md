@@ -14,5 +14,6 @@
 
 ## Development setup
 
-+ Instead of `bundle exec rake db:seed` use `db:test` to fill the database with some testdata from `database/seeds_test.rb`
++ Instead of `bundle exec rake db:seed` use `db:dev` to fill the database with some testdata from `database/seeds_test.rb`
 + Run the application via `bundle exec shotgun config.ru` to enable auto-reloading of all files at runtime
++ To empty the database simply run `bundle exec rake db:reset` and you can load your seed data all over again

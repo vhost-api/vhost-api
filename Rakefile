@@ -52,9 +52,9 @@ end
 namespace :db do
   setup_dm
 
-  desc 'Perform auto-migration (reset your db data)'
-  task :migrate do |t|
-    puts '=> Auto-migrating'
+  desc 'Reset your db data and initialize layout'
+  task :reset do |t|
+    puts '=> Resetting'
     time = Benchmark.realtime do
       DataMapper.auto_migrate!
     end
@@ -62,8 +62,8 @@ namespace :db do
   end
 
   desc 'Perform non destructive auto-migration'
-  task :upgrade do |t|
-    puts '=> Auto-upgrading'
+  task :migrate do |t|
+    puts '=> Auto-migrate'
     time = Benchmark.realtime do
       DataMapper.auto_upgrade!
     end
@@ -145,17 +145,14 @@ namespace :db do
     printf "<= %s done in %.2fs\n", t.name, time
   end
 
-  desc 'Load the test seed data from database/seeds_test.rb'
-  task :test do |t|
-    puts '=> Loading test seed data'
+  desc 'Load the test seed data from database/seeds_test.rb for development'
+  task :dev do |t|
+    puts '=> Loading development seed data'
     time = Benchmark.realtime do
-      require './database/seeds_test.rb'
+      require './database/seeds_dev.rb'
     end
     printf "<= %s done in %.2fs\n", t.name, time
   end
-
-  desc 'Drop the database, create from scratch and init with the seed data'
-  task reset: [:drop, :setup]
 
   desc 'Create the database, migrate and init with the seed data'
   task setup: [:create, :migrate, :seed]

@@ -30,6 +30,6 @@ class ShellUser
   belongs_to :shell
 
   def owner
-    Vhost.get(vhost_id).user_id
+    vhost.user
   end
 end

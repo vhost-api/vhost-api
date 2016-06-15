@@ -45,6 +45,6 @@ class Vhost
   belongs_to :php_runtime
 
   def owner
-    user_id
+    user
   end
 end

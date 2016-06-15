@@ -38,6 +38,6 @@ class Apikey
   end
 
   def owner
-    user_id
+    user
   end
 end

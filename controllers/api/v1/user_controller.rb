@@ -1,7 +1,15 @@
 # frozen_string_literal; false
 namespace '/api/v1/users' do
+  helpers do
+    def users_visible
+      @users = policy_scope(User)
+    end
+  end
+
   get do
-    @users = User.all
+    authenticate!
+    @users = User.all(id: 0)
+    users_visible
     return_resource object: @users
   end
 

@@ -26,6 +26,6 @@ class Ipv6Address
   has n, :vhosts, constraint: :protect
 
   def owner
-    User.get(name: 'admin').id
+    User.first(name: 'admin')
   end
 end

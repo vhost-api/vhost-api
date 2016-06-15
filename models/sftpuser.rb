@@ -28,6 +28,6 @@ class SftpUser
   belongs_to :vhost
 
   def owner
-    Vhost.get(vhost_id).user_id
+    vhost.owner
   end
 end

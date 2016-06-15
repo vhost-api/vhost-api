@@ -24,6 +24,6 @@ class Shell
   end
 
   def owner
-    User.get(name: 'admin').id
+    User.first(name: 'admin')
   end
 end

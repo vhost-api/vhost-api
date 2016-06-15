@@ -8,6 +8,21 @@ get '/logout' do
   [status, headers, body]
 end
 
+namespace '/user' do
+  before do
+    @sidebar_title = 'Users'
+    @sidebar_elements = ['Users']
+  end
+
+  get do
+    authenticate!
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/users.json')
+    @users = JSON.parse(body[0])['users']
+    haml :users
+  end
+end
+
 namespace '/mail' do
   before do
     @sidebar_title = 'Mail'

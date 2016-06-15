@@ -62,7 +62,7 @@ class MailAccount
   end
 
   def owner
-    Domain.get(domain_id).user_id
+    domain.owner
   end
 
   def quotausage

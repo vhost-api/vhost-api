@@ -29,6 +29,6 @@ class DatabaseUser
   has n, :databases, constraint: :protect
 
   def owner
-    user_id
+    user
   end
 end

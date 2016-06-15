@@ -10,16 +10,33 @@ group_list.each do |group|
 end
 
 user_list = [
-  ['Admin', 'admin', 'secret', true, 1],
-  ['Thore Bödecker', 'fox', 'geheim', true, 1],
-  ['Max Mustermann', 'max', 'muster', true, 3]
+  ['Admin', 'admin', 'secret', true, Group.first(name: 'admin')],
+  ['Thore Bödecker', 'fox', 'geheim', true, Group.first(name: 'admin')],
+  ['Max Mustermann', 'max', 'muster', true, Group.first(name: 'user')],
+  ['Customer 1', 'customer1', 'customer1', true, Group.first(name: 'user')],
+  ['Customer 2', 'customer2', 'customer2', true, Group.first(name: 'user')],
+  ['Customer 3', 'customer3', 'customer3', true, Group.first(name: 'user')],
+  ['Reseller 1', 'reseller1', 'reseller1', true, Group.first(name: 'reseller'),
+   %w(customer1 customer2 customer3)],
+  ['Customer 4', 'customer4', 'customer4', true, Group.first(name: 'user')],
+  ['Customer 5', 'customer5', 'customer5', true, Group.first(name: 'user')],
+  ['Reseller 2', 'reseller2', 'reseller2', true, Group.first(name: 'reseller'),
+   %w(customer4 customer5)]
 ]
 user_list.each do |user|
-  User.new(name: user[0],
-           login: user[1],
-           password: user[2],
-           enabled: user[3],
-           group_id: user[4]).save
+  u = User.new(name: user[0],
+               login: user[1],
+               password: user[2],
+               enabled: user[3],
+               group: user[4])
+
+  if user[4].name == 'reseller'
+    user[5].each do |client|
+      u.customers << User.first(login: client)
+    end
+  end
+
+  u.save
 end
 
 domain_list = [

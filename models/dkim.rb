@@ -30,6 +30,6 @@ class Dkim
   has n, :dkim_signings, constraint: :destroy
 
   def owner
-    Domain.get(domain_id).user_id
+    domain.owner
   end
 end

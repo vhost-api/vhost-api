@@ -69,14 +69,22 @@ class User
   end
 
   def owner
-    User.get(name: 'admin').id
+    if group.name == 'user' && !reseller.nil?
+      reseller
+    else
+      User.first(name: 'admin')
+    end
   end
 
   def owner_of?(element)
-    element.owner == id
+    element.owner == self
   end
 
   def admin?
-    Group.get(group_id).name == 'admin'
+    group.name == 'admin'
+  end
+
+  def reseller?
+    group.name == 'reseller'
   end
 end
