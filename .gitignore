@@ -47,3 +47,5 @@ coverage.vim
 config/database.yml
 config/appconfig.yml
 config/session.secret
+
+testdata/cookies/*
