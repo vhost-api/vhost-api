@@ -111,3 +111,14 @@ body {
 .navbar-brand-pad {
     margin-top: 10px;
 }
+
+.progress {
+    position: relative;
+}
+
+.progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: black;
+}
