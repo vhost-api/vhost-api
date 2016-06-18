@@ -1,12 +1,13 @@
 .table-wrapper
   %table.table.table-triped
     %caption Mailaliases
-    %thead
-      %tr
-        - @mailaliases[0].keys.each do |key|
-          %th= key
-    %tbody
-      - @mailaliases.each do |mailalias|
+    - unless @mailaliases.nil? || @mailaliases.empty?
+      %thead
         %tr
-        - mailalias.keys.each do |key|
-          %td= mailalias[key]
+          - @mailaliases[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @mailaliases.each do |mailalias|
+          %tr
+          - mailalias.keys.each do |key|
+            %td= mailalias[key]

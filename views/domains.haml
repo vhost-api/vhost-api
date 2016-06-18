@@ -1,43 +1,13 @@
 .table-wrapper
   %table.table.table-triped
     %caption Domains
-    %thead
-      %tr
-        %th= 'enabled'
-        %th= 'name'
-        %th= 'email_enabled'
-        %th= 'dns_enabled'
-        %th
-    %tbody
-      -# - policy_scope(Domain).each do |domain|
-      - @domains.each do |domain|
+    - unless @domains.nil? || @domains.empty?
+      %thead
         %tr
-          %td.icon
-            - enable_href_suffix = domain['enabled'] ? 'disable' : 'enable'
-            - en = 'icon-check item-enabled'
-            - dis = 'icon-cross item-disabled'
-            - enable_class_suffix = domain['enabled'] ? en : dis
-            - enable_link_text = domain['enabled'] ? 'yes' : 'no'
-            %a{ href: "/mail/domains/#{domain['id']}/#{enable_href_suffix}",
-              class: "icon #{enable_class_suffix}" }= enable_link_text
-          %td
-            %a{ href: "/mail/domains/#{domain['id']}/edit" }= domain['name']
-          %td.icon
-            - email_href_suf = domain['mail_enabled'] ? 'dis_email' : 'en_email'
-            - en = 'icon-check item-enabled'
-            - dis = 'icon-cross item-disabled'
-            - email_class_suffix = domain['mail_enabled'] ? en : dis
-            - email_link_text = domain['mail_enabled'] ? 'yes' : 'no'
-            %a{ href: "/mail/domains/#{domain['id']}/#{email_href_suf}",
-              class: "icon #{email_class_suffix}" }= email_link_text
-          %td.icon
-            - dns_href_suffix = domain['dns_enabled'] ? 'dis_dns' : 'en_dns'
-            - en = 'icon-check item-enabled'
-            - dis = 'icon-cross item-disabled'
-            - dns_class_suffix = domain['dns_enabled'] ? en : dis
-            - dns_link_text = domain['dns_enabled'] ? 'yes' : 'no'
-            %a{ href: "/mail/domains/#{domain['id']}/#{dns_href_suffix}",
-              class: "icon #{dns_class_suffix}" }= dns_link_text
-          %td.icon.item-delete
-            - delete_path = "/mail/domains/#{domain['id']}/delete"
-            %a.icon.icon-trash.item-delete{ href: delete_path }= ' delete'
+          - @domains[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @domains.each do |d|
+          %tr
+          - d.keys.each do |key|
+            %td= d[key]

@@ -1,7 +1,7 @@
 # frozen_string_literal; false
 namespace '/api/v1/domains' do
   helpers do
-    def user_domains
+    def fetch_scoped_domains
       # my_logger.debug "user ---> #{@user.inspect}"
       @domains = policy_scope(Domain)
     end
@@ -9,11 +9,9 @@ namespace '/api/v1/domains' do
 
   get do
     authenticate!
-    # my_logger.debug "user ---> #{@user.inspect}"
     @domains = Domain.all(id: 0)
-    user_domains
-    # @domains = Domain.all
-    return_resource object: @domains
+    fetch_scoped_domains
+    return_authorized_resource(object: @domains)
   end
 
   post do

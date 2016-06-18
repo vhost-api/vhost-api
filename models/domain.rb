@@ -32,7 +32,17 @@ class Domain
   has n, :mail_sources, constraint: :protect
   has n, :dkims, constraint: :protect
 
+  def as_json(options = {})
+    defaults = { methods: [:customer] }
+    options = defaults.merge(options)
+    super(fix_options_override(options))
+  end
+
   def owner
     user
+  end
+
+  def customer
+    user.to_json(only: [:id, :name, :login])
   end
 end

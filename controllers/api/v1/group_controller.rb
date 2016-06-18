@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/groups' do
+  helpers do
+    def fetch_scoped_groups
+      @groups = policy_scope(Group)
+    end
+  end
+
   get do
-    @groups = Group.all
-    return_resource object: @groups
+    authenticate!
+    @groups = Group.all(id: 0)
+    fetch_scoped_groups
+    return_authorized_resource(object: @groups)
   end
 
   post do

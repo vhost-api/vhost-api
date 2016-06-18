@@ -1,7 +1,8 @@
 # frozen_string_literal; false
 namespace '/api/v1/users' do
   helpers do
-    def users_visible
+    def fetch_scoped_users
+      # my_logger.debug "user ---> #{@user.inspect}"
       @users = policy_scope(User)
     end
   end
@@ -9,8 +10,8 @@ namespace '/api/v1/users' do
   get do
     authenticate!
     @users = User.all(id: 0)
-    users_visible
-    return_resource object: @users
+    fetch_scoped_users
+    return_authorized_resource(object: @users)
   end
 
   post do

@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/sftpusers' do
+  helpers do
+    def fetch_scoped_sftpusers
+      @sftpusers = policy_scope(SftpUser)
+    end
+  end
+
   get do
-    @sftpusers = SftpUser.all
-    return_resource object: @sftpusers
+    authenticate!
+    @sftpusers = SftpUser.all(id: 0)
+    fetch_scoped_sftpusers
+    return_authorized_resource(object: @sftpusers)
   end
 
   post do

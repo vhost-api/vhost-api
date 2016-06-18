@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/dkims' do
+  helpers do
+    def fetch_scoped_dkims
+      @dkims = policy_scope(Dkim)
+    end
+  end
+
   get do
-    @dkims = Dkim.all
-    return_resource object: @dkims
+    authenticate!
+    @dkims = Dkim.all(id: 0)
+    fetch_scoped_dkims
+    return_authorized_resource(object: @dkims)
   end
 
   post do

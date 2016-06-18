@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/apikeys' do
+  helpers do
+    def fetch_scoped_apikeys
+      @apikeys = policy_scope(Apikey)
+    end
+  end
+
   get do
-    @apikeys = Apikey.all
-    return_resource object: @apikeys
+    authenticate!
+    @apikeys = Apikey.all(id: 0)
+    fetch_scoped_apikeys
+    return_authorized_resource(object: @apikeys)
   end
 
   post do
