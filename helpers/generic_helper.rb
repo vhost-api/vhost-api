@@ -3,6 +3,20 @@ def return_json_pretty(json)
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end
 
+def return_authorized_resource(object: nil)
+  return return_json_pretty(ApiResponseError.new(
+                              status_code: 500,
+                              error_id: 'could not create',
+                              message: $ERROR_INFO.to_s
+                            )) if @user.nil?
+
+  return return_json_pretty({}.to_json) if object.nil? || object.empty?
+
+  permitted_attributes = Pundit.policy(@user, object).permitted_attributes
+  p permitted_attributes
+  return_json_pretty(object.to_json(only: permitted_attributes))
+end
+
 def return_resource(object: nil)
   clazz = object.model.to_s.downcase.pluralize
 
@@ -15,6 +29,25 @@ def return_resource(object: nil)
       return_json_pretty({ clazz => object }.to_json)
     end
   end
+end
+
+def fix_options_override(options = nil)
+  return nil if options.nil?
+  # Fix options array if exclude/only parameters are given.
+  if options.include?(:only) || options.include?(:exclude)
+    only_props = Array(options[:only])
+    excl_props = Array(options[:exclude])
+    return options if options[:methods].nil?
+    options[:methods].delete_if do |prop|
+      if only_props.include? prop
+        false
+      else
+        excl_props.include?(prop) ||
+          !(only_props.empty? || only_props.include?(prop))
+      end
+    end
+  end
+  options
 end
 
 def gen_session_json(session: nil)

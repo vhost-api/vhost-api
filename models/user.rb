@@ -51,6 +51,8 @@ class User
   has n, :vhosts, constraint: :protect
   has n, :alias_vhosts, constraint: :protect
   has n, :domains, constraint: :protect
+  has n, :databases, constraint: :protect
+  has n, :database_users, constraint: :protect
   has n, :apikeys, constraint: :destroy
   has n, :ssh_pubkeys, constraint: :destroy
 
@@ -66,6 +68,15 @@ class User
     else
       false
     end
+  end
+
+  def as_json(options = {})
+    defaults = { exclude: [:password] }
+    options = defaults.merge(options)
+    unless options[:only].nil?
+      options[:only].delete(:password) if options[:only].include?(:password)
+    end
+    super(fix_options_override(options))
   end
 
   def owner

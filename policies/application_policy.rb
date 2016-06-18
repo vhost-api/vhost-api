@@ -42,7 +42,7 @@ class ApplicationPolicy
     end
 
     def attributes
-      record.attributes.keys
+      record.properties.map(&:name)
     end
   end
 end

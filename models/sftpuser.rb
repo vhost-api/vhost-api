@@ -27,6 +27,13 @@ class SftpUser
 
   belongs_to :vhost
 
+  def as_json(options = {})
+    defaults = { exclude: [:password] }
+    options = defaults.merge(options)
+    options[:only].delete(:password) if options[:only].include?(:password)
+    super(fix_options_override(options))
+  end
+
   def owner
     vhost.owner
   end

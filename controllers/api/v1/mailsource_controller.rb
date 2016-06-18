@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/mailsources' do
+  helpers do
+    def fetch_scoped_mailsources
+      @mailsources = policy_scope(MailSource)
+    end
+  end
+
   get do
-    @mailsources = MailSource.all
-    return_resource object: @mailsources
+    authenticate!
+    @mailsources = MailSource.all(id: 0)
+    fetch_scoped_mailsources
+    return_authorized_resource(object: @mailsources)
   end
 
   post do

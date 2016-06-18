@@ -1,12 +1,13 @@
 .table-wrapper
   %table.table.table-triped
     %caption Users
-    %thead
-      %tr
-        - @users[0].keys.each do |key|
-          %th= key
-    %tbody
-      - @users.each do |u|
+    - unless @users.nil? || @users.empty?
+      %thead
         %tr
-        - u.keys.each do |key|
-          %td= u[key]
+          - @users[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @users.each do |u|
+          %tr
+          - u.keys.each do |key|
+            %td= u[key]

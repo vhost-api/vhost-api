@@ -40,41 +40,26 @@ class MailAccount
   has n, :mail_aliases, through: Resource, constraint: :destroy
 
   def as_json(options = {})
-    defaults = if owner.reseller.nil?
-                 { methods:
-                              [:quotausage,
-                               :quotausage_rel,
-                               :sieveusage,
-                               :sieveusage_rel] }
-               else
-                 { methods:
-                              [:owner,
-                               :quotausage,
-                               :quotausage_rel,
-                               :sieveusage,
-                               :sieveusage_rel] }
-               end
+    defaults = { exclude: [:password],
+                 methods: [:quotausage,
+                           :quotausage_rel,
+                           :sieveusage,
+                           :sieveusage_rel,
+                           :customer] }
     options = defaults.merge(options)
-
-    # Fix options array if exclude/only parameters are given.
-    if options.include?(:only) || options.include?(:exclude)
-      only_props = Array(options[:only])
-      excl_props = Array(options[:exclude])
-
-      options[:methods].delete_if do |prop|
-        if only_props.include? prop
-          false
-        else
-          excl_props.include?(prop) ||
-            !(only_props.empty? || only_props.include?(prop))
-        end
-      end
+    unless options[:only].nil?
+      options[:only].delete(:password) if options[:only].include?(:password)
     end
-    super(options)
+    super(fix_options_override(options))
   end
 
   def owner
     domain.owner
+  end
+
+  def customer
+    # domain.user.to_json(only: [:id, :name, :login])
+    { id: domain.user.id, name: domain.user.name, login: domain.user.login }
   end
 
   def quotausage

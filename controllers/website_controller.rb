@@ -18,7 +18,7 @@ namespace '/user' do
     authenticate!
     _status, _headers, body = call env.merge('PATH_INFO' =>
                                            '/api/v1/users.json')
-    @users = JSON.parse(body[0])['users']
+    @users = JSON.parse(body[0])
     haml :users
   end
 end
@@ -33,7 +33,7 @@ namespace '/domains' do
     authenticate!
     _status, _headers, body = call env.merge('PATH_INFO' =>
                                            '/api/v1/domains.json')
-    @domains = JSON.parse(body[0])['domains']
+    @domains = JSON.parse(body[0])
     haml :domains
   end
 end
@@ -54,7 +54,7 @@ namespace '/mail' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/domains.json')
-      @domains = JSON.parse(body[0])['domains']
+      @domains = JSON.parse(body[0])
       haml :domains
     end
 
@@ -88,7 +88,7 @@ namespace '/mail' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/mailaccounts.json')
-      @mailaccounts = JSON.parse(body[0])['mailaccounts']
+      @mailaccounts = JSON.parse(body[0])
       haml :mailaccounts
     end
 
@@ -122,7 +122,7 @@ namespace '/mail' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/mailaliases.json')
-      @mailaliases = JSON.parse(body[0])['mailaliases']
+      @mailaliases = JSON.parse(body[0])
       haml :mailaliases
     end
   end
@@ -132,7 +132,7 @@ namespace '/mail' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/mailsources.json')
-      @mailsources = JSON.parse(body[0])['mailsources']
+      @mailsources = JSON.parse(body[0])
       haml :mailsources
     end
   end
@@ -142,10 +142,10 @@ namespace '/mail' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/dkims.json')
-      @dkims = JSON.parse(body[0])['dkims']
+      @dkims = JSON.parse(body[0])
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/dkimsignings.json')
-      @dkimsignings = JSON.parse(body[0])['dkimsignings']
+      @dkimsignings = JSON.parse(body[0])
       haml :dkim
     end
 
@@ -191,7 +191,7 @@ namespace '/dns' do
       authenticate!
       _status, _headers, body = call env.merge('PATH_INFO' =>
                                              '/api/v1/domains.json')
-      @domains = JSON.parse(body[0])['domains']
+      @domains = JSON.parse(body[0])
       haml :domains
     end
 
@@ -217,12 +217,6 @@ namespace '/dns' do
         end
         haml :edit_domain
       end
-    end
-  end
-
-  namespace '/zones' do
-    get do
-      haml :dns_zones
     end
   end
 end

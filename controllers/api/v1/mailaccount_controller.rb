@@ -9,7 +9,8 @@ namespace '/api/v1/mailaccounts' do
   get do
     authenticate!
     fetch_scoped_mailaccounts
-    return_resource object: @mailaccounts
+    return_authorized_resource(object: @mailaccounts)
+    # return_resource object: @mailaccounts
   end
 
   post do

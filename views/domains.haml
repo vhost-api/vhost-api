@@ -1,12 +1,13 @@
 .table-wrapper
   %table.table.table-triped
     %caption Domains
-    %thead
-      %tr
-        - @domains[0].keys.each do |key|
-          %th= key
-    %tbody
-      - @domains.each do |d|
+    - unless @domains.nil? || @domains.empty?
+      %thead
         %tr
-        - d.keys.each do |key|
-          %td= d[key]
+          - @domains[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @domains.each do |d|
+          %tr
+          - d.keys.each do |key|
+            %td= d[key]

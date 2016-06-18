@@ -45,6 +45,7 @@ require_relative 'models/env'
 require_relative 'helpers/classes/apiresponse'
 require_relative 'helpers/classes/apiresponse_error'
 require_relative 'helpers/classes/apiresponse_success'
+require_relative 'policies/application_policy'
 
 Dir.glob('./{helpers}/*.rb').each { |file| require file }
 
