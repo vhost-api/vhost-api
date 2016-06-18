@@ -36,17 +36,22 @@
             - en_recv_link_txt = mailaccount['receiving_enabled'] ? 'yes' : 'no'
             %a{ href: "/mail/accounts/#{id}/#{en_recv_href_suf}",
               class: "icon #{en_recv_class_suf}" }= en_recv_link_txt
-          %td.progress
-            - progress_class = 'progress-ok'
-            - thresh_warn = settings.threshholds[:display][:mailquota_warn]
-            - thresh_crit = settings.threshholds[:display][:mailquota_crit]
-            - if mailaccount['quotausage_rel'] >= thresh_warn
-              - progress_class = 'progress-warn'
-            - if mailaccount['quotausage_rel'] >= thresh_crit
-              - progress_class = 'progress-crit'
-            %span{ class: progress_class,
-              style: "width:#{mailaccount['quotausage_rel']}%" }
-              = Filesize.from("#{mailaccount['quotausage']} B").pretty
+          %td
+            .progress
+              - progress_class = 'progress-bar progress-bar-info'
+              - thresh_warn = settings.threshholds[:display][:mailquota_warn]
+              - thresh_crit = settings.threshholds[:display][:mailquota_crit]
+              - if mailaccount['quotausage_rel'] >= thresh_warn
+                - progress_class = 'progress-bar progress-bar-warning'
+              - if mailaccount['quotausage_rel'] >= thresh_crit
+                - progress_class = 'progress-bar progress-bar-danger'
+              %div{:class => progress_class,
+                "role" => "progress",
+                "aria-valuemin" => "0",
+                "aria-valuemax" => "100",
+                style: "width:#{mailaccount['quotausage_rel']}%"}
+                %span
+                  = Filesize.from("#{mailaccount['quotausage']} B").pretty
           %td.number= Filesize.from("#{mailaccount['quota']} B").pretty
           %td.icon.item-delete
             - delete_path = "/mail/accounts/#{id}/delete"
