@@ -5,15 +5,14 @@ end
 
 def return_authorized_resource(object: nil)
   return return_json_pretty(ApiResponseError.new(
-                              status_code: 500,
-                              error_id: 'could not create',
+                              status_code: 403,
+                              error_id: 'Not authorized',
                               message: $ERROR_INFO.to_s
                             )) if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
-  p permitted_attributes
   return_json_pretty(object.to_json(only: permitted_attributes))
 end
 
