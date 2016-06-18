@@ -1,12 +1,13 @@
 .table-wrapper
   %table.table.table-triped
     %caption Mailsources
-    %thead
-      %tr
-        - @mailsources[0].keys.each do |key|
-          %th= key
-    %tbody
-      - @mailsources.each do |mailsource|
+    - unless @mailsources.nil? || @mailsources.empty?
+      %thead
         %tr
-        - mailsource.keys.each do |key|
-          %td= mailsource[key]
+          - @mailsources[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @mailsources.each do |mailsource|
+          %tr
+          - mailsource.keys.each do |key|
+            %td= mailsource[key]

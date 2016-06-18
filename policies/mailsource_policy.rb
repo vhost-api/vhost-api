@@ -1,7 +1,7 @@
 # frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
-class MailAccountPolicy < ApplicationPolicy
+class MailSourcePolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
     return Permissions::Reseller.new(record).attributes if user.reseller?
@@ -13,22 +13,22 @@ class MailAccountPolicy < ApplicationPolicy
       if user.admin?
         scope.all
       elsif user.reseller?
-        @mailaccounts = scope.all(id: 0)
+        @mailsources = scope.all(id: 0)
         user.domains.each do |domain|
-          @mailaccounts.concat(scope.all(domain_id: domain.id))
+          @mailsources.concat(scope.all(domain_id: domain.id))
         end
         user.customers.each do |customer|
           customer.domains.each do |domain|
-            @mailaccounts.concat(scope.all(domain_id: domain.id))
+            @mailsources.concat(scope.all(domain_id: domain.id))
           end
         end
-        @mailaccounts
+        @mailsources
       else
-        @mailaccounts = scope.all(domain_id: 0)
+        @mailsources = scope.all(domain_id: 0)
         user.domains.each do |domain|
-          @mailaccounts.concat(scope.all(domain_id: domain.id))
+          @mailsources.concat(scope.all(domain_id: domain.id))
         end
-        @mailaccounts
+        @mailsources
       end
     end
   end
@@ -36,11 +36,7 @@ class MailAccountPolicy < ApplicationPolicy
   class Permissions < ApplicationPermissions
     class Admin < self
       def attributes
-        super.push(:customer,
-                   :quotausage,
-                   :quotausage_rel,
-                   :sieveusage,
-                   :sieveusage_rel)
+        super << :allowed_from
       end
     end
 
@@ -48,9 +44,6 @@ class MailAccountPolicy < ApplicationPolicy
     end
 
     class User < Reseller
-      def attributes
-        super - [:customer]
-      end
     end
   end
 end

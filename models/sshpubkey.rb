@@ -27,6 +27,6 @@ class SshPubkey
   belongs_to :user
 
   def owner
-    user_id
+    user
   end
 end

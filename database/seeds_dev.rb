@@ -10,29 +10,53 @@ group_list.each do |group|
 end
 
 user_list = [
-  ['Admin', 'admin', 'secret', true, 1],
-  ['Thore Bödecker', 'fox', 'geheim', true, 1],
-  ['Max Mustermann', 'max', 'muster', true, 3]
+  ['Admin', 'admin', 'secret', true, Group.first(name: 'admin')],
+  ['Thore Bödecker', 'fox', 'geheim', true, Group.first(name: 'admin')],
+  ['Max Mustermann', 'max', 'muster', true, Group.first(name: 'user')],
+  ['Customer 1', 'customer1', 'customer1', true, Group.first(name: 'user')],
+  ['Customer 2', 'customer2', 'customer2', true, Group.first(name: 'user')],
+  ['Customer 3', 'customer3', 'customer3', true, Group.first(name: 'user')],
+  ['Reseller 1', 'reseller1', 'reseller1', true, Group.first(name: 'reseller'),
+   %w(customer1 customer2 customer3)],
+  ['Customer 4', 'customer4', 'customer4', true, Group.first(name: 'user')],
+  ['Customer 5', 'customer5', 'customer5', true, Group.first(name: 'user')],
+  ['Reseller 2', 'reseller2', 'reseller2', true, Group.first(name: 'reseller'),
+   %w(customer4 customer5)]
 ]
 user_list.each do |user|
-  User.new(name: user[0],
-           login: user[1],
-           password: user[2],
-           enabled: user[3],
-           group_id: user[4]).save
+  u = User.new(name: user[0],
+               login: user[1],
+               password: user[2],
+               enabled: user[3],
+               group: user[4])
+
+  if user[4].name == 'reseller'
+    user[5].each do |client|
+      u.customers << User.first(login: client)
+    end
+  end
+
+  u.save
 end
 
 domain_list = [
-  ['foobar.com', true, true, true, 3],
-  ['foxxx0.de', true, true, true, 2],
-  ['example.net', true, true, true, 1]
+  ['foobar.com', true, true, true, 'admin'],
+  ['foxxx0.de', true, true, true, 'fox'],
+  ['example.net', true, true, true, 'max'],
+  ['herpderp.org', true, true, true, 'customer1'],
+  ['schalala.net', true, true, true, 'customer2'],
+  ['everything.eu', true, true, true, 'customer3'],
+  ['archlinux.sexy', true, true, true, 'reseller1'],
+  ['kernel.org', true, true, true, 'reseller1'],
+  ['serious.business', true, true, true, 'customer4'],
+  ['big.company', true, true, true, 'customer5']
 ]
 domain_list.each do |domain|
   Domain.new(name: domain[0],
              mail_enabled: domain[1],
              dns_enabled: domain[2],
              enabled: domain[3],
-             user_id: domain[4]).save
+             user: User.first(login: domain[4])).save
 end
 
 mailaccount_list = [
@@ -235,59 +259,125 @@ sftp_user_list.each do |sftp_user|
                vhost_id: sftp_user[5]).save
 end
 
-# create the 3 necessary views
+# create the 4 necessary views
 adapter = DataMapper.repository(:default).adapter
-case adapter.options[:adapter]
-when 'mysql'
-  # mail_sendas_permissions
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW '\
-      '`mail_sendas_maps` AS '\
-      'SELECT `mail_sources`.`address` AS `source`, '\
-      '`mail_accounts`.`email` AS `user` '\
-      'FROM `mail_account_mail_sources` '\
-      'LEFT JOIN `mail_accounts` ON '\
-      '`mail_account_mail_sources`.`mail_account_id` = `mail_accounts`.`id` '\
-      'AND `mail_accounts`.`enabled` = 1 '\
-      'RIGHT JOIN `mail_sources` ON '\
-      '`mail_account_mail_sources`.`mail_source_id` = `mail_sources`.`id` '\
-      'AND `mail_sources`.`enabled` = 1;')
-  # mail_alias_maps
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW '\
-      '`mail_alias_maps` AS '\
-      'SELECT `mail_aliases`.`address` AS `source`, '\
-      "GROUP_CONCAT(`mail_accounts`.`email` SEPARATOR ' ') AS `destination` "\
-      'FROM (`mail_accounts` '\
-      'RIGHT JOIN (`mail_account_mail_aliases` '\
-      'LEFT JOIN `mail_aliases` ON '\
-      '(((`mail_account_mail_aliases`.`mail_alias_id` = `mail_aliases`.`id`) '\
-      'AND (`mail_aliases`.`enabled` = 1)))) ON '\
-      '(((`mail_account_mail_aliases`.`mail_account_id` = `mail_accounts`.`id`) '\
-      'AND (`mail_accounts`.`enabled` = 1)))) '\
-      'GROUP BY `mail_aliases`.`address`;')
+case adapter.options[:adapter].upcase
+when 'POSTGRES'
   # dkim_lookup
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW '\
-      '`dkim_lookup` AS '\
-      'SELECT `dkims`.`id` AS `id`, `domains`.`name` AS `domain_name`, '\
-      '`dkims`.`selector` AS `selector`, '\
-      '`dkims`.`private_key` AS `private_key` '\
-      'FROM `dkims` RIGHT JOIN `domains` ON '\
-      '`dkims`.`domain_id` = `domains`.`id` '\
-      'AND `domains`.`enabled` = 1 WHERE `dkims`.`enabled` = 1;')
+  adapter.execute('CREATE OR REPLACE VIEW "dkim_lookup"
+    AS
+      SELECT
+        "dkims"."id" AS "id",
+        "domains"."name" AS "domain_name",
+        "dkims"."selector" AS "selector",
+        "dkims"."private_key" AS "private_key"
+      FROM ("domains"
+        LEFT JOIN "dkims"
+          ON "dkims"."domain_id" = "domains"."id"
+          AND "domains"."enabled" = TRUE)
+      WHERE "dkims"."enabled" = TRUE;')
+  # mail_alias_maps
+  adapter.execute('CREATE OR REPLACE VIEW "mail_alias_maps"
+    AS
+      SELECT
+        "mail_aliases"."address" AS "source",
+        string_agg("mail_accounts"."email", \' \') AS "destination"
+      FROM ("mail_account_mail_aliases"
+        LEFT JOIN "mail_accounts"
+          ON "mail_account_mail_aliases"."mail_account_id" = "mail_accounts"."id"
+          AND "mail_accounts"."enabled" = TRUE
+        RIGHT JOIN "mail_aliases"
+          ON "mail_account_mail_aliases"."mail_alias_id" = "mail_aliases"."id"
+          AND "mail_aliases"."enabled" = TRUE)
+      WHERE "mail_accounts"."email" IS NOT NULL
+      GROUP BY "mail_aliases"."address";')
+  # mail_sendas_maps
+  adapter.execute('CREATE OR REPLACE VIEW "mail_sendas_maps"
+    AS
+      SELECT
+        "mail_sources"."address" AS "source",
+        "mail_accounts"."email" AS "user"
+      FROM ("mail_account_mail_sources"
+        LEFT JOIN "mail_accounts"
+          ON "mail_account_mail_sources"."mail_account_id" = "mail_accounts"."id"
+          AND "mail_accounts"."enabled" = TRUE
+        RIGHT JOIN "mail_sources"
+          ON "mail_account_mail_sources"."mail_source_id" = "mail_sources"."id"
+          AND "mail_sources"."enabled" = TRUE)
+      WHERE "mail_accounts"."email" IS NOT NULL;')
+  # sftp_user_maps
+  adapter.execute('CREATE OR REPLACE VIEW "sftp_user_maps"
+    AS
+      SELECT
+        "sftp_users"."username" AS "username",
+        "sftp_users"."password" AS "passwd",
+        "vhosts"."os_uid" AS "uid",
+        "vhosts"."os_gid" AS "gid",
+        "sftp_users"."homedir" AS "homedir",
+        \'/bin/false\'::text AS "shell"
+      FROM "sftp_users"
+        RIGHT JOIN "vhosts"
+          ON "sftp_users"."vhost_id" = "vhosts"."id"
+      WHERE "vhosts"."enabled" = TRUE
+        AND "sftp_users"."enabled" = TRUE;')
+when 'MYSQL'
+  # dkim_lookup
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `dkim_lookup`
+    AS
+      SELECT
+        `dkims`.`id` AS `id`,
+        `domains`.`name` AS `domain_name`,
+        `dkims`.`selector` AS `selector`,
+        `dkims`.`private_key` AS `private_key`
+      FROM `dkims`
+        RIGHT JOIN `domains`
+          ON `dkims`.`domain_id` = `domains`.`id`
+          AND `domains`.`enabled` = 1
+      WHERE `dkims`.`enabled` = 1;')
+  # mail_alias_maps
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `mail_alias_maps`
+    AS
+      SELECT
+        `mail_aliases`.`address` AS `source`,
+        group_concat(`mail_accounts`.`email` separator \' \') AS `destination`
+      FROM (`mail_account_mail_aliases`
+        LEFT JOIN `mail_accounts`
+          ON `mail_account_mail_aliases`.`mail_account_id` = `mail_accounts`.`id`
+          AND `mail_accounts`.`enabled` = 1
+        RIGHT JOIN `mail_aliases`
+          ON `mail_account_mail_aliases`.`mail_alias_id` = `mail_aliases`.`id`
+          AND `mail_aliases`.`enabled` = 1)
+      WHERE `mail_accounts`.`email` IS NOT NULL
+      GROUP BY `mail_aliases`.`address`;')
+  # mail_sendas_maps
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `mail_sendas_maps`
+    AS
+      SELECT
+        `mail_sources`.`address` AS `source`,
+        `mail_accounts`.`email` AS `user`
+      FROM (`mail_account_mail_sources`
+        LEFT JOIN `mail_accounts`
+          ON `mail_account_mail_sources`.`mail_account_id` = `mail_accounts`.`id`
+          AND `mail_accounts`.`enabled` = 1
+        RIGHT JOIN `mail_sources`
+          ON `mail_account_mail_sources`.`mail_source_id` = `mail_sources`.`id`
+          AND `mail_sources`.`enabled` = 1)
+      WHERE `mail_accounts`.`email` IS NOT NULL;')
   # sftp proftpd user lookup
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW '\
-      '`sftp_user_maps` AS '\
-      'SELECT `sftp_users`.`username` AS `username`, '\
-      '`sftp_users`.`password` AS passwd, `vhosts`.`os_uid` AS uid, '\
-      '`vhosts`.`os_gid` AS gid, `sftp_users`.`homedir` AS homedir, '\
-      "'/bin/false' AS shell "\
-      'FROM `sftp_users` '\
-      'RIGHT JOIN `vhosts` ON '\
-      '`sftp_users`.`vhost_id` = `vhosts`.`id` WHERE `vhosts`.`enabled` = 1 '\
-      'AND `sftp_users`.`enabled` = 1;')
-when 'postgres'
-  puts 'postgres views not implemented yet!'
-when 'sqlite'
-  puts 'sqlite views not implemented yet!'
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `sftp_user_maps`
+    AS
+      SELECT
+        `sftp_users`.`username` AS `username`,
+        `sftp_users`.`password` AS passwd,
+        `vhosts`.`os_uid` AS uid,
+        `vhosts`.`os_gid` AS gid,
+        `sftp_users`.`homedir` AS homedir,
+        \'/bin/false\' AS shell
+      FROM `sftp_users`
+        RIGHT JOIN `vhosts`
+          ON `sftp_users`.`vhost_id` = `vhosts`.`id`
+      WHERE `vhosts`.`enabled` = 1
+        AND `sftp_users`.`enabled` = 1;')
 else
-  puts 'unknown database adapter!'
+  raise 'Error: unsupported database adapter!'
 end

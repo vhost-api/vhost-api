@@ -52,18 +52,26 @@ end
 namespace :db do
   setup_dm
 
-  desc 'Perform auto-migration (reset your db data)'
-  task :migrate do |t|
-    puts '=> Auto-migrating'
+  desc 'Reset your db data and initialize layout'
+  task :reset do |t|
+    puts '=> Resetting'
     time = Benchmark.realtime do
+      case @dbconfig[:db_adapter].upcase
+      when 'POSTGRES'
+        adapter = DataMapper.repository(:default).adapter
+        adapter.execute('DROP VIEW IF EXISTS "dkim_lookup";')
+        adapter.execute('DROP VIEW IF EXISTS "mail_alias_maps";')
+        adapter.execute('DROP VIEW IF EXISTS "mail_sendas_maps";')
+        adapter.execute('DROP VIEW IF EXISTS "sftp_user_maps";')
+      end
       DataMapper.auto_migrate!
     end
     printf "<= %s done in %.2fs\n", t.name, time
   end
 
   desc 'Perform non destructive auto-migration'
-  task :upgrade do |t|
-    puts '=> Auto-upgrading'
+  task :migrate do |t|
+    puts '=> Auto-migrate'
     time = Benchmark.realtime do
       DataMapper.auto_upgrade!
     end
@@ -83,12 +91,12 @@ namespace :db do
     puts "=> Creating database '#{database}'"
 
     time = Benchmark.realtime do
-      case config[:db_adapter]
-      when 'postgres'
-        system('createdb', '-E', charset, '-h', host, '-U', user, database)
-        DataMapper.auto_upgrade!
-        DataMapper.auto_migrate!
-      when 'mysql'
+      case config[:db_adapter].upcase
+      when 'POSTGRES'
+        puts 'Creating databases with a PostgreSQL adapter is not supported.'
+        puts 'You have to prepare the PostgreSQL database with user and password
+              yourself.'
+      when 'MYSQL'
         query = [
           'mysql', '-B', '--skip-pager', "--user=#{user}",
           (password.empty? ? '' : "--password=#{password}"),
@@ -97,11 +105,8 @@ namespace :db do
           DEFAULT COLLATE #{collation}".inspect
         ]
         system(query.compact.join(' '))
-        DataMapper.auto_upgrade!
-        DataMapper.auto_migrate!
       else
-        raise "Adapter #{config[:db_adapter]} not supported for
-               creating databases yet."
+        raise 'Error: unsupported database adapter!'
       end
     end
     printf "<= %s done in %.2fs\n", t.name, time
@@ -117,10 +122,11 @@ namespace :db do
 
     puts "=> Dropping database '#{database}'"
     time = Benchmark.realtime do
-      case config[:db_adapter]
-      when 'postgres'
-        system('dropdb', '-h', host, '-U', user, database)
-      when 'mysql'
+      case config[:db_adapter].upcase
+      when 'POSTGRES'
+        puts 'Dropping databases with a PostgreSQL adapter is not supported.'
+        puts 'You have to drop the PostgreSQL database yourself.'
+      when 'MYSQL'
         query = [
           'mysql', '-B', '--skip-pager', "--user=#{user}",
           (password.empty? ? '' : "--password=#{password}"),
@@ -129,8 +135,7 @@ namespace :db do
         ]
         system(query.compact.join(' '))
       else
-        raise "Adapter #{config[:db_adapter]} not supported for
-               dropping databases yet."
+        raise 'Error: unsupported database adapter!'
       end
     end
     printf "<= %s done in %.2fs\n", t.name, time
@@ -145,17 +150,14 @@ namespace :db do
     printf "<= %s done in %.2fs\n", t.name, time
   end
 
-  desc 'Load the test seed data from database/seeds_test.rb'
-  task :test do |t|
-    puts '=> Loading test seed data'
+  desc 'Load the test seed data from database/seeds_test.rb for development'
+  task :dev do |t|
+    puts '=> Loading development seed data'
     time = Benchmark.realtime do
-      require './database/seeds_test.rb'
+      require './database/seeds_dev.rb'
     end
     printf "<= %s done in %.2fs\n", t.name, time
   end
-
-  desc 'Drop the database, create from scratch and init with the seed data'
-  task reset: [:drop, :setup]
 
   desc 'Create the database, migrate and init with the seed data'
   task setup: [:create, :migrate, :seed]

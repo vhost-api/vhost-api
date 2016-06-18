@@ -1,7 +1,7 @@
 # frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
-class MailAccountPolicy < ApplicationPolicy
+class DkimSigningPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
     return Permissions::Reseller.new(record).attributes if user.reseller?
@@ -13,44 +13,40 @@ class MailAccountPolicy < ApplicationPolicy
       if user.admin?
         scope.all
       elsif user.reseller?
-        @mailaccounts = scope.all(id: 0)
+        @dkimsignings = scope.all(id: 0)
         user.domains.each do |domain|
-          @mailaccounts.concat(scope.all(domain_id: domain.id))
+          domain.dkims.each do |dkim|
+            @dkimsignings.concat(scope.all(dkim_id: dkim.id))
+          end
         end
         user.customers.each do |customer|
           customer.domains.each do |domain|
-            @mailaccounts.concat(scope.all(domain_id: domain.id))
+            domain.dkims.each do |dkim|
+              @dkimsignings.concat(scope.all(dkim_id: dkim.id))
+            end
           end
         end
-        @mailaccounts
+        @dkimsignings
       else
-        @mailaccounts = scope.all(domain_id: 0)
+        @dkimsignings = scope.all(id: 0)
         user.domains.each do |domain|
-          @mailaccounts.concat(scope.all(domain_id: domain.id))
+          domain.dkims.each do |dkim|
+            @dkimsignings.concat(scope.all(dkim_id: dkim.id))
+          end
         end
-        @mailaccounts
+        @dkimsignings
       end
     end
   end
 
   class Permissions < ApplicationPermissions
     class Admin < self
-      def attributes
-        super.push(:customer,
-                   :quotausage,
-                   :quotausage_rel,
-                   :sieveusage,
-                   :sieveusage_rel)
-      end
     end
 
     class Reseller < Admin
     end
 
     class User < Reseller
-      def attributes
-        super - [:customer]
-      end
     end
   end
 end

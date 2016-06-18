@@ -26,6 +26,6 @@ class DkimSigning
   belongs_to :dkim
 
   def owner
-    Domain.get(Dkim.get(dkim_id).domain_id).user_id
+    dkim.owner
   end
 end

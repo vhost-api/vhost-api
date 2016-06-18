@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/vhosts' do
+  helpers do
+    def fetch_scoped_vhosts
+      @vhosts = policy_scope(Vhost)
+    end
+  end
+
   get do
-    @vhosts = Vhost.all
-    return_resource object: @vhosts
+    authenticate!
+    @vhosts = Vhost.all(id: 0)
+    fetch_scoped_vhosts
+    return_authorized_resource(object: @vhosts)
   end
 
   post do

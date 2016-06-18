@@ -39,6 +39,6 @@ class AliasVhost
   belongs_to :ipv6_address
 
   def owner
-    user_id
+    user
   end
 end

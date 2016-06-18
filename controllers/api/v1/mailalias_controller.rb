@@ -1,8 +1,16 @@
 # frozen_string_literal; false
 namespace '/api/v1/mailaliases' do
+  helpers do
+    def fetch_scoped_mailaliases
+      @mailaliases = policy_scope(MailAlias)
+    end
+  end
+
   get do
-    @mailaliases = MailAlias.all
-    return_resource object: @mailaliases
+    authenticate!
+    @mailaliases = MailAlias.all(id: 0)
+    fetch_scoped_mailaliases
+    return_authorized_resource(object: @mailaliases)
   end
 
   post do

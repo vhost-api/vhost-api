@@ -51,6 +51,8 @@ class User
   has n, :vhosts, constraint: :protect
   has n, :alias_vhosts, constraint: :protect
   has n, :domains, constraint: :protect
+  has n, :databases, constraint: :protect
+  has n, :database_users, constraint: :protect
   has n, :apikeys, constraint: :destroy
   has n, :ssh_pubkeys, constraint: :destroy
 
@@ -68,15 +70,32 @@ class User
     end
   end
 
+  def as_json(options = {})
+    defaults = { exclude: [:password] }
+    options = defaults.merge(options)
+    unless options[:only].nil?
+      options[:only].delete(:password) if options[:only].include?(:password)
+    end
+    super(fix_options_override(options))
+  end
+
   def owner
-    User.get(name: 'admin').id
+    if group.name == 'user' && !reseller.nil?
+      reseller
+    else
+      User.first(name: 'admin')
+    end
   end
 
   def owner_of?(element)
-    element.owner == id
+    element.owner == self
   end
 
   def admin?
-    Group.get(group_id).name == 'admin'
+    group.name == 'admin'
+  end
+
+  def reseller?
+    group.name == 'reseller'
   end
 end
