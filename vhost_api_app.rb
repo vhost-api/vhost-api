@@ -68,22 +68,6 @@ configure :production do
   set :raise_errors, false
 end
 
-get '/js/*.js' do
-  pass unless settings.coffeescript?
-  last_modified File.mtime(settings.root + '/views/' + settings.jsdir)
-  content_type :js
-  cache_control :public, :must_revalidate
-  coffee "#{settings.jsdir}/#{params[:splat].first}".to_sym
-end
-
-get '/css/*.css' do
-  last_modified File.mtime(settings.root + '/views/' + settings.cssdir)
-  content_type :css
-  cache_control :public, :must_revalidate
-  send(settings.cssengine,
-       (settings.cssdir + '/' + params[:splat].first).to_sym)
-end
-
 use Rack::Session::Cookie, secret: File.read('config/session.secret'),
                            key: settings.session[:key].to_s,
                            domain: settings.session[:domain].to_s,
@@ -130,6 +114,22 @@ before %r{/.*/} do
   else
     content_type :html, 'charset' => 'utf-8'
   end
+end
+
+get '/js/*.js' do
+  pass unless settings.coffeescript?
+  last_modified File.mtime(settings.root + '/views/' + settings.jsdir)
+  content_type :js
+  cache_control :public, :must_revalidate
+  coffee "#{settings.jsdir}/#{params[:splat].first}".to_sym
+end
+
+get '/css/*.css' do
+  last_modified File.mtime(settings.root + '/views/' + settings.cssdir)
+  content_type :css
+  cache_control :public, :must_revalidate
+  send(settings.cssengine,
+       (settings.cssdir + '/' + params[:splat].first).to_sym)
 end
 
 get '/' do

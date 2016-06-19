@@ -4,13 +4,18 @@ require 'yaml'
 # require 'logger'
 require 'data_mapper'
 require 'dm-migrations'
-# require 'rake'
 require 'rubocop/rake_task'
 require 'haml_lint/rake_task'
 require 'benchmark'
-# require 'logger'
-# require 'optparse'
 require './init'
+
+begin
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+  task default: :spec
+rescue LoadError
+  puts 'RSpec unavailable'
+end
 
 @log_level = :warn
 
@@ -150,11 +155,20 @@ namespace :db do
     printf "<= %s done in %.2fs\n", t.name, time
   end
 
-  desc 'Load the test seed data from database/seeds_test.rb for development'
+  desc 'Load the development seed data from database/seeds_dev.rb'
   task :dev do |t|
     puts '=> Loading development seed data'
     time = Benchmark.realtime do
       require './database/seeds_dev.rb'
+    end
+    printf "<= %s done in %.2fs\n", t.name, time
+  end
+
+  desc 'Load the test seed data from database/seeds_test.rb'
+  task :test do |t|
+    puts '=> Loading test seed data'
+    time = Benchmark.realtime do
+      require './database/seeds_test.rb'
     end
     printf "<= %s done in %.2fs\n", t.name, time
   end

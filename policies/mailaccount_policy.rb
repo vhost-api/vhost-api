@@ -8,6 +8,13 @@ class MailAccountPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
+  def show?
+    return true if user.admin?
+    return true if user.reseller? && user.customers.include?(record.owner)
+    return true if record.owner == user
+    false
+  end
+
   class Scope < Scope
     def resolve
       if user.admin?

@@ -36,6 +36,7 @@ group :development do
 end
 
 group :test, :development do
+  gem 'rspec', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
   gem 'astrolabe', require: false
