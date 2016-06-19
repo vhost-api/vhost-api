@@ -70,12 +70,12 @@ class MailAccount
     if File.exist?(filename)
       Integer(IO.read(filename).match(%r{priv/quota/storage\n(.*)\n}m)[1])
     else
-      0
+      'NaN'
     end
   end
 
   def quotausage_rel
-    (quotausage * 100 / quota).round(1)
+    (quotausage.to_i * 100 / quota).round(1)
   end
 
   def sieveusage
@@ -91,6 +91,6 @@ class MailAccount
   end
 
   def sieveusage_rel
-    (sieveusage * 100 / quota_sieve_script).round(1)
+    (sieveusage.to_i * 100 / quota_sieve_script).round(1)
   end
 end

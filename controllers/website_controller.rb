@@ -175,6 +175,67 @@ namespace '/mail' do
   end
 end
 
+namespace '/webhosting' do
+  before do
+    @sidebar_title = 'Webhosting'
+    @sidebar_elements = %w(VHosts AliasVHosts SFTPUsers ShellUsers)
+  end
+
+  get do
+    authenticate!
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/phpruntimes.json')
+    @phpruntimes = JSON.parse(body[0])
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/ipv4addresses.json')
+    @ipv4addresses = JSON.parse(body[0])
+    _status, _headers, body = call env.merge('PATH_INFO' =>
+                                           '/api/v1/ipv6addresses.json')
+    @ipv6addresses = JSON.parse(body[0])
+    haml :webhostinghome
+  end
+
+  namespace '/vhosts' do
+    get do
+      authenticate!
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/vhosts.json')
+      @vhosts = JSON.parse(body[0])
+      haml :vhosts
+    end
+  end
+
+  namespace '/aliasvhosts' do
+    get do
+      authenticate!
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/aliasvhosts.json')
+      @aliasvhosts = JSON.parse(body[0])
+      haml :aliasvhosts
+    end
+  end
+
+  namespace '/sftpusers' do
+    get do
+      authenticate!
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/sftpusers.json')
+      @sftpusers = JSON.parse(body[0])
+      haml :sftpusers
+    end
+  end
+
+  namespace '/shellusers' do
+    get do
+      authenticate!
+      _status, _headers, body = call env.merge('PATH_INFO' =>
+                                             '/api/v1/shellusers.json')
+      @shellusers = JSON.parse(body[0])
+      haml :shellusers
+    end
+  end
+end
+
 namespace '/dns' do
   before do
     @sidebar_title = 'DNS'

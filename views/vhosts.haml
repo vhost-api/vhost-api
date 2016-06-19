@@ -1,0 +1,13 @@
+.table-wrapper
+  %table.table.table-striped
+    %caption VHosts
+    - unless @vhosts.nil? || @vhosts.empty?
+      %thead
+        %tr
+          - @vhosts[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @vhosts.each do |v|
+          %tr
+          - v.keys.each do |key|
+            %td= v[key]

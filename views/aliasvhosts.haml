@@ -1,0 +1,13 @@
+.table-wrapper
+  %table.table.table-striped
+    %caption Alias-VHosts
+    - unless @aliasvhosts.nil? || @aliasvhosts.empty?
+      %thead
+        %tr
+          - @aliasvhosts[0].keys.each do |key|
+            %th= key
+      %tbody
+        - @aliasvhosts.each do |av|
+          %tr
+          - av.keys.each do |key|
+            %td= av[key]

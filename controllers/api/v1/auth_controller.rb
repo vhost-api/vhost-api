@@ -14,7 +14,7 @@ namespace '/api/v1/auth' do
       # store stuff for later use
       session[:user] = user
       session[:user_id] = user.id
-      session[:group] = Group.get(user.group_id).name
+      session[:group] = user.group.name
 
       flashmsg = 'Successfully logged in.'
       if settings.environment == :development
@@ -51,20 +51,5 @@ namespace '/api/v1/auth' do
     end
     flash[:success] = flashmsg
     redirect '/'
-  end
-
-  get '/protected' do
-    authenticate!
-    my_logger.debug request.env.inspect
-    haml :protected
-  end
-
-  get '/admin' do
-    if @user.admin?
-      haml :admin
-    else
-      flash[:error] = 'not authorized'
-      redirect '/'
-    end
   end
 end
