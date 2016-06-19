@@ -45,11 +45,11 @@
                 - progress_class = 'progress-bar progress-bar-warning'
               - if mailaccount['quotausage_rel'] >= thresh_crit
                 - progress_class = 'progress-bar progress-bar-danger'
-              %div{:class => progress_class,
-                "role" => "progress",
-                "aria-valuemin" => "0",
-                "aria-valuemax" => "100",
-                style: "width:#{mailaccount['quotausage_rel']}%"}
+              %div{ class: progress_class,
+                    'role': 'progress',
+                    'aria-valuemin': '0',
+                    'aria-valuemax': '100',
+                    style: "width:#{mailaccount['quotausage_rel']}%" }
                 %span
                   - q_usage = mailaccount['quotausage']
                   - if q_usage.is_a?(Fixnum)
