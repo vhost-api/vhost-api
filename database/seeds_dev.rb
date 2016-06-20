@@ -277,24 +277,49 @@ php_rt_list.each do |php_rt|
 end
 
 vhost_list = [
-  ['foxxx0.de', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web1', 'c2web1', true, 'fox'],
-  ['ipv4.foxxx0.de', '10.1.1.1', '::1', true, 'php7', 'c2web2', 'c2web2', true, 'fox'],
-  ['ipv6.foxxx0.de', '127.0.0.1', 'fe80::dead:beef', true, 'php7', 'c2web3', 'c2web3', true, 'fox'],
-  ['paste.foxxx0.de', '10.1.1.1', 'fe80::dead:beef', true, 'php7', 'c2web4', 'c2web4', true, 'fox'],
-  ['blog.foxxx0.de', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web5', 'c2web5', true, 'fox'],
-  ['example.net', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c3web6', 'c3web6', true, 'max'],
-  ['mail.example.net', '10.4.4.4', 'fe80::beef:4', true, 'php56', 'c3web7', 'c3web7', true, 'max']
+  ['foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web1', 'c2web1', true, 'fox'],
+  ['ipv4.foxxx0.de', :vhost, '10.1.1.1', '::1', true, 'php7', 'c2web2', 'c2web2', true, 'fox'],
+  ['ipv6.foxxx0.de', :vhost, '127.0.0.1', 'fe80::dead:beef', true, 'php7', 'c2web3', 'c2web3', true, 'fox'],
+  ['paste.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', true, 'php7', 'c2web4', 'c2web4', true, 'fox'],
+  ['p.foxxx0.de', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'paste.foxxx0.de', true, 'fox'],
+  ['blog.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web5', 'c2web5', true, 'fox'],
+  ['example.net', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c3web6', 'c3web6', true, 'max'],
+  ['mail.example.net', :vhost, '10.4.4.4', 'fe80::beef:4', true, 'php56', 'c3web7', 'c3web7', true, 'max'],
+  ['webmail.example.net', :alias, :permanent, '10.4.4.4', 'fe80::beef:4', 'mail.example.net', true, 'max']
 ]
 vhost_list.each do |vhost|
-  Vhost.new(fqdn: vhost[0],
-            ipv4_address: Ipv4Address.first(address: vhost[1]),
-            ipv6_address: Ipv6Address.first(address: vhost[2]),
-            php_enabled: vhost[3],
-            php_runtime: PhpRuntime.first(name: vhost[4]),
-            os_uid: vhost[5],
-            os_gid: vhost[6],
-            enabled: vhost[7],
-            user: User.first(login: vhost[8])).save
+  case vhost[1]
+  when :alias
+    parent_vhost = Vhost.first(fqdn: vhost[5])
+    Vhost.new(fqdn: vhost[0],
+              type: :alias,
+              redirect_type: vhost[2],
+              ipv4_address: Ipv4Address.first(address: vhost[3]),
+              ipv6_address: Ipv6Address.first(address: vhost[4]),
+              php_enabled: false,
+              php_runtime: PhpRuntime.first(name: 'none'),
+              os_uid: parent_vhost.os_uid,
+              os_gid: parent_vhost.os_uid,
+              parent: parent_vhost,
+              enabled: vhost[6],
+              user: User.first(login: vhost[7])).save
+  when :vhost
+    vhost_basedir = '/srv/http/vhost'
+    client_id = vhost[6].scan(%r{c(\d+)}).first.last
+    vhost_id = vhost[6].scan(%r{web(\d+)}).first.last
+    docroot = "#{vhost_basedir}/client#{client_id}/web#{vhost_id}/htdocs"
+    Vhost.new(fqdn: vhost[0],
+              type: :vhost,
+              document_root: docroot,
+              ipv4_address: Ipv4Address.first(address: vhost[2]),
+              ipv6_address: Ipv6Address.first(address: vhost[3]),
+              php_enabled: vhost[4],
+              php_runtime: PhpRuntime.first(name: vhost[5]),
+              os_uid: vhost[6],
+              os_gid: vhost[7],
+              enabled: vhost[8],
+              user: User.first(login: vhost[9])).save
+  end
 end
 
 # '1test!sftplogin?' = {md5}f5NspiyFx2u8dxbZARAcjQ==
