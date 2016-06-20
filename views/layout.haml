@@ -60,14 +60,14 @@
           = yield
         .row
           .col-sm-9.col-sm-offset-3.col-md-11.col-md-offset-1.main
-            =find_and_preserve styled_flash
+            = find_and_preserve styled_flash
       - else
         .col-sm-12.col-md-12.col-md-offset-2.main
           = yield
         .row
           .col-sm-12.col-md-12.col-md-offset-2.main
-            =find_and_preserve styled_flash
-        
+            = find_and_preserve styled_flash
+
 
     %script{ src: '/js/jquery.js' }
     %script{ src: '/js/bootstrap.min.js' }
