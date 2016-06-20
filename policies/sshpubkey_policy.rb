@@ -7,6 +7,18 @@ class SshPubkeyPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
+  # Checks if current user is allowed to create
+  # new records of type record.class.
+  # This method enforces the users quotas and prevents
+  # creating more records than the user is allowed to.
+  #
+  # @return [Boolean]
+  def create?
+    # TODO: actual implementation including enforced quotas
+    return true if user.admin?
+    false
+  end
+
   class Scope < Scope
     def resolve
       if user.admin?
