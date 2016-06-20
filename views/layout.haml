@@ -53,19 +53,19 @@
     .container-fluid
       .row
       - if !@sidebar_elements.nil?
-        .col-sm-3.col-md-2.sidebar
+        .col-sm-3.col-md-1.sidebar
           %ul.nav.nav-sidebar
             = haml :sidebar
-        .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main
+        .col-sm-9.col-sm-offset-3.col-md-11.col-md-offset-1.main
           = yield
         .row
-          .col-sm-9.col-sm-offset-3.col-md-10.col-md-offset-2.main
+          .col-sm-9.col-sm-offset-3.col-md-11.col-md-offset-1.main
             =find_and_preserve styled_flash
       - else
-        .col-sm-12.col-md-10.col-md-offset-2.main
+        .col-sm-12.col-md-12.col-md-offset-2.main
           = yield
         .row
-          .col-sm-12.col-md-10.col-md-offset-2.main
+          .col-sm-12.col-md-12.col-md-offset-2.main
             =find_and_preserve styled_flash
         
 
