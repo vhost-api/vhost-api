@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
 class PhpRuntimePolicy < ApplicationPolicy
@@ -10,13 +9,7 @@ class PhpRuntimePolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        scope.all(id: 0)
-      else
-        scope.all(id: 0)
-      end
+      scope.all
     end
   end
 

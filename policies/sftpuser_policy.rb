@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
 class SftpUserPolicy < ApplicationPolicy
@@ -14,19 +13,25 @@ class SftpUserPolicy < ApplicationPolicy
         scope.all
       elsif user.reseller?
         @sftpusers = scope.all(id: 0)
-        user.vhosts.each do |vhost|
-          @sftpusers.concat(scope.all(vhost_id: vhost.id))
-        end
-        user.customers.each do |customer|
-          customer.vhosts.each do |vhost|
+        unless user.vhosts.nil? || user.vhosts.empty?
+          user.vhosts.each do |vhost|
             @sftpusers.concat(scope.all(vhost_id: vhost.id))
+          end
+        end
+        unless user.customers.nil? || user.customers.empty?
+          user.customers.each do |customer|
+            customer.vhosts.each do |vhost|
+              @sftpusers.concat(scope.all(vhost_id: vhost.id))
+            end
           end
         end
         @sftpusers
       else
         @sftpusers = scope.all(id: 0)
-        user.vhosts.each do |vhost|
-          @sftpusers.concat(scope.all(vhost_id: vhost.id))
+        unless user.vhosts.nil? || user.vhosts.empty?
+          user.vhosts.each do |vhost|
+            @sftpusers.concat(scope.all(vhost_id: vhost.id))
+          end
         end
         @sftpusers
       end

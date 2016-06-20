@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -25,6 +24,7 @@ class DkimSigning
 
   belongs_to :dkim
 
+  # @return [User]
   def owner
     dkim.owner
   end

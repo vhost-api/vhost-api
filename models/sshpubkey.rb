@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -26,6 +25,7 @@ class SshPubkey
 
   belongs_to :user
 
+  # @return [User]
   def owner
     user
   end

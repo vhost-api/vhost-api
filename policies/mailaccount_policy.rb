@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
 class MailAccountPolicy < ApplicationPolicy

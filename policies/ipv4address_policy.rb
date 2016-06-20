@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 class Ipv4AddressPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -11,9 +10,18 @@ class Ipv4AddressPolicy < ApplicationPolicy
       if user.admin?
         scope.all
       elsif user.reseller?
-        scope.all(id: 0)
+        @ipv4addrs = scope.all(id: 0)
+        @ipv4addrs.concat(user.ipv4_addresses)
+        user.customers.each do |customer|
+          customer.ipv4_addresses.each do |ipv4addr|
+            @ipv4addrs.concat(scope.all(id: ipv4addr.id)) unless @ipv4addrs.include?(ipv4addr)
+          end
+        end
+        @ipv4addrs
       else
-        scope.all(id: 0)
+        @ipv4addrs = scope.all(id: 0)
+        @ipv4addrs.concat(user.ipv4_addresses)
+        @ipv4addrs
       end
     end
   end

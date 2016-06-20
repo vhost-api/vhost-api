@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -37,6 +36,7 @@ class Apikey
     self.updated_at = Time.now.to_i
   end
 
+  # @return [User]
   def owner
     user
   end

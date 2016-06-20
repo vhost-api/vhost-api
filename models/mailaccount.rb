@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -39,6 +38,8 @@ class MailAccount
   has n, :mail_sources, through: Resource, constraint: :destroy
   has n, :mail_aliases, through: Resource, constraint: :destroy
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password],
                  methods: [:quotausage,
@@ -53,43 +54,44 @@ class MailAccount
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     domain.owner
   end
 
+  # @return [User]
   def customer
-    # domain.user.to_json(only: [:id, :name, :login])
     { id: domain.user.id, name: domain.user.name, login: domain.user.login }
   end
 
+  # @return [Fixnum, nil]
   def quotausage
     settings = Sinatra::Application.settings
     filename = "#{settings.mail_home}/" \
                "#{email.to_s.split('@')[1]}/" \
                "#{email.to_s.split('@')[0]}/.quotausage"
     if File.exist?(filename)
-      Integer(IO.read(filename).match(%r{priv/quota/storage\n(.*)\n}m)[1])
-    else
-      'NaN'
+      return Integer(IO.read(filename).match(%r{priv/quota/storage\n(.*)\n}m)[1])
     end
+    nil
   end
 
+  # @return [Fixnum]
   def quotausage_rel
     (quotausage.to_i * 100 / quota).round(1)
   end
 
+  # @return [Fixnum, nil]
   def sieveusage
     settings = Sinatra::Application.settings
     filename = "#{settings.mail_home}/" \
                "#{email.to_s.split('@')[1]}/" \
                "#{email.to_s.split('@')[0]}/#{settings.sieve_file}"
-    if File.exist?(filename)
-      File.size(filename)
-    else
-      0
-    end
+    return File.size(filename) if File.exist?(filename)
+    nil
   end
 
+  # @return [Fixnum]
   def sieveusage_rel
     (sieveusage.to_i * 100 / quota_sieve_script).round(1)
   end

@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
 class AliasVhostPolicy < ApplicationPolicy
@@ -15,9 +14,7 @@ class AliasVhostPolicy < ApplicationPolicy
       elsif user.reseller?
         @aliasvhosts = scope.all(user_id: user.id)
         user.customers.each do |customer|
-          customer.alias_vhosts.each do |aliasvhost|
-            @aliasvhosts.concat(scope.all(id: aliasvhost.id))
-          end
+          @aliasvhosts.concat(scope.all(user_id: customer.id))
         end
         @aliasvhosts
       else

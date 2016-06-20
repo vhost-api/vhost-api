@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -38,6 +37,7 @@ class AliasVhost
   belongs_to :ipv4_address
   belongs_to :ipv6_address
 
+  # @return [User]
   def owner
     user
   end

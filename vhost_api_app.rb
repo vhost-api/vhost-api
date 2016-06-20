@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'bundler/setup'
 
 require 'sinatra'
@@ -15,6 +14,8 @@ require 'filesize'
 require 'tilt/sass'
 require 'sass'
 require 'English'
+require 'better_errors'
+require 'binding_of_caller'
 
 # load models and stuff
 require_relative './init'
@@ -53,8 +54,12 @@ configure do
 end
 
 configure :development do
+  require 'pry'
   set :show_exceptions, :after_handler
   set :raise_errors, false
+  use BetterErrors::Middleware
+  BetterErrors.application_root = __dir__
+  BetterErrors.use_pry!
 
   log_file = File.new("log/#{settings.environment}_application.log", 'a+')
   log_file.sync = true
@@ -74,6 +79,7 @@ use Rack::Session::Cookie, secret: File.read('config/session.secret'),
                            expire_after: settings.session[:timeout],
                            path: settings.session[:path].to_s
 
+# @return [Logger]
 def my_logger
   settings.logger
 end
@@ -82,9 +88,10 @@ before { env['rack.errors'] = error_logger }
 
 # tell pundit how to find the user
 current_user do
-  session[:user]
+  User.get(session[:user_id])
 end
 
+# @return [Boolean]
 def user?
   @user != nil
 end
@@ -133,12 +140,12 @@ get '/css/*.css' do
 end
 
 get '/' do
-  # my_logger.debug "user ---> #{@user.inspect}"
-  # my_logger.error "test"
+  authenticate!
   haml :home, layout: :layout
 end
 
 get '/env' do
+  authenticate!
   respond_to do |type|
     type.html do
       haml :envs, layout: false
@@ -151,10 +158,12 @@ get '/env' do
 end
 
 get '/about' do
+  authenticate!
   haml :about, layout: false
 end
 
 get '/contact' do
+  authenticate!
   haml :contact, layout: false
 end
 

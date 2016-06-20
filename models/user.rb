@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -48,6 +47,9 @@ class User
 
   belongs_to :group
 
+  has n, :ipv4_addresses, through: Resource, constraint: :protect
+  has n, :ipv6_addresses, through: Resource, constraint: :protect
+
   has n, :vhosts, constraint: :protect
   has n, :alias_vhosts, constraint: :protect
   has n, :domains, constraint: :protect
@@ -60,6 +62,7 @@ class User
   has n, :customers, self, child_key: :reseller_id
   belongs_to :reseller, self, required: false
 
+  # @return [Boolean]
   def authenticate(attempted_password)
     # BCrypt automatically hashes the right side of ==
     # when comparing to self.password.
@@ -70,6 +73,8 @@ class User
     end
   end
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password] }
     options = defaults.merge(options)
@@ -79,6 +84,7 @@ class User
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     if group.name == 'user' && !reseller.nil?
       reseller
@@ -87,14 +93,17 @@ class User
     end
   end
 
+  # @return [Boolean]
   def owner_of?(element)
     element.owner == self
   end
 
+  # @return [Boolean]
   def admin?
     group.name == 'admin'
   end
 
+  # @return [Boolean]
   def reseller?
     group.name == 'reseller'
   end

@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/phpruntimes' do
   helpers do
     def fetch_scoped_phpruntimes

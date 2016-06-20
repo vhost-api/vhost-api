@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -28,6 +27,8 @@ class DatabaseUser
 
   has n, :databases, constraint: :protect
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password] }
     options = defaults.merge(options)
@@ -35,6 +36,7 @@ class DatabaseUser
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     user
   end

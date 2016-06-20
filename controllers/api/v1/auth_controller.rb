@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/auth' do
   post '/login' do
     params['user'] && params['user']['login'] && params['user']['password']
@@ -12,7 +11,6 @@ namespace '/api/v1/auth' do
 
     if user.authenticate(params['user']['password'])
       # store stuff for later use
-      session[:user] = user
       session[:user_id] = user.id
       session[:group] = user.group.name
 
@@ -42,7 +40,6 @@ namespace '/api/v1/auth' do
       flashmsg << '</br>previus session:</br>' \
                   "<pre>#{gen_session_json(session: session)}</pre>"
     end
-    session[:user] = nil
     session[:user_id] = nil
     session[:group] = nil
     if settings.environment == :development

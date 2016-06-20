@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -44,6 +43,7 @@ class Vhost
   belongs_to :ipv6_address
   belongs_to :php_runtime
 
+  # @return [User]
   def owner
     user
   end

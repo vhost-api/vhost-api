@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 # This abstract class is the base for each api response.
 class ApiResponse
   def initialize(status: nil, status_code: nil)

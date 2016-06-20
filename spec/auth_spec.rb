@@ -10,13 +10,6 @@ describe 'VHost-API Authentication' do
     expect(last_response.body).to include('Username')
   end
 
-  it 'redirects unauthenticated users to login page' do
-    get '/domains'
-    expect(last_response.redirect?).to be_truthy
-    follow_redirect!
-    expect(last_request.path).to eq('/login')
-  end
-
   it 'allows logging in with valid credentials' do
     clear_cookies
     post '/api/v1/auth/login', 'user' => { 'login' => 'max',

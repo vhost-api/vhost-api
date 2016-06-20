@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -24,7 +23,9 @@ class Ipv4Address
   end
 
   has n, :vhosts, constraint: :protect
+  has n, :users, through: Resource, constraint: :protect
 
+  # @return [User]
   def owner
     User.first(name: 'admin')
   end

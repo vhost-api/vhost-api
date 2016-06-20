@@ -3,7 +3,7 @@ development:
   :db_host: localhost
   :db_user: foo
   :db_pass: bar
-  :db_name: vhost_api
+  :db_name: vhost_api_dev
 
 production:
   :db_adapter: postgres
@@ -11,4 +11,12 @@ production:
   :db_host: db.example.com
   :db_user: foo
   :db_pass: bar
-  :db_name: vhost_api
+  :db_name: vhost_api_prod
+
+test:
+  :db_adapter: postgres
+  :db_encoding: unicode
+  :db_host: test.example.com
+  :db_user: foo
+  :db_pass: bar
+  :db_name: vhost_api_test

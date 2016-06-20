@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/foobars' do
   get do
     @foobars = Foobar.all

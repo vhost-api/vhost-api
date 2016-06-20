@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -27,12 +26,15 @@ class MailSource
 
   has n, :mail_accounts, through: Resource, constraint: :destroy
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { methods: [:allowed_from] }
     options = defaults.merge(options)
     super(fix_options_override(options))
   end
 
+  # @return [Array(MailAccount)]
   def allowed_from
     allowed_senders = []
     mail_accounts.each do |acc|
@@ -41,6 +43,7 @@ class MailSource
     allowed_senders
   end
 
+  # @return [User]
   def owner
     domain.owner
   end

@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/ipv6addresses' do
   helpers do
     def fetch_scoped_ipv6addresses

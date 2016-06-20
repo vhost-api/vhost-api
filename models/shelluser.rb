@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -29,6 +28,8 @@ class ShellUser
   belongs_to :vhost
   belongs_to :shell
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password] }
     options = defaults.merge(options)
@@ -36,6 +37,7 @@ class ShellUser
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     vhost.user
   end
