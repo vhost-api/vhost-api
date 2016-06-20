@@ -231,6 +231,17 @@ Dkim.all.each do |dk|
                   enabled: true).save
 end
 
+php_rt_list = [
+  ['none', '0.0'],
+  ['php56', '5.6.22'],
+  ['php7', '7.0.7']
+]
+php_rt_list.each do |php_rt|
+  PhpRuntime.new(name: php_rt[0],
+                 version: php_rt[1],
+                 enabled: true).save
+end
+
 ipv4_list = [
   ['127.0.0.1', User.all.map(&:login)],
   ['10.1.1.1', User.all.map(&:login)],
@@ -265,60 +276,76 @@ ipv6_list.each do |ipv6|
                   users: users).save
 end
 
-php_rt_list = [
-  ['none', '0.0'],
-  ['php56', '5.6.22'],
-  ['php7', '7.0.7']
-]
-php_rt_list.each do |php_rt|
-  PhpRuntime.new(name: php_rt[0],
-                 version: php_rt[1],
-                 enabled: true).save
-end
-
 vhost_list = [
-  ['foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web1', 'c2web1', true, 'fox'],
-  ['ipv4.foxxx0.de', :vhost, '10.1.1.1', '::1', true, 'php7', 'c2web2', 'c2web2', true, 'fox'],
-  ['ipv6.foxxx0.de', :vhost, '127.0.0.1', 'fe80::dead:beef', true, 'php7', 'c2web3', 'c2web3', true, 'fox'],
-  ['paste.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', true, 'php7', 'c2web4', 'c2web4', true, 'fox'],
+  ['foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'fox'],
+  ['ipv4.foxxx0.de', :vhost, '10.1.1.1', '::1', true, 'php7', true, 'fox'],
+  ['ipv6.foxxx0.de', :vhost, '127.0.0.1', 'fe80::dead:beef', true, 'php7', true, 'fox'],
+  ['paste.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', true, 'php7', true, 'fox'],
   ['p.foxxx0.de', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'paste.foxxx0.de', true, 'fox'],
-  ['blog.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web5', 'c2web5', true, 'fox'],
-  ['example.net', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c3web6', 'c3web6', true, 'max'],
-  ['mail.example.net', :vhost, '10.4.4.4', 'fe80::beef:4', true, 'php56', 'c3web7', 'c3web7', true, 'max'],
-  ['webmail.example.net', :alias, :permanent, '10.4.4.4', 'fe80::beef:4', 'mail.example.net', true, 'max']
+  ['blog.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'fox'],
+  ['example.net', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'max'],
+  ['mail.example.net', :vhost, '10.4.4.4', 'fe80::beef:4', true, 'php56', true, 'max'],
+  ['webmail.example.net', :alias, :permanent, '10.4.4.4', 'fe80::beef:4', 'mail.example.net', true, 'max'],
+  ['herpderp.org', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true, 'customer1'],
+  ['test.herpderp.org', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true, 'customer1'],
+  ['sub.herpderp.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer1'],
+  ['schalala.net', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true, 'customer2'],
+  ['test.schalala.net', :vhost, '10.2.2.2', 'fe80::dead:beef', false, 'none', true, 'customer2'],
+  ['sub.schalala.net', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true, 'customer2'],
+  ['everything.eu', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer3'],
+  ['foo.everything.eu', :vhost, '10.2.2.3', 'fe80::dead:beef', false, 'none', true, 'customer3'],
+  ['serious.business', :vhost, '10.3.3.3', 'fe80::beef:3', false, 'none', true, 'customer4'],
+  ['big.company', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer5'],
+  ['archlinux.sexy', :vhost, '10.2.2.3', 'fe80::beef:2', false, 'none', true, 'reseller1'],
+  ['kernel.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'reseller1'],
+  ['herp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'sub.herpderp.org', true, 'customer1'],
+  ['derp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'sub.herpderp.org', true, 'customer1'],
+  ['merp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'test.herpderp.org', true, 'customer1'],
+  ['blerp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'test.herpderp.org', true, 'customer1'],
+  ['bar.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'schalala.net', true, 'customer2'],
+  ['xyz.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'schalala.net', true, 'customer2'],
+  ['bla.everything.eu', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'everything.eu', true, 'customer3'],
+  ['funny.serious.business', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'serious.business', true, 'customer4'],
+  ['little.big.company', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'big.company', true, 'customer5'],
+  ['cdn.archlinux.sexy', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'archlinux.sexy', true, 'reseller1'],
+  ['login.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
+  ['hodor.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
+  ['moved.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
+  ['gone.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
+  ['cdn.kernel.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'archlinux.sexy', true, 'reseller1'],
+  ['svn.kernel.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'kernel.org', true, 'reseller1']
 ]
 vhost_list.each do |vhost|
   case vhost[1]
   when :alias
     parent_vhost = Vhost.first(fqdn: vhost[5])
-    Vhost.new(fqdn: vhost[0],
-              type: :alias,
-              redirect_type: vhost[2],
-              ipv4_address: Ipv4Address.first(address: vhost[3]),
-              ipv6_address: Ipv6Address.first(address: vhost[4]),
-              php_enabled: false,
-              php_runtime: PhpRuntime.first(name: 'none'),
-              os_uid: parent_vhost.os_uid,
-              os_gid: parent_vhost.os_uid,
-              parent: parent_vhost,
-              enabled: vhost[6],
-              user: User.first(login: vhost[7])).save
+    Vhost.create(fqdn: vhost[0],
+                 type: :alias,
+                 redirect_type: vhost[2],
+                 ipv4_address: Ipv4Address.first(address: vhost[3]),
+                 ipv6_address: Ipv6Address.first(address: vhost[4]),
+                 php_enabled: false,
+                 php_runtime: PhpRuntime.first(name: 'none'),
+                 os_uid: parent_vhost.os_uid,
+                 os_gid: parent_vhost.os_uid,
+                 parent: parent_vhost,
+                 enabled: vhost[6],
+                 user: User.first(login: vhost[7]))
   when :vhost
     vhost_basedir = '/srv/http/vhost'
-    client_id = vhost[6].scan(%r{c(\d+)}).first.last
-    vhost_id = vhost[6].scan(%r{web(\d+)}).first.last
-    docroot = "#{vhost_basedir}/client#{client_id}/web#{vhost_id}/htdocs"
-    Vhost.new(fqdn: vhost[0],
-              type: :vhost,
-              document_root: docroot,
-              ipv4_address: Ipv4Address.first(address: vhost[2]),
-              ipv6_address: Ipv6Address.first(address: vhost[3]),
-              php_enabled: vhost[4],
-              php_runtime: PhpRuntime.first(name: vhost[5]),
-              os_uid: vhost[6],
-              os_gid: vhost[7],
-              enabled: vhost[8],
-              user: User.first(login: vhost[9])).save
+    u = User.first(login: vhost[7])
+    v = Vhost.create(fqdn: vhost[0],
+                     type: :vhost,
+                     ipv4_address: Ipv4Address.first(address: vhost[2]),
+                     ipv6_address: Ipv6Address.first(address: vhost[3]),
+                     php_enabled: vhost[4],
+                     php_runtime: PhpRuntime.first(name: vhost[5]),
+                     enabled: vhost[6],
+                     user: u)
+    v.document_root = "#{vhost_basedir}/client#{u.id}/web#{v.id}/htdocs"
+    v.os_uid = "c#{u.id}web#{v.id}"
+    v.os_gid = "c#{u.id}web#{v.id}"
+    v.save
   end
 end
 
