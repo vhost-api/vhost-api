@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 group_list = [
   ['admin', true],
   ['reseller', true],
@@ -10,32 +9,32 @@ group_list.each do |group|
 end
 
 user_list = [
-  ['Admin', 'admin', 'secret', true, Group.first(name: 'admin')],
-  ['Thore Bödecker', 'fox', 'geheim', true, Group.first(name: 'admin')],
-  ['Max Mustermann', 'max', 'muster', true, Group.first(name: 'user')],
-  ['Customer 1', 'customer1', 'customer1', true, Group.first(name: 'user')],
-  ['Customer 2', 'customer2', 'customer2', true, Group.first(name: 'user')],
-  ['Customer 3', 'customer3', 'customer3', true, Group.first(name: 'user')],
-  ['Reseller 1', 'reseller1', 'reseller1', true, Group.first(name: 'reseller'),
+  ['Admin', 'admin', 'secret', true, 'admin'],
+  ['Thore Bödecker', 'fox', 'geheim', true, 'admin'],
+  ['Max Mustermann', 'max', 'muster', true, 'user'],
+  ['Customer 1', 'customer1', 'customer1', true, 'user'],
+  ['Customer 2', 'customer2', 'customer2', true, 'user'],
+  ['Customer 3', 'customer3', 'customer3', true, 'user'],
+  ['Reseller 1', 'reseller1', 'reseller1', true, 'reseller',
    %w(customer1 customer2 customer3)],
-  ['Customer 4', 'customer4', 'customer4', true, Group.first(name: 'user')],
-  ['Customer 5', 'customer5', 'customer5', true, Group.first(name: 'user')],
-  ['Reseller 2', 'reseller2', 'reseller2', true, Group.first(name: 'reseller'),
+  ['Customer 4', 'customer4', 'customer4', true, 'user'],
+  ['Customer 5', 'customer5', 'customer5', true, 'user'],
+  ['Reseller 2', 'reseller2', 'reseller2', true, 'reseller',
    %w(customer4 customer5)]
 ]
 user_list.each do |user|
+  g = Group.first(name: user[4])
   u = User.new(name: user[0],
                login: user[1],
                password: user[2],
                enabled: user[3],
-               group: user[4])
+               group: g)
 
-  if user[4].name == 'reseller'
+  if g.name == 'reseller'
     user[5].each do |client|
       u.customers << User.first(login: client)
     end
   end
-
   u.save
 end
 
@@ -96,7 +95,7 @@ mailaccount_list.each do |mailaccount|
                   receiving_enabled: mailaccount[4],
                   quota: mailaccount[2],
                   enabled: mailaccount[5],
-                  domain_id: Domain.first(name: mailaccount[0].split('@')[1]).id,
+                  domain: Domain.first(name: mailaccount[0].split('@')[1]),
                   realname: mailaccount[3]).save
 end
 
@@ -171,7 +170,7 @@ mailalias_mailaccount_list.each do |mals_macc|
   MailAlias.new(
     address: mals_macc[0],
     enabled: true,
-    domain_id: Domain.first(name: mals_macc[0].split('@')[1]).id
+    domain: Domain.first(name: mals_macc[0].split('@')[1])
   ).save
   [*mals_macc[1]].each do |macc|
     acc = MailAccount.first(email: macc)
@@ -200,7 +199,7 @@ mailsource_mailaccount_list = [
 mailsource_mailaccount_list.each do |msrc_macc|
   MailSource.new(address: msrc_macc[0],
                  enabled: true,
-                 domain_id: Domain.first(name: msrc_macc[0].split('@')[1]).id).save
+                 domain: Domain.first(name: msrc_macc[0].split('@')[1])).save
   [*msrc_macc[1]].each do |macc|
     acc = MailAccount.first(email: macc)
     acc.mail_sources << MailSource.first(address: msrc_macc[0])
@@ -210,7 +209,7 @@ end
 
 # DKIM keys
 Domain.all.each do |d|
-  dkim = Dkim.new(domain_id: d.id, enabled: true)
+  dkim = Dkim.new(domain: d, enabled: true)
   dkim.selector = 'mail'
   dkim.private_key = <<-EOF
 -----BEGIN RSA PRIVATE KEY-----
@@ -228,24 +227,42 @@ end
 # DKIM author <-> key assignment
 Dkim.all.each do |dk|
   DkimSigning.new(author: dk.domain.name,
-                  dkim_id: dk.id,
+                  dkim: dk,
                   enabled: true).save
 end
 
 ipv4_list = [
-  ['127.0.0.1'],
-  ['10.1.2.3']
+  ['127.0.0.1', User.all.map(&:login)],
+  ['10.1.1.1', User.all.map(&:login)],
+  ['10.2.2.2', %w(customer1 customer2)],
+  ['10.2.2.3', %w(customer3)],
+  ['10.3.3.3', %w(reseller2 customer4)],
+  ['10.4.4.4', %w(max)]
 ]
 ipv4_list.each do |ipv4|
-  Ipv4Address.new(address: IPAddr.new(ipv4[0]), enabled: true).save
+  users = User.all(id: 0)
+  ipv4[1].each do |u|
+    users.concat(User.all(login: u))
+  end
+  Ipv4Address.new(address: IPAddr.new(ipv4[0]),
+                  enabled: true,
+                  users: users).save
 end
 
 ipv6_list = [
-  ['::1'],
-  ['fe80::dead:beef']
+  ['::1', User.all.map(&:login)],
+  ['fe80::dead:beef', User.all.map(&:login)],
+  ['fe80::beef:1', %w(reseller1 customer1 customer2)],
+  ['fe80::beef:2', %w(reseller1)],
+  ['fe80::beef:3', %w(reseller2 customer4)],
+  ['fe80::beef:4', %w(max)]
 ]
 ipv6_list.each do |ipv6|
-  Ipv6Address.new(address: IPAddr.new(ipv6[0]), enabled: true).save
+  users = User.all(id: 0)
+  ipv6[1].each { |u| users.concat(User.all(login: u)) }
+  Ipv6Address.new(address: IPAddr.new(ipv6[0]),
+                  enabled: true,
+                  users: users).save
 end
 
 php_rt_list = [
@@ -260,24 +277,24 @@ php_rt_list.each do |php_rt|
 end
 
 vhost_list = [
-  ['foxxx0.de', '10.1.2.3', 'fe80::dead:beef', false, 'none', 'c2web1', 'c2web1', true, 'fox'],
-  ['ipv4.foxxx0.de', '10.1.2.3', '::1', true, 'php7', 'c2web2', 'c2web2', true, 'fox'],
+  ['foxxx0.de', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web1', 'c2web1', true, 'fox'],
+  ['ipv4.foxxx0.de', '10.1.1.1', '::1', true, 'php7', 'c2web2', 'c2web2', true, 'fox'],
   ['ipv6.foxxx0.de', '127.0.0.1', 'fe80::dead:beef', true, 'php7', 'c2web3', 'c2web3', true, 'fox'],
-  ['paste.foxxx0.de', '10.1.2.3', 'fe80::dead:beef', true, 'php7', 'c2web4', 'c2web4', true, 'fox'],
-  ['blog.foxxx0.de', '10.1.2.3', 'fe80::dead:beef', false, 'none', 'c2web5', 'c2web5', true, 'fox'],
-  ['example.net', '10.1.2.3', 'fe80::dead:beef', false, 'none', 'c3web6', 'c3web6', true, 'max'],
-  ['mail.example.net', '10.1.2.3', 'fe80::dead:beef', true, 'php56', 'c3web7', 'c3web7', true, 'max']
+  ['paste.foxxx0.de', '10.1.1.1', 'fe80::dead:beef', true, 'php7', 'c2web4', 'c2web4', true, 'fox'],
+  ['blog.foxxx0.de', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c2web5', 'c2web5', true, 'fox'],
+  ['example.net', '10.1.1.1', 'fe80::dead:beef', false, 'none', 'c3web6', 'c3web6', true, 'max'],
+  ['mail.example.net', '10.4.4.4', 'fe80::beef:4', true, 'php56', 'c3web7', 'c3web7', true, 'max']
 ]
 vhost_list.each do |vhost|
   Vhost.new(fqdn: vhost[0],
-            ipv4_address_id: Ipv4Address.first(address: vhost[1]).id,
-            ipv6_address_id: Ipv6Address.first(address: vhost[2]).id,
+            ipv4_address: Ipv4Address.first(address: vhost[1]),
+            ipv6_address: Ipv6Address.first(address: vhost[2]),
             php_enabled: vhost[3],
-            php_runtime_id: PhpRuntime.first(name: vhost[4]).id,
+            php_runtime: PhpRuntime.first(name: vhost[4]),
             os_uid: vhost[5],
             os_gid: vhost[6],
             enabled: vhost[7],
-            user_id: User.first(login: vhost[8]).id).save
+            user: User.first(login: vhost[8])).save
 end
 
 # '1test!sftplogin?' = {md5}f5NspiyFx2u8dxbZARAcjQ==
