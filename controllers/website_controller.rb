@@ -177,7 +177,7 @@ end
 namespace '/webhosting' do
   before do
     @sidebar_title = 'Webhosting'
-    @sidebar_elements = %w(VHosts AliasVHosts SFTPUsers ShellUsers)
+    @sidebar_elements = %w(VHosts SFTPUsers ShellUsers)
   end
 
   get do
@@ -201,16 +201,6 @@ namespace '/webhosting' do
                                              '/api/v1/vhosts.json')
       @vhosts = JSON.parse(body[0])
       haml :vhosts
-    end
-  end
-
-  namespace '/aliasvhosts' do
-    get do
-      authenticate!
-      _status, _headers, body = call env.merge('PATH_INFO' =>
-                                             '/api/v1/aliasvhosts.json')
-      @aliasvhosts = JSON.parse(body[0])
-      haml :aliasvhosts
     end
   end
 
