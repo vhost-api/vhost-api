@@ -51,7 +51,6 @@ class User
   has n, :ipv6_addresses, through: Resource, constraint: :protect
 
   has n, :vhosts, constraint: :protect
-  has n, :alias_vhosts, constraint: :protect
   has n, :domains, constraint: :protect
   has n, :databases, constraint: :protect
   has n, :database_users, constraint: :protect
