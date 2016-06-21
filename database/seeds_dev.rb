@@ -9,32 +9,26 @@ group_list.each do |group|
 end
 
 user_list = [
-  ['Admin', 'admin', 'secret', true, 'admin'],
-  ['Thore Bödecker', 'fox', 'geheim', true, 'admin'],
-  ['Max Mustermann', 'max', 'muster', true, 'user'],
-  ['Customer 1', 'customer1', 'customer1', true, 'user'],
-  ['Customer 2', 'customer2', 'customer2', true, 'user'],
-  ['Customer 3', 'customer3', 'customer3', true, 'user'],
-  ['Reseller 1', 'reseller1', 'reseller1', true, 'reseller',
-   %w(customer1 customer2 customer3)],
-  ['Customer 4', 'customer4', 'customer4', true, 'user'],
-  ['Customer 5', 'customer5', 'customer5', true, 'user'],
-  ['Reseller 2', 'reseller2', 'reseller2', true, 'reseller',
-   %w(customer4 customer5)]
+  ['Admin', 'admin', 'secret', true, 'admin', nil],
+  ['Thore Bödecker', 'fox', 'geheim', true, 'admin', nil],
+  ['Max Mustermann', 'max', 'muster', true, 'user', nil],
+  ['Reseller 1', 'reseller1', 'reseller1', true, 'reseller', nil],
+  ['Customer 1', 'customer1', 'customer1', true, 'user', 'reseller1'],
+  ['Customer 2', 'customer2', 'customer2', true, 'user', 'reseller1'],
+  ['Customer 3', 'customer3', 'customer3', true, 'user', 'reseller1'],
+  ['Reseller 2', 'reseller2', 'reseller2', true, 'reseller', nil],
+  ['Customer 4', 'customer4', 'customer4', true, 'user', 'reseller2'],
+  ['Customer 5', 'customer5', 'customer5', true, 'user', 'reseller2']
 ]
 user_list.each do |user|
   g = Group.first(name: user[4])
-  u = User.new(name: user[0],
-               login: user[1],
-               password: user[2],
-               enabled: user[3],
-               group: g)
-
-  if g.name == 'reseller'
-    user[5].each do |client|
-      u.customers << User.first(login: client)
-    end
-  end
+  u = User.create(name: user[0],
+                  login: user[1],
+                  password: user[2],
+                  enabled: user[3],
+                  group: g)
+  next if user[5].nil?
+  u.reseller_id = User.first(login: user[5]).id
   u.save
 end
 
@@ -332,7 +326,7 @@ vhost_list.each do |vhost|
                  enabled: vhost[6],
                  user: User.first(login: vhost[7]))
   when :vhost
-    vhost_basedir = '/srv/http/vhost'
+    vhost_basedir = '/srv/http/vhost/clients'
     u = User.first(login: vhost[7])
     v = Vhost.create(fqdn: vhost[0],
                      type: :vhost,
@@ -351,16 +345,27 @@ end
 
 # '1test!sftplogin?' = {md5}f5NspiyFx2u8dxbZARAcjQ==
 sftp_user_list = [
-  [1, 'c1web5-1', '{md5}f5NspiyFx2u8dxbZARAcjQ==',
-   '/srv/http/vhost/blog.foxxx0.de', true, 5]
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'blog.foxxx0.de', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'mail.example.net', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'herpderp.org', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'sub.herpderp.org', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'test.schalala.net', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'foo.everything.eu', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'serious.business', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'big.company', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'archlinux.sexy', true],
+  ['{md5}f5NspiyFx2u8dxbZARAcjQ==', 'kernel.org', true]
 ]
 sftp_user_list.each do |sftp_user|
-  SftpUser.new(id: sftp_user[0],
-               username: sftp_user[1],
-               password: sftp_user[2],
-               homedir: sftp_user[3],
-               enabled: sftp_user[4],
-               vhost_id: sftp_user[5]).save
+  v = Vhost.first(fqdn: sftp_user[1])
+  u_home = v.document_root.gsub(%r{/htdocs}, '')
+  u = SftpUser.create(username: SecureRandom.hex(8),
+                      homedir: u_home,
+                      password: sftp_user[0],
+                      vhost: v,
+                      enabled: sftp_user[2])
+  u.username = "#{v.os_uid}-#{u.id}"
+  u.save
 end
 
 # create the 4 necessary views
