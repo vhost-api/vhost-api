@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/vhosts' do
   helpers do
     def fetch_scoped_vhosts

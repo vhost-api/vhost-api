@@ -51,8 +51,12 @@
                     'aria-valuemax': '100',
                     style: "width:#{mailaccount['quotausage_rel']}%" }
                 %span
-                  = Filesize.from("#{mailaccount['quotausage']} B").pretty
-          %td.number= Filesize.from("#{mailaccount['quota']} B").pretty
+                  - q_usage = mailaccount['quotausage']
+                  - if q_usage.is_a?(Fixnum)
+                    = Filesize.from("#{mailaccount['quotausage']} B").pretty
+                  - else
+                    = q_usage
+          %td.number= Filesize.from("#{mailaccount['quota'].to_i} B").pretty
           %td.icon.item-delete
             - delete_path = "/mail/accounts/#{id}/delete"
             %a.icon.icon-trash.item-delete{ href: delete_path } delete

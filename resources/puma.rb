@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 environment 'development'
 
 pidfile 'puma.pid'

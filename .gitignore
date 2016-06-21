@@ -4,7 +4,9 @@
 # logfiles and tempfiles
 /log/*
 /tmp/*
-.sass-cache
+.sass-cache/**
+.yardoc/**
+.bundle/**
 
 # RubyMine
 /.idea
@@ -47,5 +49,7 @@ coverage.vim
 config/database.yml
 config/appconfig.yml
 config/session.secret
+
+coverage/**
 
 testdata/cookies/*

@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -27,12 +26,15 @@ class MailAlias
 
   has n, :mail_accounts, through: Resource, constraint: :destroy
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { methods: [:destinations] }
     options = defaults.merge(options)
     super(fix_options_override(options))
   end
 
+  # @return [Array(MailAccount)]
   def destinations
     dests = []
     mail_accounts.each do |acc|
@@ -41,6 +43,7 @@ class MailAlias
     dests
   end
 
+  # @return [User]
   def owner
     domain.owner
   end

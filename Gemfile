@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 # core
 gem 'sinatra'
-gem 'sinatra-contrib', require: false
+gem 'sinatra-contrib'
 gem 'sinatra-logger'
 gem 'bcrypt'
 # tools
@@ -33,9 +33,14 @@ gem 'sass'
 
 group :development do
   gem 'shotgun', require: false
+  gem 'pry'
+  gem 'better_errors'
+  gem 'binding_of_caller'
 end
 
 group :test, :development do
+  gem 'yard', require: false
+  gem 'simplecov', require: false
   gem 'rspec', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false

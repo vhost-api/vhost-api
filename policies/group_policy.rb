@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require File.expand_path '../application_policy.rb', __FILE__
 
 class GroupPolicy < ApplicationPolicy
@@ -6,6 +5,15 @@ class GroupPolicy < ApplicationPolicy
     return Permissions::Admin.new(record).attributes if user.admin?
     return Permissions::Reseller.new(record).attributes if user.reseller?
     Permissions::User.new(record).attributes
+  end
+
+  # Checks if current user is allowed to create
+  # new records of type record.class.
+  #
+  # @return [Boolean]
+  def create?
+    return true if user.admin?
+    false
   end
 
   class Scope < Scope

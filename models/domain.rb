@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -32,16 +31,20 @@ class Domain
   has n, :mail_sources, constraint: :protect
   has n, :dkims, constraint: :protect
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { methods: [:customer] }
     options = defaults.merge(options)
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     user
   end
 
+  # @return [JSON]
   def customer
     user.to_json(only: [:id, :name, :login])
   end

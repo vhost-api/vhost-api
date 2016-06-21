@@ -10,13 +10,6 @@ describe 'VHost-API Authentication' do
     expect(last_response.body).to include('Username')
   end
 
-  it 'redirects unauthenticated users to login page' do
-    get '/domains'
-    expect(last_response.redirect?).to be_truthy
-    follow_redirect!
-    expect(last_request.path).to eq('/login')
-  end
-
   it 'allows logging in with valid credentials' do
     clear_cookies
     post '/api/v1/auth/login', 'user' => { 'login' => 'max',
@@ -41,7 +34,7 @@ describe 'VHost-API Authentication' do
     expect(last_request.path).to eq('/')
   end
 
-  it 'shows a user greeting when logged in' do
+  it 'shows users name in topnav when logged in' do
     clear_cookies
     testuser = User.get(3)
     get '/',
@@ -52,6 +45,6 @@ describe 'VHost-API Authentication' do
                                          testuser.group_id
                                        ).name }
     expect(last_response).to be_ok
-    expect(last_response.body.include?("Welcome #{testuser.name}")).to be_truthy
+    expect(last_response.body.include?(testuser.name)).to be_truthy
   end
 end

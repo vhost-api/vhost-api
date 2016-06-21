@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 namespace '/api/v1/auth' do
   post '/login' do
     params['user'] && params['user']['login'] && params['user']['password']
@@ -12,9 +11,8 @@ namespace '/api/v1/auth' do
 
     if user.authenticate(params['user']['password'])
       # store stuff for later use
-      session[:user] = user
       session[:user_id] = user.id
-      session[:group] = Group.get(user.group_id).name
+      session[:group] = user.group.name
 
       flashmsg = 'Successfully logged in.'
       if settings.environment == :development
@@ -42,7 +40,6 @@ namespace '/api/v1/auth' do
       flashmsg << '</br>previus session:</br>' \
                   "<pre>#{gen_session_json(session: session)}</pre>"
     end
-    session[:user] = nil
     session[:user_id] = nil
     session[:group] = nil
     if settings.environment == :development
@@ -51,20 +48,5 @@ namespace '/api/v1/auth' do
     end
     flash[:success] = flashmsg
     redirect '/'
-  end
-
-  get '/protected' do
-    authenticate!
-    my_logger.debug request.env.inspect
-    haml :protected
-  end
-
-  get '/admin' do
-    if @user.admin?
-      haml :admin
-    else
-      flash[:error] = 'not authorized'
-      redirect '/'
-    end
   end
 end

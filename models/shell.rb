@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -23,6 +22,7 @@ class Shell
     self.updated_at = Time.now.to_i
   end
 
+  # @return [User]
   def owner
     User.first(name: 'admin')
   end

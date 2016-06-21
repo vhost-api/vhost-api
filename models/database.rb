@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -29,6 +28,7 @@ class Database
 
   has n, :database_users, constraint: :protect
 
+  # @return [User]
   def owner
     user
   end

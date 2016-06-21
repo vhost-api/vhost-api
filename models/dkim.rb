@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -29,6 +28,7 @@ class Dkim
 
   has n, :dkim_signings, constraint: :destroy
 
+  # @return [User]
   def owner
     domain.owner
   end

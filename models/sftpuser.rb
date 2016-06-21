@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -27,13 +26,18 @@ class SftpUser
 
   belongs_to :vhost
 
+  # @param options [Hash]
+  # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password] }
     options = defaults.merge(options)
-    options[:only].delete(:password) if options[:only].include?(:password)
+    unless options[:only].nil?
+      options[:only].delete(:password) if options[:only].include?(:password)
+    end
     super(fix_options_override(options))
   end
 
+  # @return [User]
   def owner
     vhost.owner
   end

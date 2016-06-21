@@ -1,4 +1,3 @@
-# frozen_string_literal; false
 
 @environment = ENV['RACK_ENV'] || 'development'
 @dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
@@ -33,7 +32,6 @@ require_relative 'models/mailalias'
 require_relative 'models/ipv4address'
 require_relative 'models/ipv6address'
 require_relative 'models/phpruntime'
-require_relative 'models/aliasvhost'
 require_relative 'models/vhost'
 require_relative 'models/shell'
 require_relative 'models/sftpuser'
@@ -41,7 +39,6 @@ require_relative 'models/shelluser'
 require_relative 'models/sshpubkey'
 require_relative 'models/databaseuser'
 require_relative 'models/database'
-require_relative 'models/env'
 require_relative 'helpers/classes/apiresponse'
 require_relative 'helpers/classes/apiresponse_error'
 require_relative 'helpers/classes/apiresponse_success'

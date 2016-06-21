@@ -11,6 +11,7 @@ development:
     :display:
       :mailquota_warn: 65
       :mailquota_crit: 90
+  :webmail_link: 'http://webmail.localhost.localdomain/'
 
 production:
   :site_title: 'vhost-API'
@@ -25,3 +26,19 @@ production:
     :display:
       :mailquota_warn: 65
       :mailquota_crit: 90
+  :webmail_link: 'https://webmail.example.net/'
+
+test:
+  :site_title: 'vhost-API'
+  :session:
+    :timeout: 2592000 # 30 days
+    :domain: localhost
+    :key: rack.session
+    :path: /
+  :mail_home: 'testdata/vmail'
+  :sieve_file: 'dovecot.sieve'
+  :threshholds:
+    :display:
+      :mailquota_warn: 65
+      :mailquota_crit: 90
+  :webmail_link: 'https://webmail.test.localdomain/'
