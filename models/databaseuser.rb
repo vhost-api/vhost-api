@@ -32,7 +32,9 @@ class DatabaseUser
   def as_json(options = {})
     defaults = { exclude: [:password] }
     options = defaults.merge(options)
-    options[:only].delete(:password) if options[:only].include?(:password)
+    unless options[:only].nil?
+      options[:only].delete(:password) if options[:only].include?(:password)
+    end
     super(fix_options_override(options))
   end
 
