@@ -16,9 +16,8 @@ class ShellUserPolicy < ApplicationPolicy
   #
   # @return [Boolean]
   def create?
-    # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
   end
 
   # Scope for ShellUser
@@ -46,5 +45,20 @@ class ShellUserPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_shelluser_num < user.quota_shell_users
+    false
+  end
+
+  # @return [Fixnum]
+  def check_shelluser_num
+    shelluser_usage = user.vhosts.shell_users.size
+    shelluser_usage += user.customers.vhosts.shell_users.size if user.reseller?
+    shelluser_usage
   end
 end
