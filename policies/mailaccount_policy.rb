@@ -20,6 +20,14 @@ class MailAccountPolicy < ApplicationPolicy
     quotacheck
   end
 
+  # Calculates users remaining MailAccount storage quota.
+  # Used when creating new MailAccounts.
+  #
+  # @return [Fixnum]
+  def storage_remaining
+    user.quota_mail_storage - check_account_storage
+  end
+
   # Scope for MailAccount
   class Scope < Scope
     def resolve
@@ -63,9 +71,21 @@ class MailAccountPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    used_quota = user.domains.mail_accounts.size
-    used_quota += user.customers.domains.mail_accounts.size if user.reseller?
-    return true if used_quota < user.quota_mail_accounts
+    return true if check_account_num < user.quota_mail_accounts &&
+                   check_account_storage < user.quota_mail_storage
     false
+  end
+
+  # @return [Fixnum]
+  def check_account_num
+    acc_usage = user.domains.mail_accounts.size
+    acc_usage += user.customers.domains.mail_accounts.size if user.reseller?
+    acc_usage
+  end
+
+  # @return [Fixnum]
+  def check_account_storage
+    accounts = Pundit.policy_scope(user, MailAccount)
+    accounts.map(&:quota).reduce(0, :+)
   end
 end
