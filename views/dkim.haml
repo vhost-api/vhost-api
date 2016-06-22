@@ -3,35 +3,43 @@
     %caption DKIM Keys
     %thead
       %tr
-        %th= 'enabled'
-        %th= 'selector'
-        %th= 'private_key'
-        %th= 'public_key'
-        %th= 'created_at'
-        %th= 'updated_at'
-        %th= 'domain_id'
-        %th
+        %th<
+          enabled
+        %th<
+          selector
+        %th<
+          private_key
+        %th<
+          public_key
+        %th<
+          created_at
+        %th<
+          updated_at
+        %th<
+          domain_id
+        %th<
     %tbody
       -# - policy_scope(Dkim).each do |dkim|
       - @dkims.each do |dkim|
         %tr
-          %td.icon
+          %td.icon<
             - enable_href_suffix = dkim['enabled'] ? 'disable' : 'enable'
             - en = 'icon-check item-enabled'
             - dis = 'icon-cross item-disabled'
             - enable_class_suffix = dkim['enabled'] ? en : dis
             - enable_link_text = dkim['enabled'] ? 'yes' : 'no'
-            %a{ href: "/mail/dkim/#{dkim['id']}/#{enable_href_suffix}",
-               class: "icon #{enable_class_suffix}" }= enable_link_text
-          %td
-            %a{ href: "/mail/dkim/#{dkim['id']}/edit" }= dkim['selector']
-          %td= dkim['private_key'][0..15].gsub(%r{/\s\w+\s*$/}, '...')
-          %td= dkim['public_key'][0..15].gsub(%r{/\s\w+\s*$/}, '...')
-          %td= dkim['created_at']
-          %td= dkim['updated_at']
-          %td= dkim['domain_id']
-          %td.icon.item-delete
-            - delete_path = "/mail/dkim/#{dkim['id']}/delete"
+            %a{ href: ['/mail/dkim', dkim['id'], enable_href_suffix].join('/'),
+               class: 'icon ' + enable_class_suffix.to_s }= enable_link_text
+          %td<
+            %a{ href: ['/mail/dkim', dkim['id'], 'edit'].join('/') }<
+              = dkim['selector']
+          %td<= dkim['private_key'][0..15].gsub(%r{/\s\w+\s*$/}, '...')
+          %td<= dkim['public_key'][0..15].gsub(%r{/\s\w+\s*$/}, '...')
+          %td<= dkim['created_at']
+          %td<= dkim['updated_at']
+          %td<= dkim['domain_id']
+          %td.icon.item-delete<
+            - delete_path = ['/mail/dkim', dkim['id'], 'delete'].join('/')
             %a.icon.icon-trash.item-delete{ href: delete_path } delete
 
 .table-wrapper
@@ -39,30 +47,36 @@
     %caption DKIM Author-Key Associations
     %thead
       %tr
-        %th= 'enabled'
-        %th= 'author'
-        %th= 'created_at'
-        %th= 'updated_at'
-        %th= 'dkim_id'
-        %th
+        %th<
+          enabled
+        %th<
+          author
+        %th<
+          created_at
+        %th<
+          updated_at
+        %th<
+          dkim_id
+        %th<
     %tbody
       -# - policy_scope(DkimSigning).each do |dkimsigning|
       - @dkimsignings.each do |dkimsgn|
         %tr
-          %td.icon
+          %td.icon<
             - enable_href_suffix = dkimsgn['enabled'] ? 'disable' : 'enable'
             - en = 'icon-check item-enabled'
             - dis = 'icon-cross item-disabled'
             - enable_class_suffix = dkimsgn['enabled'] ? en : dis
             - enable_link_text = dkimsgn['enabled'] ? 'yes' : 'no'
-            %a{ href: "/mail/dkimsgn/#{dkimsgn['id']}/#{enable_href_suffix}",
-                class: "icon #{enable_class_suffix}" }= enable_link_text
-          %td
-            - edit_path = "/mail/dkimsigning/#{dkimsgn['id']}/edit"
+            %a{ href: ['/mail/dkimsgn', dkimsgn['id'],
+                       enable_href_suffix].join('/'),
+                class: 'icon ' + enable_class_suffix.to_s }= enable_link_text
+          %td<
+            - edit_path = ['/mail/dkimsigning', dkimsgn['id'], 'edit'].join('/')
             %a{ href: edit_path }= dkimsgn['author']
-          %td= dkimsgn['created_at']
-          %td= dkimsgn['updated_at']
-          %td= dkimsgn['dkim_id']
-          %td.icon.item-delete
-            - delete_path = "/mail/dkimsgn/#{dkimsgn['id']}/delete"
+          %td<= dkimsgn['created_at']
+          %td<= dkimsgn['updated_at']
+          %td<= dkimsgn['dkim_id']
+          %td.icon.item-delete<
+            - delete_path = ['/mail/dkimsgn', dkimsgn['id'], 'delete'].join('/')
             %a.icon.icon-trash.item-delete{ href: delete_path } delete

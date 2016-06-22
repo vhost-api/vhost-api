@@ -1,13 +1,16 @@
+# frozen_string_literal: true
 def return_json_pretty(json)
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end
 
 def return_authorized_resource(object: nil)
-  return return_json_pretty(ApiResponseError.new(
-                              status_code: 403,
-                              error_id: 'Not authorized',
-                              message: $ERROR_INFO.to_s
-                            )) if @user.nil?
+  return return_json_pretty(
+    ApiResponseError.new(
+      status_code: 403,
+      error_id: 'Not authorized',
+      message: $ERROR_INFO.to_s
+    )
+  ) if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
 
@@ -34,19 +37,23 @@ def fix_options_override(options = nil)
   return nil if options.nil?
   # Fix options array if exclude/only parameters are given.
   if options.include?(:only) || options.include?(:exclude)
-    only_props = Array(options[:only])
-    excl_props = Array(options[:exclude])
     return options if options[:methods].nil?
-    options[:methods].delete_if do |prop|
-      if only_props.include? prop
-        false
-      else
-        excl_props.include?(prop) ||
-          !(only_props.empty? || only_props.include?(prop))
-      end
-    end
+    options[:methods] = cleanup_options_hash(options)
   end
   options
+end
+
+def cleanup_options_hash(options = nil)
+  only_props = Array(options[:only])
+  excl_props = Array(options[:exclude])
+  options[:methods].delete_if do |prop|
+    if only_props.include?(prop)
+      false
+    else
+      excl_props.include?(prop) ||
+        !(only_props.empty? || only_props.include?(prop))
+    end
+  end
 end
 
 def gen_session_json(session: nil)
@@ -70,8 +77,8 @@ end
 
 def css(*stylesheets)
   stylesheets.map do |stylesheet|
-    "<link href=\"/#{stylesheet}.css\" media=\"screen, projection\" " \
-    'rel="stylesheet" />'
+    ['<link href="/', stylesheet, '.css" media="screen, projection"',
+     ' rel="stylesheet" />'].join
   end.join
 end
 
@@ -100,9 +107,10 @@ def parse_dovecot_quotausage(file)
 end
 
 def mailaccount_quotausage(mailaccount)
-  filename = "#{settings.mail_home}/" \
-             "#{mailaccount.email.to_s.split('@')[1]}/" \
-             "#{mailaccount.email.to_s.split('@')[0]}/.quotausage"
+  filename = [settings.mail_home,
+              mailaccount.email.to_s.split('@')[1],
+              mailaccount.email.to_s.split('@')[0],
+              '.quotausage'].join('/')
   parse_dovecot_quotausage(filename)
 end
 

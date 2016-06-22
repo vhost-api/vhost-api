@@ -5,9 +5,9 @@
       %thead
         %tr
           - @shellusers[0].keys.each do |key|
-            %th= key
+            %th<= key
       %tbody
         - @shellusers.each do |u|
           %tr
           - u.keys.each do |key|
-            %td= u[key]
+            %td<= u[key]

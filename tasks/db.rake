@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 begin
   require 'data_mapper'
   require 'dm-migrations'
@@ -9,9 +10,10 @@ begin
   def setup_dm
     DataMapper::Logger.new($stdout, @log_level)
     DataMapper::Model.raise_on_save_failure = true
-    DataMapper.setup(:default, "#{@dbconfig[:db_adapter]}://" \
-                     "#{@dbconfig[:db_user]}:#{@dbconfig[:db_pass]}" \
-                     "@#{@dbconfig[:db_host]}/#{@dbconfig[:db_name]}")
+    DataMapper.setup(:default,
+                     [@dbconfig[:db_adapter], '://',
+                      @dbconfig[:db_user], ':', @dbconfig[:db_pass], '@',
+                      @dbconfig[:db_host], '/', @dbconfig[:db_name]].join)
   end
 
   namespace :db do
@@ -53,21 +55,22 @@ begin
       charset = config[:charset] || ENV['CHARSET'] || 'utf8'
       collation = config[:collation] || ENV['COLLATION'] || 'utf8_unicode_ci'
 
-      puts "=> Creating database '#{database}'"
+      puts '=> Creating database ' + database.to_s
 
       time = Benchmark.realtime do
         case config[:db_adapter].upcase
         when 'POSTGRES'
           puts 'Creating databases with a PostgreSQL adapter is not supported.'
-          puts 'You have to prepare the PostgreSQL database with user and password
-                yourself.'
+          puts 'You have to prepare the PostgreSQL database with user and'
+          puts 'password yourself.'
         when 'MYSQL'
           query = [
-            'mysql', '-B', '--skip-pager', "--user=#{user}",
-            (password.empty? ? '' : "--password=#{password}"),
-            (%w(127.0.0.1 localhost).include?(host) ? '-e' : "--host=#{host} -e"),
-            "CREATE DATABASE #{database} DEFAULT CHARACTER SET #{charset}
-            DEFAULT COLLATE #{collation}".inspect
+            'mysql', '-B', '--skip-pager', '--user=' + user.to_s,
+            (password.empty? ? '' : '--password=' + password.to_s),
+            (%w(127.0.0.1 localhost).include?(host) ? '-e' : '--host=' +
+            host.to_s + ' -e'),
+            'CREATE DATABASE ' + database.to_s + ' DEFAULT CHARACTER SET ' +
+              charset.to_s + ' DEFAULT COLLATE ' + collation.to_s
           ]
           system(query.compact.join(' '))
         else
@@ -85,7 +88,7 @@ begin
       host = config[:db_host]
       database = config[:db_name] || config[:path].sub(%r{/\//}, '')
 
-      puts "=> Dropping database '#{database}'"
+      puts '=> Dropping database ' + database.to_s
       time = Benchmark.realtime do
         case config[:db_adapter].upcase
         when 'POSTGRES'
@@ -93,10 +96,11 @@ begin
           puts 'You have to drop the PostgreSQL database yourself.'
         when 'MYSQL'
           query = [
-            'mysql', '-B', '--skip-pager', "--user=#{user}",
-            (password.empty? ? '' : "--password=#{password}"),
-            (%w(127.0.0.1 localhost).include?(host) ? '-e' : "--host=#{host} -e"),
-            "DROP DATABASE IF EXISTS #{database}".inspect
+            'mysql', '-B', '--skip-pager', '--user=' + user.to_s,
+            (password.empty? ? '' : '--password=' + password.to_s),
+            (%w(127.0.0.1 localhost).include?(host) ? '-e' : '--host=' +
+            host.to_s + ' -e'),
+            'DROP DATABASE IF EXISTS ' + database.to_s
           ]
           system(query.compact.join(' '))
         else

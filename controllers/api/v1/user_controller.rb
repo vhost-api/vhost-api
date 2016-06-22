@@ -1,7 +1,7 @@
+# frozen_string_literal: true
 namespace '/api/v1/users' do
   helpers do
     def fetch_scoped_users
-      # my_logger.debug "user ---> #{@user.inspect}"
       @users = policy_scope(User)
     end
   end

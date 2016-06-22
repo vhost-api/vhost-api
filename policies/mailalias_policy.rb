@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for MailAlias
 class MailAliasPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -7,44 +9,24 @@ class MailAliasPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
+  # Scope for MailAlias
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @mailaliases = scope.all(id: 0)
-        user.domains.each do |domain|
-          @mailaliases.concat(scope.all(domain_id: domain.id))
-        end
-        user.customers.each do |customer|
-          customer.domains.each do |domain|
-            @mailaliases.concat(scope.all(domain_id: domain.id))
-          end
-        end
-        @mailaliases
-      else
-        @mailaliases = scope.all(domain_id: 0)
-        user.domains.each do |domain|
-          @mailaliases.concat(scope.all(domain_id: domain.id))
-        end
-        @mailaliases
-      end
+      return scope.all if user.admin?
+      mailaliases
+    end
+
+    private
+
+    def mailaliases
+      result = user.domains.mail_aliases.all
+      result.concat(user.customers.domains.mail_aliases) if user.reseller?
+      result
     end
   end
 
   class Permissions < ApplicationPermissions
+    # include destinations method
     class Admin < self
       def attributes
         super << :destinations
@@ -56,5 +38,20 @@ class MailAliasPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_alias_num < user.quota_mail_aliases
+    false
+  end
+
+  # @return [Fixnum]
+  def check_alias_num
+    alias_usage = user.domains.mail_aliases.size
+    alias_usage += user.customers.domains.mail_aliases.size if user.reseller?
+    alias_usage
   end
 end

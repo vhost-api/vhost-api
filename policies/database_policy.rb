@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for Database
 class DatabasePolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -7,33 +9,19 @@ class DatabasePolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
+  # Scope for Database
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @databases = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          customer.databases.each do |database|
-            @databases.concat(scope.all(id: database.id))
-          end
-        end
-        @databases
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      databases
+    end
+
+    private
+
+    def databases
+      result = user.databases.all
+      result.concat(user.customers.databases) if user.reseller?
+      result
     end
   end
 
@@ -46,5 +34,15 @@ class DatabasePolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    db_num = user.databases.size
+    db_num += user.customers.databases.size if user.reseller?
+    return true if db_num < user.quota_databases
+    false
   end
 end

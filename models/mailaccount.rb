@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -48,9 +49,8 @@ class MailAccount
                            :sieveusage_rel,
                            :customer] }
     options = defaults.merge(options)
-    unless options[:only].nil?
-      options[:only].delete(:password) if options[:only].include?(:password)
-    end
+    options[:only].delete(:password) if !options[:only].nil? &&
+                                        options[:only].include?(:password)
     super(fix_options_override(options))
   end
 
@@ -66,14 +66,8 @@ class MailAccount
 
   # @return [Fixnum, nil]
   def quotausage
-    settings = Sinatra::Application.settings
-    filename = "#{settings.mail_home}/" \
-               "#{email.to_s.split('@')[1]}/" \
-               "#{email.to_s.split('@')[0]}/.quotausage"
-    if File.exist?(filename)
-      return Integer(IO.read(filename).match(%r{priv/quota/storage\n(.*)\n}m)[1])
-    end
-    nil
+    return nil unless File.exist?(quotafile)
+    IO.read(quotafile).match(%r{priv/quota/storage\n(.*)\n}m)[1].to_i
   end
 
   # @return [Fixnum]
@@ -83,16 +77,30 @@ class MailAccount
 
   # @return [Fixnum, nil]
   def sieveusage
-    settings = Sinatra::Application.settings
-    filename = "#{settings.mail_home}/" \
-               "#{email.to_s.split('@')[1]}/" \
-               "#{email.to_s.split('@')[0]}/#{settings.sieve_file}"
-    return File.size(filename) if File.exist?(filename)
-    nil
+    return nil unless File.exist?(sievefile)
+    File.size(sievefile)
   end
 
   # @return [Fixnum]
   def sieveusage_rel
     (sieveusage.to_i * 100 / quota_sieve_script).round(1)
+  end
+
+  private
+
+  def quotafile
+    settings = Sinatra::Application.settings
+    [settings.mail_home,
+     email.to_s.split('@')[1],
+     email.to_s.split('@')[0],
+     '.quotausage'].join('/')
+  end
+
+  def sievefile
+    settings = Sinatra::Application.settings
+    [settings.mail_home,
+     email.to_s.split('@')[1],
+     email.to_s.split('@')[0],
+     settings.sieve_file].join('/')
   end
 end

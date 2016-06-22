@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for ApiKey
 class ApikeyPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -7,33 +9,19 @@ class ApikeyPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
+  # Scope for Apikey
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @apikeys = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          customer.apikeys.each do |apikey|
-            @apikeys.concat(scope.all(id: apikey.id))
-          end
-        end
-        @apikeys
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      apikeys
+    end
+
+    private
+
+    def apikeys
+      result = user.apikeys.all
+      result.concat(user.customers.apikeys) if user.reseller?
+      result
     end
   end
 
@@ -46,5 +34,15 @@ class ApikeyPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    apikey_quota = user.apikeys.size
+    apikey_quota += user.customers.apikeys.size if user.reseller?
+    return true if apikey_quota < user.quota_apikeys
+    false
   end
 end

@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for User
 class UserPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -7,29 +9,19 @@ class UserPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
+  # Scope for User
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @users = scope.all(id: user.id)
-        @users.concat(user.customers)
-        @users
-      else
-        scope.all(id: user.id)
-      end
+      return scope.all if user.admin?
+      users
+    end
+
+    private
+
+    def users
+      result = scope.all(id: user.id)
+      result.concat(user.customers) if user.reseller?
+      result
     end
   end
 
@@ -40,10 +32,21 @@ class UserPolicy < ApplicationPolicy
     class Reseller < Admin
     end
 
+    # Override for user
     class User < Reseller
       def attributes
         super - [:group_id, :reseller_id]
       end
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return false unless user.reseller?
+    customer_quota = user.customers.size
+    return true if customer_quota < user.quota_customers
+    false
   end
 end

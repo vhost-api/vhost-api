@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+require File.expand_path '../application_policy.rb', __FILE__
+
 # default application policy
 class ApplicationPolicy
   attr_reader :user, :record
@@ -42,12 +45,13 @@ class ApplicationPolicy
   # new records of type record.class.
   # This method enforces the users quotas and prevents
   # creating more records than the user is allowed to.
+  # The private quotacheck methods needs to be overridden
+  # in model policies when needed.
   #
   # @return [Boolean]
   def create?
-    # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
   end
 
   # default scope
@@ -81,5 +85,11 @@ class ApplicationPolicy
     def attributes
       record.properties.map(&:name)
     end
+  end
+
+  private
+
+  def quotacheck
+    false
   end
 end

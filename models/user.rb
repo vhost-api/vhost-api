@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -12,17 +13,19 @@ class User
   property :login, String, required: true, unique_index: true, length: 3..255
   property :password, BCryptHash, required: true, length: 255
   property :contact_email, String, required: false, length: 255
+  property :quota_apikeys, Integer, required: true, min: 0, default: 2
+  property :quota_sshpubkeys, Integer, required: true, min: 0, default: 10
+  property :quota_customers, Integer, required: true, min: 0, default: 5
   property :quota_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_vhost_storage, Integer, required: true, min: 0,
                                           max: (2**63 - 1),
                                           default: 104_857_600 # 100MiB default
-  property :quota_alias_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_databases, Integer, required: true, min: 0, default: 0
   property :quota_db_users, Integer, required: true, min: 0, default: 0
   property :quota_dns_zones, Integer, required: true, min: 0, default: 1
-  property :quota_dns_zone_records, Integer, required: true, min: 0,
-                                             default: 10
-  property :quota_mail_domains, Integer, required: true, min: 0, default: 1
+  property :quota_dns_records, Integer, required: true, min: 0,
+                                        default: 10
+  property :quota_domains, Integer, required: true, min: 0, default: 1
   property :quota_mail_accounts, Integer, required: true, min: 0, default: 5
   property :quota_mail_aliases, Integer, required: true, min: 0, default: 10
   property :quota_mail_sources, Integer, required: true, min: 0, default: 10

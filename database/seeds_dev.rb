@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 group_list = [
   ['admin', true],
   ['reseller', true],
@@ -271,43 +272,79 @@ ipv6_list.each do |ipv6|
 end
 
 vhost_list = [
-  ['foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'fox'],
+  ['foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'fox'],
   ['ipv4.foxxx0.de', :vhost, '10.1.1.1', '::1', true, 'php7', true, 'fox'],
-  ['ipv6.foxxx0.de', :vhost, '127.0.0.1', 'fe80::dead:beef', true, 'php7', true, 'fox'],
-  ['paste.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', true, 'php7', true, 'fox'],
-  ['p.foxxx0.de', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'paste.foxxx0.de', true, 'fox'],
-  ['blog.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'fox'],
-  ['example.net', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'max'],
-  ['mail.example.net', :vhost, '10.4.4.4', 'fe80::beef:4', true, 'php56', true, 'max'],
-  ['webmail.example.net', :alias, :permanent, '10.4.4.4', 'fe80::beef:4', 'mail.example.net', true, 'max'],
-  ['herpderp.org', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true, 'customer1'],
-  ['test.herpderp.org', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true, 'customer1'],
-  ['sub.herpderp.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer1'],
-  ['schalala.net', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true, 'customer2'],
-  ['test.schalala.net', :vhost, '10.2.2.2', 'fe80::dead:beef', false, 'none', true, 'customer2'],
-  ['sub.schalala.net', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true, 'customer2'],
-  ['everything.eu', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer3'],
-  ['foo.everything.eu', :vhost, '10.2.2.3', 'fe80::dead:beef', false, 'none', true, 'customer3'],
-  ['serious.business', :vhost, '10.3.3.3', 'fe80::beef:3', false, 'none', true, 'customer4'],
-  ['big.company', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'customer5'],
-  ['archlinux.sexy', :vhost, '10.2.2.3', 'fe80::beef:2', false, 'none', true, 'reseller1'],
-  ['kernel.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true, 'reseller1'],
-  ['herp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'sub.herpderp.org', true, 'customer1'],
-  ['derp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'sub.herpderp.org', true, 'customer1'],
-  ['merp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'test.herpderp.org', true, 'customer1'],
-  ['blerp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'test.herpderp.org', true, 'customer1'],
-  ['bar.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'schalala.net', true, 'customer2'],
-  ['xyz.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'schalala.net', true, 'customer2'],
-  ['bla.everything.eu', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'everything.eu', true, 'customer3'],
-  ['funny.serious.business', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'serious.business', true, 'customer4'],
-  ['little.big.company', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'big.company', true, 'customer5'],
-  ['cdn.archlinux.sexy', :alias, :none, '10.1.1.1', 'fe80::dead:beef', 'archlinux.sexy', true, 'reseller1'],
-  ['login.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
-  ['hodor.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
-  ['moved.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
-  ['gone.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'herpderp.org', true, 'customer1'],
-  ['cdn.kernel.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef', 'archlinux.sexy', true, 'reseller1'],
-  ['svn.kernel.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef', 'kernel.org', true, 'reseller1']
+  ['ipv6.foxxx0.de', :vhost, '127.0.0.1', 'fe80::dead:beef', true, 'php7', true,
+   'fox'],
+  ['paste.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', true, 'php7', true,
+   'fox'],
+  ['p.foxxx0.de', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'paste.foxxx0.de', true, 'fox'],
+  ['blog.foxxx0.de', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'fox'],
+  ['example.net', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'max'],
+  ['mail.example.net', :vhost, '10.4.4.4', 'fe80::beef:4', true, 'php56', true,
+   'max'],
+  ['webmail.example.net', :alias, :permanent, '10.4.4.4', 'fe80::beef:4',
+   'mail.example.net', true, 'max'],
+  ['herpderp.org', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true,
+   'customer1'],
+  ['test.herpderp.org', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true,
+   'customer1'],
+  ['sub.herpderp.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none',
+   true, 'customer1'],
+  ['schalala.net', :vhost, '10.2.2.2', 'fe80::beef:1', false, 'none', true,
+   'customer2'],
+  ['test.schalala.net', :vhost, '10.2.2.2', 'fe80::dead:beef', false, 'none',
+   true, 'customer2'],
+  ['sub.schalala.net', :vhost, '10.1.1.1', 'fe80::beef:1', false, 'none', true,
+   'customer2'],
+  ['everything.eu', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'customer3'],
+  ['foo.everything.eu', :vhost, '10.2.2.3', 'fe80::dead:beef', false, 'none',
+   true, 'customer3'],
+  ['serious.business', :vhost, '10.3.3.3', 'fe80::beef:3', false, 'none', true,
+   'customer4'],
+  ['big.company', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'customer5'],
+  ['archlinux.sexy', :vhost, '10.2.2.3', 'fe80::beef:2', false, 'none', true,
+   'reseller1'],
+  ['kernel.org', :vhost, '10.1.1.1', 'fe80::dead:beef', false, 'none', true,
+   'reseller1'],
+  ['herp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'sub.herpderp.org', true, 'customer1'],
+  ['derp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'sub.herpderp.org', true, 'customer1'],
+  ['merp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'test.herpderp.org', true, 'customer1'],
+  ['blerp.herpderp.org', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'test.herpderp.org', true, 'customer1'],
+  ['bar.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'schalala.net', true, 'customer2'],
+  ['xyz.schalala.net', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'schalala.net', true, 'customer2'],
+  ['bla.everything.eu', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'everything.eu', true, 'customer3'],
+  ['funny.serious.business', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'serious.business', true, 'customer4'],
+  ['little.big.company', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'big.company', true, 'customer5'],
+  ['cdn.archlinux.sexy', :alias, :none, '10.1.1.1', 'fe80::dead:beef',
+   'archlinux.sexy', true, 'reseller1'],
+  ['login.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef',
+   'herpderp.org', true, 'customer1'],
+  ['hodor.herpderp.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef',
+   'herpderp.org', true, 'customer1'],
+  ['moved.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef',
+   'herpderp.org', true, 'customer1'],
+  ['gone.herpderp.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef',
+   'herpderp.org', true, 'customer1'],
+  ['cdn.kernel.org', :alias, :temporary, '10.1.1.1', 'fe80::dead:beef',
+   'archlinux.sexy', true, 'reseller1'],
+  ['svn.kernel.org', :alias, :permanent, '10.1.1.1', 'fe80::dead:beef',
+   'kernel.org', true, 'reseller1']
 ]
 vhost_list.each do |vhost|
   case vhost[1]
@@ -336,9 +373,12 @@ vhost_list.each do |vhost|
                      php_runtime: PhpRuntime.first(name: vhost[5]),
                      enabled: vhost[6],
                      user: u)
-    v.document_root = "#{vhost_basedir}/client#{u.id}/web#{v.id}/htdocs"
-    v.os_uid = "c#{u.id}web#{v.id}"
-    v.os_gid = "c#{u.id}web#{v.id}"
+    v.document_root = [vhost_basedir,
+                       'client' + u.id.to_s,
+                       'web' + v.id.to_s,
+                       'htdocs'].map(&:to_s).join('/')
+    v.os_uid = 'c' + u.id.to_s + 'web' + v.id.to_s
+    v.os_gid = 'c' + u.id.to_s + 'web' + v.id.to_s
     v.save
   end
 end
@@ -364,7 +404,7 @@ sftp_user_list.each do |sftp_user|
                       password: sftp_user[0],
                       vhost: v,
                       enabled: sftp_user[2])
-  u.username = "#{v.os_uid}-#{u.id}"
+  u.username = [v.os_uid, u.id].join('-')
   u.save
 end
 
@@ -382,7 +422,7 @@ when 'POSTGRES'
         "dkims"."private_key" AS "private_key"
       FROM ("domains"
         LEFT JOIN "dkims"
-          ON "dkims"."domain_id" = "domains"."id"
+          ON "dkims"."domain_id"="domains"."id"
           AND "domains"."enabled" = TRUE)
       WHERE "dkims"."enabled" = TRUE;')
   # mail_alias_maps
@@ -393,10 +433,11 @@ when 'POSTGRES'
         string_agg("mail_accounts"."email", \' \') AS "destination"
       FROM ("mail_account_mail_aliases"
         LEFT JOIN "mail_accounts"
-          ON "mail_account_mail_aliases"."mail_account_id" = "mail_accounts"."id"
+          ON
+            "mail_account_mail_aliases"."mail_account_id"="mail_accounts"."id"
           AND "mail_accounts"."enabled" = TRUE
         RIGHT JOIN "mail_aliases"
-          ON "mail_account_mail_aliases"."mail_alias_id" = "mail_aliases"."id"
+          ON "mail_account_mail_aliases"."mail_alias_id"="mail_aliases"."id"
           AND "mail_aliases"."enabled" = TRUE)
       WHERE "mail_accounts"."email" IS NOT NULL
       GROUP BY "mail_aliases"."address";')
@@ -408,10 +449,10 @@ when 'POSTGRES'
         "mail_accounts"."email" AS "user"
       FROM ("mail_account_mail_sources"
         LEFT JOIN "mail_accounts"
-          ON "mail_account_mail_sources"."mail_account_id" = "mail_accounts"."id"
+          ON "mail_account_mail_sources"."mail_account_id"="mail_accounts"."id"
           AND "mail_accounts"."enabled" = TRUE
         RIGHT JOIN "mail_sources"
-          ON "mail_account_mail_sources"."mail_source_id" = "mail_sources"."id"
+          ON "mail_account_mail_sources"."mail_source_id"="mail_sources"."id"
           AND "mail_sources"."enabled" = TRUE)
       WHERE "mail_accounts"."email" IS NOT NULL;')
   # sftp_user_maps
@@ -426,7 +467,7 @@ when 'POSTGRES'
         \'/bin/false\'::text AS "shell"
       FROM "sftp_users"
         RIGHT JOIN "vhosts"
-          ON "sftp_users"."vhost_id" = "vhosts"."id"
+          ON "sftp_users"."vhost_id"="vhosts"."id"
       WHERE "vhosts"."enabled" = TRUE
         AND "sftp_users"."enabled" = TRUE;')
 when 'MYSQL'
@@ -440,36 +481,38 @@ when 'MYSQL'
         `dkims`.`private_key` AS `private_key`
       FROM `dkims`
         RIGHT JOIN `domains`
-          ON `dkims`.`domain_id` = `domains`.`id`
+          ON `dkims`.`domain_id`=`domains`.`id`
           AND `domains`.`enabled` = 1
       WHERE `dkims`.`enabled` = 1;')
   # mail_alias_maps
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `mail_alias_maps`
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
+  VIEW `mail_alias_maps`
     AS
       SELECT
         `mail_aliases`.`address` AS `source`,
         group_concat(`mail_accounts`.`email` separator \' \') AS `destination`
       FROM (`mail_account_mail_aliases`
         LEFT JOIN `mail_accounts`
-          ON `mail_account_mail_aliases`.`mail_account_id` = `mail_accounts`.`id`
+          ON `mail_account_mail_aliases`.`mail_account_id`=`mail_accounts`.`id`
           AND `mail_accounts`.`enabled` = 1
         RIGHT JOIN `mail_aliases`
-          ON `mail_account_mail_aliases`.`mail_alias_id` = `mail_aliases`.`id`
+          ON `mail_account_mail_aliases`.`mail_alias_id`=`mail_aliases`.`id`
           AND `mail_aliases`.`enabled` = 1)
       WHERE `mail_accounts`.`email` IS NOT NULL
       GROUP BY `mail_aliases`.`address`;')
   # mail_sendas_maps
-  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `mail_sendas_maps`
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
+  VIEW `mail_sendas_maps`
     AS
       SELECT
         `mail_sources`.`address` AS `source`,
         `mail_accounts`.`email` AS `user`
       FROM (`mail_account_mail_sources`
         LEFT JOIN `mail_accounts`
-          ON `mail_account_mail_sources`.`mail_account_id` = `mail_accounts`.`id`
+          ON `mail_account_mail_sources`.`mail_account_id`=`mail_accounts`.`id`
           AND `mail_accounts`.`enabled` = 1
         RIGHT JOIN `mail_sources`
-          ON `mail_account_mail_sources`.`mail_source_id` = `mail_sources`.`id`
+          ON `mail_account_mail_sources`.`mail_source_id`=`mail_sources`.`id`
           AND `mail_sources`.`enabled` = 1)
       WHERE `mail_accounts`.`email` IS NOT NULL;')
   # sftp proftpd user lookup
@@ -484,7 +527,7 @@ when 'MYSQL'
         \'/bin/false\' AS shell
       FROM `sftp_users`
         RIGHT JOIN `vhosts`
-          ON `sftp_users`.`vhost_id` = `vhosts`.`id`
+          ON `sftp_users`.`vhost_id`=`vhosts`.`id`
       WHERE `vhosts`.`enabled` = 1
         AND `sftp_users`.`enabled` = 1;')
 else

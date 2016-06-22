@@ -1,9 +1,9 @@
 %table
   - @mailaccount.attributes.each do |key, value|
     %tr
-      %td
-        %label{ for: key } #{key}:
-      %td
+      %td<
+        %label{ for: key }<= key
+      %td<
         - suffix = { key: nil, val: nil }
         - disable_input = false
         - if %w(id created_at updated_at).include? key.to_s
@@ -25,12 +25,12 @@
         - if disable_input
           = value
         - elsif suffix[:key].nil?
-          %input{ id: key, name: key, type: input_type, value: input_value }
+          %input{ id: key, name: key, type: input_type, value: input_value }<
         - else
           %input{ id: key, name: key, type: input_type, value: input_value,
-            suffix[:key].to_sym => suffix[:val] }
+            suffix[:key].to_sym => suffix[:val] }<
   %tr
-    %td{ colspan: 2, style: 'text-align: center' }
+    %td{ colspan: 2, style: 'text-align: center' }<
       %input{ type: 'submit', value: 'Submit',
         onclick: 'submitMyForm(); return false;',
-        style: 'display:inline-block;' }
+        style: 'display:inline-block;' }<

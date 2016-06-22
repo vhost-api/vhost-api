@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for SshPubkey
 class SshPubkeyPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -7,31 +9,19 @@ class SshPubkeyPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
+  # Scope for SshPubkey
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @sshpubkeys = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          @sshpubkeys.concat(scope.all(user_id: customer.id))
-        end
-        @sshpubkeys
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      sshpubkeys
+    end
+
+    private
+
+    def sshpubkeys
+      result = user.ssh_pubkeys.all
+      result.concat(user.customers.ssh_pubkeys) if user.reseller?
+      result
     end
   end
 
@@ -44,5 +34,15 @@ class SshPubkeyPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    sshpubkey_quota = user.ssh_pubkeys.size
+    sshpubkey_quota += user.customers.ssh_pubkeys.size if user.reseller?
+    return true if sshpubkey_quota < user.quota_sshpubkeys
+    false
   end
 end

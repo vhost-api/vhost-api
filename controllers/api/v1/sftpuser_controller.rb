@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/sftpusers' do
   helpers do
     def fetch_scoped_sftpusers

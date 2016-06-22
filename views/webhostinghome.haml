@@ -7,12 +7,12 @@
       %thead
         %tr
           - @ipv4addresses[0].keys.each do |key|
-            %th= key
+            %th<= key
       %tbody
         - @ipv4addresses.each do |addr|
           %tr
           - addr.keys.each do |key|
-            %td= addr[key]
+            %td<= addr[key]
 
 .table-wrapper
   %table.table.table-striped
@@ -21,12 +21,12 @@
       %thead
         %tr
           - @ipv6addresses[0].keys.each do |key|
-            %th= key
+            %th<= key
       %tbody
         - @ipv6addresses.each do |addr|
           %tr
           - addr.keys.each do |key|
-            %td= addr[key]
+            %td<= addr[key]
 
 .table-wrapper
   %table.table.table-striped
@@ -35,9 +35,9 @@
       %thead
         %tr
           - @phpruntimes[0].keys.each do |key|
-            %th= key
+            %th<= key
       %tbody
         - @phpruntimes.each do |phprt|
           %tr
           - phprt.keys.each do |key|
-            %td= phprt[key]
+            %td<= phprt[key]

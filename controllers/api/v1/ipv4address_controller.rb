@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/ipv4addresses' do
   helpers do
     def fetch_scoped_ipv4addresses

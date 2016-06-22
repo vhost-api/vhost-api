@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # This class builds an api error response.
 class ApiResponseError < ApiResponse
   def initialize(status_code: 500, error_id: nil, message: nil, data: nil)
