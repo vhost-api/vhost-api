@@ -16,9 +16,8 @@ class MailAliasPolicy < ApplicationPolicy
   #
   # @return [Boolean]
   def create?
-    # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
   end
 
   # Scope for MailAlias
@@ -50,5 +49,20 @@ class MailAliasPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_alias_num < user.quota_mail_aliases
+    false
+  end
+
+  # @return [Fixnum]
+  def check_alias_num
+    alias_usage = user.domains.mail_aliases.size
+    alias_usage += user.customers.domains.mail_aliases.size if user.reseller?
+    alias_usage
   end
 end
