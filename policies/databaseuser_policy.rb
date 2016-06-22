@@ -9,18 +9,6 @@ class DatabaseUserPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    false
-  end
-
   # Scope for DatabaseUser
   class Scope < Scope
     def resolve
@@ -46,5 +34,20 @@ class DatabaseUserPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_dbuser_num < user.quota_db_users
+    false
+  end
+
+  # @return [Fixnum]
+  def check_dbuser_num
+    dbuser_usage = user.database_users.size
+    dbuser_usage += user.customers.database_users.size if user.reseller?
+    dbuser_usage
   end
 end
