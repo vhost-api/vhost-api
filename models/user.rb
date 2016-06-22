@@ -17,7 +17,6 @@ class User
   property :quota_vhost_storage, Integer, required: true, min: 0,
                                           max: (2**63 - 1),
                                           default: 104_857_600 # 100MiB default
-  property :quota_alias_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_databases, Integer, required: true, min: 0, default: 0
   property :quota_db_users, Integer, required: true, min: 0, default: 0
   property :quota_dns_zones, Integer, required: true, min: 0, default: 1
