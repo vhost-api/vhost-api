@@ -35,4 +35,14 @@ class ApikeyPolicy < ApplicationPolicy
     class User < Reseller
     end
   end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    apikey_quota = user.apikeys.size
+    apikey_quota += user.customers.apikeys.size if user.reseller?
+    return true if apikey_quota < user.quota_apikeys
+    false
+  end
 end
