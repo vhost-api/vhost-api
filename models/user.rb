@@ -21,9 +21,9 @@ class User
   property :quota_databases, Integer, required: true, min: 0, default: 0
   property :quota_db_users, Integer, required: true, min: 0, default: 0
   property :quota_dns_zones, Integer, required: true, min: 0, default: 1
-  property :quota_dns_zone_records, Integer, required: true, min: 0,
-                                             default: 10
-  property :quota_mail_domains, Integer, required: true, min: 0, default: 1
+  property :quota_dns_records, Integer, required: true, min: 0,
+                                        default: 10
+  property :quota_domains, Integer, required: true, min: 0, default: 1
   property :quota_mail_accounts, Integer, required: true, min: 0, default: 5
   property :quota_mail_aliases, Integer, required: true, min: 0, default: 10
   property :quota_mail_sources, Integer, required: true, min: 0, default: 10
