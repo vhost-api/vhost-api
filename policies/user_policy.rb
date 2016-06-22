@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for User
 class UserPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -19,17 +21,19 @@ class UserPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for User
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @users = scope.all(id: user.id)
-        @users.concat(user.customers)
-        @users
-      else
-        scope.all(id: user.id)
-      end
+      return scope.all if user.admin?
+      users
+    end
+
+    private
+
+    def users
+      result = scope.all(id: user.id)
+      result.concat(user.customers) if user.reseller?
+      result
     end
   end
 
@@ -40,6 +44,7 @@ class UserPolicy < ApplicationPolicy
     class Reseller < Admin
     end
 
+    # Override for user
     class User < Reseller
       def attributes
         super - [:group_id, :reseller_id]

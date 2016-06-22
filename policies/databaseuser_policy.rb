@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for DatabaseUser
 class DatabaseUserPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -19,21 +21,19 @@ class DatabaseUserPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for DatabaseUser
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @database_users = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          customer.databaseusers.each do |database_user|
-            @database_users.concat(scope.all(id: database_user.id))
-          end
-        end
-        @database_userusers
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      databaseusers
+    end
+
+    private
+
+    def databaseusers
+      result = user.database_users.all
+      result.concat(user.customers.database_users) if user.reseller?
+      result
     end
   end
 

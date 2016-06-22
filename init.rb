@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 @environment = ENV['RACK_ENV'] || 'development'
 @dbconfig = YAML.load(File.read('config/database.yml'))[@environment]

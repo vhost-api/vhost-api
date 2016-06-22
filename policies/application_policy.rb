@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+require File.expand_path '../application_policy.rb', __FILE__
+
 # default application policy
 class ApplicationPolicy
   attr_reader :user, :record

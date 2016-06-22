@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for SshPubkey
 class SshPubkeyPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -19,19 +21,19 @@ class SshPubkeyPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for SshPubkey
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @sshpubkeys = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          @sshpubkeys.concat(scope.all(user_id: customer.id))
-        end
-        @sshpubkeys
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      sshpubkeys
+    end
+
+    private
+
+    def sshpubkeys
+      result = user.ssh_pubkeys.all
+      result.concat(user.customers.ssh_pubkeys) if user.reseller?
+      result
     end
   end
 

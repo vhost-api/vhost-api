@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+require File.expand_path '../application_policy.rb', __FILE__
+
+# Policy for Ipv6Address
 class Ipv6AddressPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -14,24 +18,19 @@ class Ipv6AddressPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for Ipv6Address
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @ipv6addrs = scope.all(id: 0)
-        @ipv6addrs.concat(user.ipv6_addresses)
-        user.customers.each do |customer|
-          customer.ipv6_addresses.each do |ipv6addr|
-            @ipv6addrs.concat(scope.all(id: ipv6addr.id)) unless @ipv6addrs.include?(ipv6addr)
-          end
-        end
-        @ipv6addrs
-      else
-        @ipv6addrs = scope.all(id: 0)
-        @ipv6addrs.concat(user.ipv6_addresses)
-        @ipv6addrs
-      end
+      return scope.all if user.admin?
+      ipv6addresses
+    end
+
+    private
+
+    def ipv6addresses
+      result = user.ipv6_addresses.all
+      result.concat(user.customers.ipv6_addresses) if user.reseller?
+      result
     end
   end
 

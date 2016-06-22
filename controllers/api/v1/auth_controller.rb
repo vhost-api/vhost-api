@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/auth' do
   post '/login' do
     params['user'] && params['user']['login'] && params['user']['password']
@@ -16,7 +17,8 @@ namespace '/api/v1/auth' do
 
       flashmsg = 'Successfully logged in.'
       if settings.environment == :development
-        flashmsg << "</br><pre>#{gen_session_json(session: session)}</pre>"
+        flashmsg = flashmsg.dup
+        flashmsg << '</br><pre>' + gen_session_json(session: session) + '</pre>'
       end
       flash[:success] = flashmsg
 
@@ -37,14 +39,16 @@ namespace '/api/v1/auth' do
     authenticate!
     flashmsg = 'Successfully logged out.'
     if settings.environment == :development
+      flashmsg = flashmsg.dup
       flashmsg << '</br>previus session:</br>' \
-                  "<pre>#{gen_session_json(session: session)}</pre>"
+                  '<pre>' + gen_session_json(session: session) + '</pre>'
     end
     session[:user_id] = nil
     session[:group] = nil
     if settings.environment == :development
+      flashmsg = flashmsg.dup
       flashmsg << '</br>now:</br>' \
-                  "<pre>#{gen_session_json(session: session)}</pre>"
+                  '<pre>' + gen_session_json(session: session) + '</pre>'
     end
     flash[:success] = flashmsg
     redirect '/'

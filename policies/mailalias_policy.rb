@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for MailAlias
 class MailAliasPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -8,7 +10,7 @@ class MailAliasPolicy < ApplicationPolicy
   end
 
   # Checks if current user is allowed to create
-  # new records of type record.class.
+  # new records of type MailAlias.
   # This method enforces the users quotas and prevents
   # creating more records than the user is allowed to.
   #
@@ -19,32 +21,24 @@ class MailAliasPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for MailAlias
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @mailaliases = scope.all(id: 0)
-        user.domains.each do |domain|
-          @mailaliases.concat(scope.all(domain_id: domain.id))
-        end
-        user.customers.each do |customer|
-          customer.domains.each do |domain|
-            @mailaliases.concat(scope.all(domain_id: domain.id))
-          end
-        end
-        @mailaliases
-      else
-        @mailaliases = scope.all(domain_id: 0)
-        user.domains.each do |domain|
-          @mailaliases.concat(scope.all(domain_id: domain.id))
-        end
-        @mailaliases
-      end
+      return scope.all if user.admin?
+      mailaliases
+    end
+
+    private
+
+    def mailaliases
+      result = user.domains.mail_aliases.all
+      result.concat(user.customers.domains.mail_aliases) if user.reseller?
+      result
     end
   end
 
   class Permissions < ApplicationPermissions
+    # include destinations method
     class Admin < self
       def attributes
         super << :destinations

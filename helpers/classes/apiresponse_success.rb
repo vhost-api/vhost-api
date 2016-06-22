@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # This class builds an api success response.
 class ApiResponseSuccess < ApiResponse
   def initialize(status_code: 200, data: nil)

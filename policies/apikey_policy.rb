@@ -1,5 +1,7 @@
+# frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
+# Policy for ApiKey
 class ApikeyPolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
@@ -19,21 +21,19 @@ class ApikeyPolicy < ApplicationPolicy
     false
   end
 
+  # Scope for Apikey
   class Scope < Scope
     def resolve
-      if user.admin?
-        scope.all
-      elsif user.reseller?
-        @apikeys = scope.all(user_id: user.id)
-        user.customers.each do |customer|
-          customer.apikeys.each do |apikey|
-            @apikeys.concat(scope.all(id: apikey.id))
-          end
-        end
-        @apikeys
-      else
-        scope.all(user_id: user.id)
-      end
+      return scope.all if user.admin?
+      apikeys
+    end
+
+    private
+
+    def apikeys
+      result = user.apikeys.all
+      result.concat(user.customers.apikeys) if user.reseller?
+      result
     end
   end
 

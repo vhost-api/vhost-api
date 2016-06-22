@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 namespace '/api/v1/mailaccounts' do
   helpers do
     def fetch_scoped_mailaccounts
@@ -31,8 +32,9 @@ namespace '/api/v1/mailaccounts' do
       if @mailaccount.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailaccount })
-        response.headers['Location'] = "#{request.base_url}/mailaccounts" \
-                                       "/#{@mailaccount.id}"
+        response.headers['Location'] = [request.base_url,
+                                        'mailaccounts',
+                                        @mailaccount.id].join('/')
       else
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
@@ -89,7 +91,6 @@ namespace '/api/v1/mailaccounts' do
       authenticate!
 
       authorize @mailaccount, :update?
-      # halt 200, "#{request.inspect}"
 
       @result = nil
       begin
@@ -99,8 +100,6 @@ namespace '/api/v1/mailaccounts' do
 
         # generate dovecot password hash from plaintex
         params['password'] = gen_doveadm_pwhash(params['password'].to_s)
-
-        # halt 400, "#{@params.inspect}"
 
         @result = if @mailaccount.update(params)
                     ApiResponseSuccess.new(data: { object: @mailaccount })

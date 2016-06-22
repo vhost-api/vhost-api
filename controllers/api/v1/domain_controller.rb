@@ -1,7 +1,7 @@
+# frozen_string_literal: true
 namespace '/api/v1/domains' do
   helpers do
     def fetch_scoped_domains
-      # my_logger.debug "user ---> #{@user.inspect}"
       @domains = policy_scope(Domain)
     end
   end

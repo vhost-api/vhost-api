@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'bundler/setup'
 
 require 'sinatra'
@@ -27,14 +28,15 @@ Dir.glob('./controllers/api/v1/*.rb').each { |file| require file }
 DataMapper::Logger.new($stdout, :info)
 DataMapper::Property::String.length(255)
 DataMapper::Model.raise_on_save_failure = true
-DataMapper.setup(:default, "#{@dbconfig[:db_adapter]}://" \
-                           "#{@dbconfig[:db_user]}:#{@dbconfig[:db_pass]}" \
-                           "@#{@dbconfig[:db_host]}/#{@dbconfig[:db_name]}")
+DataMapper.setup(:default,
+                 [@dbconfig[:db_adapter], '://',
+                  @dbconfig[:db_user], ':', @dbconfig[:db_pass], '@',
+                  @dbconfig[:db_host], '/', @dbconfig[:db_name]].join)
 
 ::Logger.class_eval { alias_method :write, :'<<' }
-access_log = "log/#{settings.environment}_access.log"
+access_log = 'log/' + settings.environment.to_s + '_access.log'
 access_logger = ::Logger.new(access_log)
-error_log = "log/#{settings.environment}_error.log"
+error_log = 'log/' + settings.environment.to_s + '_error.log'
 error_logger = ::File.new(error_log, 'a+')
 error_logger.sync = true
 
@@ -47,7 +49,9 @@ configure do
   enable :coffeescript
   set :cssengine, 'scss'
   set :start_time, Time.now
-  @appconfig = YAML.load(File.read('config/appconfig.yml'))[settings.environment.to_s]
+  @appconfig = YAML.load(
+    File.read('config/appconfig.yml')
+  )[settings.environment.to_s]
   @appconfig.keys.each do |key|
     set key, @appconfig[key]
   end
@@ -61,7 +65,8 @@ configure :development do
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
 
-  log_file = File.new("log/#{settings.environment}_application.log", 'a+')
+  log_file = File.new('log/' + settings.environment.to_s + '_application.log',
+                      'a+')
   log_file.sync = true
   my_logger = Logger.new(log_file)
   my_logger.level = Logger::DEBUG
@@ -128,7 +133,7 @@ get '/js/*.js' do
   last_modified File.mtime(settings.root + '/views/' + settings.jsdir)
   content_type :js
   cache_control :public, :must_revalidate
-  coffee "#{settings.jsdir}/#{params[:splat].first}".to_sym
+  coffee [settings.jsdir, params[:splat].first].join('/').to_sym
 end
 
 get '/css/*.css' do
@@ -136,7 +141,7 @@ get '/css/*.css' do
   content_type :css
   cache_control :public, :must_revalidate
   send(settings.cssengine,
-       (settings.cssdir + '/' + params[:splat].first).to_sym)
+       [settings.cssdir, params[:splat].first].join('/').to_sym)
 end
 
 get '/' do
