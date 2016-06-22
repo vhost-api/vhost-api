@@ -10,15 +10,14 @@ class SftpUserPolicy < ApplicationPolicy
   end
 
   # Checks if current user is allowed to create
-  # new records of type record.class.
+  # new records of type SftpUser.
   # This method enforces the users quotas and prevents
   # creating more records than the user is allowed to.
   #
   # @return [Boolean]
   def create?
-    # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
   end
 
   # Scope for SftpUser
@@ -47,5 +46,20 @@ class SftpUserPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_sftpuser_num < user.quota_sftp_users
+    false
+  end
+
+  # @return [Fixnum]
+  def check_sftpuser_num
+    sftpuser_usage = user.vhosts.sftp_users.size
+    sftpuser_usage += user.customers.vhosts.sftp_users.size if user.reseller?
+    sftpuser_usage
   end
 end
