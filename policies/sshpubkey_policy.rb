@@ -35,4 +35,14 @@ class SshPubkeyPolicy < ApplicationPolicy
     class User < Reseller
     end
   end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    sshpubkey_quota = user.ssh_pubkeys.size
+    sshpubkey_quota += user.customers.ssh_pubkeys.size if user.reseller?
+    return true if sshpubkey_quota < user.quota_sshpubkeys
+    false
+  end
 end
