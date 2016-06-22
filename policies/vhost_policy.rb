@@ -10,7 +10,7 @@ class VhostPolicy < ApplicationPolicy
   end
 
   # Checks if current user is allowed to create
-  # new records of type record.class.
+  # new records of type Vhost.
   # This method enforces the users quotas and prevents
   # creating more records than the user is allowed to.
   #
@@ -18,7 +18,15 @@ class VhostPolicy < ApplicationPolicy
   def create?
     # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
+  end
+
+  # Calculates users remaining Vhost storage quota.
+  # Used when creating new Vhosts.
+  #
+  # @return [Fixnum]
+  def storage_remaining
+    user.quota_vhost_storage - check_vhost_storage
   end
 
   # Scope for Vhost
@@ -46,5 +54,27 @@ class VhostPolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_vhost_num < user.quota_vhosts &&
+                   check_vhost_storage < user.quota_vhost_storage
+    false
+  end
+
+  # @return [Fixnum]
+  def check_vhost_num
+    vhost_usage = user.vhosts.size
+    vhost_usage += user.customers.vhosts.size if user.reseller?
+    vhost_usage
+  end
+
+  # @return [Fixnum]
+  def check_vhost_storage
+    vhosts = Pundit.policy_scope(user, Vhost)
+    vhosts.map(&:quota).reduce(0, :+)
   end
 end

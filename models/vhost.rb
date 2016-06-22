@@ -13,9 +13,8 @@ class Vhost
   property :document_root, String, length: 0..255
   property :redirect_type, Enum[:none, :temporary, :permanent], default: :none
   property :redirect_target, Text, lazy: false
-  property :quota_vhost_storage, Integer, required: true, min: 0,
-                                          max: (2**63 - 1),
-                                          default: 104_857_600 # 100MiB default
+  property :quota, Integer, required: true, min: 0, max: (2**63 - 1),
+                            default: 104_857_600 # 100MiB default
   property :auto_subdomain, Enum[:none, :www, :wildcard], default: :none
   property :php_enabled, Boolean, default: false
   property :ssl_enabled, Boolean, default: false
