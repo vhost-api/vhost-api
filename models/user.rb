@@ -14,6 +14,7 @@ class User
   property :password, BCryptHash, required: true, length: 255
   property :contact_email, String, required: false, length: 255
   property :quota_apikeys, Integer, required: true, min: 0, default: 2
+  property :quota_customers, Integer, required: true, min: 0, default: 5
   property :quota_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_vhost_storage, Integer, required: true, min: 0,
                                           max: (2**63 - 1),

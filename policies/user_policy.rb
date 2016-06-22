@@ -39,4 +39,14 @@ class UserPolicy < ApplicationPolicy
       end
     end
   end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return false unless user.reseller?
+    customer_quota = user.customers.size
+    return true if customer_quota < user.quota_customers
+    false
+  end
 end
