@@ -9,15 +9,6 @@ class ShellPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type record.class.
-  #
-  # @return [Boolean]
-  def create?
-    return true if user.admin?
-    false
-  end
-
   # Scope for Shell
   class Scope < Scope
     def resolve

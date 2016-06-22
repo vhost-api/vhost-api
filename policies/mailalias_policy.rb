@@ -9,17 +9,6 @@ class MailAliasPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type MailAlias.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    return true if user.admin?
-    quotacheck
-  end
-
   # Scope for MailAlias
   class Scope < Scope
     def resolve

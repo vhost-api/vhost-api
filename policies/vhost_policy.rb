@@ -9,18 +9,6 @@ class VhostPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type Vhost.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    # TODO: actual implementation including enforced quotas
-    return true if user.admin?
-    quotacheck
-  end
-
   # Calculates users remaining Vhost storage quota.
   # Used when creating new Vhosts.
   #

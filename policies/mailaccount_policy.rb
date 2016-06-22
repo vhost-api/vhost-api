@@ -9,17 +9,6 @@ class MailAccountPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
-  # Checks if current user is allowed to create
-  # new records of type MailAccount.
-  # This method enforces the users quotas and prevents
-  # creating more records than the user is allowed to.
-  #
-  # @return [Boolean]
-  def create?
-    return true if user.admin?
-    quotacheck
-  end
-
   # Calculates users remaining MailAccount storage quota.
   # Used when creating new MailAccounts.
   #
