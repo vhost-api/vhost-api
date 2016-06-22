@@ -1,4 +1,4 @@
 - @sidebar_elements.each do |view|
-  %li
+  %li<
     %a{ href: "/#{request.path.split('/')[1]}/#{view.downcase}",
-       title: view, class: sidebar_current?(view.downcase) }= view
+       title: view, class: sidebar_current?(view.downcase) }<= view
