@@ -10,15 +10,14 @@ class MailSourcePolicy < ApplicationPolicy
   end
 
   # Checks if current user is allowed to create
-  # new records of type record.class.
+  # new records of type MailSource.
   # This method enforces the users quotas and prevents
   # creating more records than the user is allowed to.
   #
   # @return [Boolean]
   def create?
-    # TODO: actual implementation including enforced quotas
     return true if user.admin?
-    false
+    quotacheck
   end
 
   # Scope for MailSource
@@ -50,5 +49,20 @@ class MailSourcePolicy < ApplicationPolicy
 
     class User < Reseller
     end
+  end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_source_num < user.quota_mail_sources
+    false
+  end
+
+  # @return [Fixnum]
+  def check_source_num
+    source_usage = user.domains.mail_sources.size
+    source_usage += user.customers.domains.mail_sources.size if user.reseller?
+    source_usage
   end
 end
