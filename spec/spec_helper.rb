@@ -14,6 +14,8 @@ SimpleCov.start 'vhost-api'
 
 require 'rack/test'
 require 'rspec'
+require 'factory_girl'
+require 'database_cleaner'
 
 ENV['RACK_ENV'] = 'test'
 
@@ -28,4 +30,17 @@ end
 
 RSpec.configure do |c|
   c.include RSpecMixin
+  c.include FactoryGirl::Syntax::Methods
+
+  c.before(:suite) do
+    FactoryGirl.find_definitions
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  c.around(:each) do |example|
+    DatabaseCleaner.cleaning do
+      example.run
+    end
+  end
 end

@@ -13,8 +13,14 @@ describe 'VHost-API Authentication' do
 
   it 'allows logging in with valid credentials' do
     clear_cookies
-    post '/api/v1/auth/login', 'user' => { 'login' => 'max',
-                                           'password' => 'muster' }
+    password = 'muster'
+    testuser = create(:customer,
+                      name: 'Max Mustermann',
+                      login: 'max',
+                      password: password)
+
+    post '/api/v1/auth/login', 'user' => { 'login' => testuser.login,
+                                           'password' => password }
     expect(last_response.redirect?).to be_truthy
     follow_redirect!
     expect(last_request.path).to eq('/')
@@ -22,7 +28,10 @@ describe 'VHost-API Authentication' do
 
   it 'allows logging out from an active session' do
     clear_cookies
-    testuser = User.get(3)
+    testuser = create(:customer,
+                      name: 'Max Mustermann',
+                      login: 'max',
+                      password: 'muster')
     get '/api/v1/auth/logout',
         {},
         appconfig[:session][:key] => { user: testuser,
@@ -37,7 +46,10 @@ describe 'VHost-API Authentication' do
 
   it 'shows users name in topnav when logged in' do
     clear_cookies
-    testuser = User.get(3)
+    testuser = create(:customer,
+                      name: 'Max Mustermann',
+                      login: 'max',
+                      password: 'muster')
     get '/',
         {},
         appconfig[:session][:key] => { user: testuser,

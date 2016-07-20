@@ -47,5 +47,9 @@ group :test, :development do
   gem 'rubocop-rspec', require: false
   gem 'astrolabe', require: false
   gem 'haml-lint', require: false
-  gem 'factory_girl', require: false
+end
+
+group :test do
+  gem 'database_cleaner'
+  gem 'factory_girl'
 end
