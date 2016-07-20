@@ -48,7 +48,7 @@ class User
     self.updated_at = Time.now.to_i
   end
 
-  belongs_to :group
+  belongs_to :group, lazy: false
 
   has n, :ipv4_addresses, through: Resource, constraint: :protect
   has n, :ipv6_addresses, through: Resource, constraint: :protect
@@ -61,8 +61,8 @@ class User
   has n, :ssh_pubkeys, constraint: :destroy
 
   # reseller relation
-  has n, :customers, self, child_key: :reseller_id
-  belongs_to :reseller, self, required: false
+  has n, :customers, self, child_key: :reseller_id, lazy: false
+  belongs_to :reseller, self, required: false, lazy: false
 
   # @return [Boolean]
   def authenticate(attempted_password)
@@ -91,7 +91,7 @@ class User
     if group.name == 'user' && !reseller.nil?
       reseller
     else
-      User.first(name: 'admin')
+      User.first(login: 'admin')
     end
   end
 

@@ -16,11 +16,11 @@ FactoryGirl.define do
     enabled true
   end
 
-  factory :customer, class: User do
+  factory :user, class: User do
     name 'Customer'
     login 'customer'
     password 'customer'
-    association :group, factory: :customer_group, strategy: :create
+    association :group, factory: :user_group, strategy: :create
     enabled true
   end
 end

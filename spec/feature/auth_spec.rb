@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require File.expand_path '../spec_helper.rb', __FILE__
+require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe 'VHost-API Authentication' do
   appconfig = YAML.load(File.read('config/appconfig.yml'))[ENV['RACK_ENV']]
@@ -14,7 +14,7 @@ describe 'VHost-API Authentication' do
   it 'allows logging in with valid credentials' do
     clear_cookies
     password = 'muster'
-    testuser = create(:customer,
+    testuser = create(:user,
                       name: 'Max Mustermann',
                       login: 'max',
                       password: password)
@@ -28,7 +28,7 @@ describe 'VHost-API Authentication' do
 
   it 'allows logging out from an active session' do
     clear_cookies
-    testuser = create(:customer,
+    testuser = create(:user,
                       name: 'Max Mustermann',
                       login: 'max',
                       password: 'muster')
@@ -46,7 +46,7 @@ describe 'VHost-API Authentication' do
 
   it 'shows users name in topnav when logged in' do
     clear_cookies
-    testuser = create(:customer,
+    testuser = create(:user,
                       name: 'Max Mustermann',
                       login: 'max',
                       password: 'muster')

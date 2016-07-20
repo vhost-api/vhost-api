@@ -10,8 +10,8 @@ FactoryGirl.define do
     enabled true
   end
 
-  factory :customer_group, class: Group do
-    name 'customer'
+  factory :user_group, class: Group do
+    name 'user'
     enabled true
   end
 end

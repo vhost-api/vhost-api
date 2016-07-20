@@ -5,6 +5,7 @@ AllCops:
     - ./**/*.rb
     - '**/Rakefile'
     - '**/Gemfile'
+    - '**/Guardfile'
   Exclude:
     - vendor/**/*
     - .vendor/**/*
