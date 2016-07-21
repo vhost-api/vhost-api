@@ -1,26 +1,45 @@
 # frozen_string_literal: true
 FactoryGirl.define do
-  factory :admin, class: User do
-    name 'Admin'
-    login 'admin'
-    password 'secret'
-    association :group, factory: :admin_group, strategy: :create
-    enabled true
+  sequence :user_login do |n|
+    "customer#{n}"
   end
 
-  factory :reseller, class: User do
-    name 'Reseller'
-    login 'reseller'
-    password 'reseller'
-    association :group, factory: :reseller_group, strategy: :create
-    enabled true
+  sequence :reseller_login do |n|
+    "reseller#{n}"
   end
 
   factory :user, class: User do
     name 'Customer'
-    login 'customer'
+    login { generate(:user_login) }
     password 'customer'
-    association :group, factory: :user_group, strategy: :create
     enabled true
+
+    transient do
+      group_name 'user'
+    end
+
+    group do
+      Group.first(name: group_name) || create(:group, name: group_name)
+    end
+
+    factory :admin do
+      name 'Admin'
+      login 'admin'
+      password 'secret'
+
+      transient do
+        group_name 'admin'
+      end
+    end
+
+    factory :reseller do
+      name 'Reseller'
+      login { generate(:reseller_login) }
+      password 'reseller'
+
+      transient do
+        group_name 'reseller'
+      end
+    end
   end
 end

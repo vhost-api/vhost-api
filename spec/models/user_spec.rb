@@ -3,7 +3,8 @@ require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe 'VHost-API User Model' do
   it 'has a valid factory' do
-    expect(create(:admin)).to be_valid
+    admin_group = create(:group, name: 'admin')
+    expect(create(:admin, group: admin_group)).to be_valid
     expect(create(:reseller)).to be_valid
     expect(create(:user)).to be_valid
   end
@@ -22,9 +23,12 @@ describe 'VHost-API User Model' do
 
   it 'allows adding records' do
     _testadmin = create(:admin)
-    _testreseller = create(:reseller)
-    _testuser = create(:user)
-    expect(User.count).to eq(3)
+    _testreseller1 = create(:reseller)
+    _testreseller2 = create(:reseller)
+    _testuser1 = create(:user)
+    _testuser2 = create(:user)
+    _testuser3 = create(:user)
+    expect(User.count).to eq(6)
   end
 
   it 'allows authentication with a given password' do
@@ -42,13 +46,6 @@ describe 'VHost-API User Model' do
     expect { JSON.parse(testuser.to_json) }.not_to raise_exception
   end
 
-  it 'returns the owner as a User object' do
-    testadmin = create(:admin)
-    testuser = create(:user)
-    expect(testuser.owner).to be_an_instance_of(User)
-    expect(testuser.owner).to eq(testadmin)
-  end
-
   it 'checks ownership of a given object against itself' do
     testadmin = create(:admin)
     testuser = create(:user)
@@ -58,8 +55,10 @@ describe 'VHost-API User Model' do
 
   it 'allows checking of admin privileges' do
     testadmin = build(:admin)
+    testreseller = build(:reseller)
     testuser = build(:user)
     expect(testadmin.admin?).to be_truthy
+    expect(testreseller.admin?).not_to be_truthy
     expect(testuser.admin?).not_to be_truthy
   end
 
@@ -68,5 +67,11 @@ describe 'VHost-API User Model' do
     testuser = build(:user)
     expect(testreseller.reseller?).to be_truthy
     expect(testuser.reseller?).not_to be_truthy
+  end
+
+  it 'returns the owner as a User object' do
+    _testadmin = create(:admin)
+    testuser = create(:user)
+    expect(testuser.owner).to be_an_instance_of(User)
   end
 end
