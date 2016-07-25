@@ -1,0 +1,13 @@
+.table-wrapper
+  %table.table.table-striped
+    %caption Groups
+    - unless @groups.nil? || @groups.empty?
+      %thead
+        %tr
+          - @groups[0].keys.each do |key|
+            %th<= key
+      %tbody
+        - @groups.each do |d|
+          %tr
+          - d.keys.each do |key|
+            %td<= d[key]
