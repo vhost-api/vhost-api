@@ -37,7 +37,7 @@ group :development do
   gem 'pry'
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem 'guard'
+  gem 'guard', require: false
   gem 'guard-rspec', require: false
 end
 
@@ -49,6 +49,7 @@ group :test, :development do
   gem 'rubocop-rspec', require: false
   gem 'astrolabe', require: false
   gem 'haml-lint', require: false
+  gem 'faker', require: false
 end
 
 group :test do
