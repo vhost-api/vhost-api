@@ -14,25 +14,30 @@ namespace '/api/v1/groups' do
   end
 
   post do
+    authenticate!
     @group = Group.create!(params[:group])
     return_resource object: @group
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
     @group = Group.get(params[:id])
+    halt 404 if @group.nil?
   end
 
   namespace '/:id' do
     delete do
+      authenticate!
       return_resource object: @group.delete
     end
 
     patch do
+      authenticate!
       @group.assign_attributes(params[:group]).save!
       return_resource object: @group
     end
 
     get do
+      authenticate!
       return_resource object: @group
     end
   end
