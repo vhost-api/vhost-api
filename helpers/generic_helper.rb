@@ -9,13 +9,27 @@ def return_authorized_resource(object: nil)
       status_code: 403,
       error_id: 'Not authorized',
       message: $ERROR_INFO.to_s
-    )
+    ).to_json
+  ) if @user.nil?
+
+  return return_json_pretty({}.to_json) if object.nil?
+
+  permitted_attributes = Pundit.policy(@user, object).permitted_attributes
+  return_json_pretty(object.to_json(only: permitted_attributes))
+end
+
+def return_authorized_collection(object: nil)
+  return return_json_pretty(
+    ApiResponseError.new(
+      status_code: 403,
+      error_id: 'Not authorized',
+      message: $ERROR_INFO.to_s
+    ).to_json
   ) if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
-  # return_json_pretty(object.to_json(only: permitted_attributes))
   return_json_pretty(object.sort.to_json(only: permitted_attributes))
 end
 
@@ -115,11 +129,13 @@ def mailaccount_quotausage(mailaccount)
 end
 
 def authenticate!
-  unless user?
-    flash[:error] = 'You need to be logged in!'
-    session[:return_to] = request.path_info
-    redirect '/login'
-  end
+  @user = User.get(session[:user_id])
+  # p 'User: ' + user?.to_s + ' ' + @user.to_s
+  return_apiresponse(
+    ApiResponseError.new(status_code: 403,
+                         error_id: 'unauthorized',
+                         message: unauthorized_msg)
+  ) if @user.nil?
 end
 
 def nav_current?(path = '/')

@@ -57,10 +57,17 @@ namespace '/api/v1/mailaccounts' do
                                      error_id: 'resource conflict',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      # 500 = Internal Server Error
-      @result = ApiResponseError.new(status_code: 500,
-                                     error_id: 'could not create',
-                                     message: $ERROR_INFO.to_s)
+      if MailAccount.first(params).nil?
+        # 500 = Internal Server Error
+        @result = ApiResponseError.new(status_code: 500,
+                                       error_id: 'could not create',
+                                       message: $ERROR_INFO.to_s)
+      else
+        # 409 = Conflict
+        @result = ApiResponseError.new(status_code: 409,
+                                       error_id: 'resource conflict',
+                                       message: $ERROR_INFO.to_s)
+      end
     end
     return_apiresponse @result
   end
@@ -120,10 +127,17 @@ namespace '/api/v1/mailaccounts' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not update',
-                                       message: $ERROR_INFO.to_s)
+        if MailAccount.first(params).nil?
+          # 500 = Internal Server Error
+          @result = ApiResponseError.new(status_code: 500,
+                                         error_id: 'could not create',
+                                         message: $ERROR_INFO.to_s)
+        else
+          # 409 = Conflict
+          @result = ApiResponseError.new(status_code: 409,
+                                         error_id: 'resource conflict',
+                                         message: $ERROR_INFO.to_s)
+        end
       end
       return_apiresponse @result
     end

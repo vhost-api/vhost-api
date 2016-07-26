@@ -83,7 +83,11 @@ class ApplicationPolicy
     end
 
     def attributes
-      record.properties.map(&:name)
+      if record.is_a?(Array)
+        record.properties.map(&:name)
+      else
+        record.class.properties.map(&:name)
+      end
     end
   end
 

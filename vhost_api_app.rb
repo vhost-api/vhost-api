@@ -101,20 +101,27 @@ def user?
   @user != nil
 end
 
+def unauthorized_msg
+  'insufficient permissions or quota exhausted'
+end
+
 error Pundit::NotAuthorizedError do
   flash[:alert] = 'not authorized'
-  status 403
-  body 'Forbidden'
-  # redirect '/'
+  return_apiresponse(
+    ApiResponseError.new(status_code: 403,
+                         error_id: 'unauthorized',
+                         message: unauthorized_msg)
+  )
 end
 
 before do
+  authenticate! unless request.path_info.include?('/login')
+
   set_title
   set_sidebar_title
-  last_modified settings.start_time
-  etag settings.start_time.to_s
-  cache_control :public, :must_revalidate
-  @user = User.get(session[:user_id])
+  # last_modified settings.start_time
+  # etag settings.start_time.to_s
+  # cache_control :public, :must_revalidate
 end
 
 # check if request wants json
@@ -173,5 +180,9 @@ get '/contact' do
 end
 
 not_found do
-  haml :not_found
+  return_apiresponse(
+    ApiResponseError.new(status_code: 404,
+                         error_id: 'not found',
+                         message: 'requested resource does not exist')
+  ) if @group.nil?
 end
