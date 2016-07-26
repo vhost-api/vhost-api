@@ -8,7 +8,7 @@ class SftpUser
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :username, String, required: true, unique_index: true, length: 3..255
+  property :username, String, required: true, unique: true, length: 3..255
   property :password, String, required: true, length: 255
   property :homedir, String, required: true, length: 255, default: '/bin/false'
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,

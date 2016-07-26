@@ -8,7 +8,7 @@ class Database
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :name, String, required: true, unique_index: true, length: 3..64
+  property :name, String, required: true, unique: true, length: 3..64
   property :type, Enum[:mysql], required: true, default: :mysql
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false

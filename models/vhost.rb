@@ -8,7 +8,7 @@ class Vhost
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :fqdn, String, required: true, unique_index: true, length: 3..255
+  property :fqdn, String, required: true, unique: true, length: 3..255
   property :type, Enum[:vhost, :alias], default: :vhost
   property :document_root, String, length: 0..255
   property :redirect_type, Enum[:none, :temporary, :permanent], default: :none

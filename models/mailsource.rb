@@ -8,7 +8,7 @@ class MailSource
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :address, String, required: true, unique_index: true, length: 3..255
+  property :address, String, required: true, unique: true, length: 3..255
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,

@@ -8,7 +8,7 @@ class Shell
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :shell, String, required: true, unique_index: true
+  property :shell, String, required: true, unique: true
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,

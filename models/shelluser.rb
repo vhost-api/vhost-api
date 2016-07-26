@@ -8,7 +8,7 @@ class ShellUser
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :username, String, required: true, unique_index: true, length: 5..255
+  property :username, String, required: true, unique: true, length: 5..255
   property :password, String, required: true, length: 255
   property :uid, Integer, required: true, min: 0, default: 99 # 99 -- nobody
   property :gid, Integer, required: true, min: 0, default: 99 # 99 -- nobody

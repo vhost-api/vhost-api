@@ -8,7 +8,7 @@ class MailAccount
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :email, String, required: true, unique_index: true, length: 3..255,
+  property :email, String, required: true, unique: true, length: 3..255,
                            format: :email_address
   property :realname, String, required: false, length: 255
   property :password, String, required: true, length: 255
