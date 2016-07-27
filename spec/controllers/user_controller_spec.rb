@@ -934,7 +934,8 @@ describe 'VHost-API User Controller' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testgroup) { create(:group) }
-        let!(:testuser) { create(:user, name: 'herpderp') }
+        let!(:testuser) { create(:user, name: 'Testuser', login: 'test') }
+        let!(:user) { create(:user, name: 'herpderp') }
         let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         describe 'GET all' do
@@ -972,7 +973,7 @@ describe 'VHost-API User Controller' do
         describe 'GET one' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testuser, :show?)
+              Pundit.authorize(testuser, user, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
@@ -980,7 +981,7 @@ describe 'VHost-API User Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/users/#{testuser.id}", nil,
+              "/api/v#{api_version}/users/#{user.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1001,7 +1002,7 @@ describe 'VHost-API User Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/users/#{testuser.id}", nil,
+              "/api/v#{api_version}/users/#{user.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1017,7 +1018,8 @@ describe 'VHost-API User Controller' do
 
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testuser, :show?)
+              user.destroy
+              Pundit.authorize(testuser, user, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
@@ -1111,7 +1113,7 @@ describe 'VHost-API User Controller' do
         describe 'PATCH' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testuser, :update?)
+              Pundit.authorize(testuser, user, :update?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
@@ -1139,7 +1141,7 @@ describe 'VHost-API User Controller' do
             updated_attrs = attributes_for(:user, name: 'foo')
 
             patch(
-              "/api/v#{api_version}/users/#{testuser.id}",
+              "/api/v#{api_version}/users/#{user.id}",
               updated_attrs.to_json,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1178,7 +1180,7 @@ describe 'VHost-API User Controller' do
         describe 'DELETE' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testuser, :destroy?)
+              Pundit.authorize(testuser, user, :destroy?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
@@ -1186,7 +1188,7 @@ describe 'VHost-API User Controller' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/users/#{testuser.id}",
+              "/api/v#{api_version}/users/#{user.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1202,7 +1204,7 @@ describe 'VHost-API User Controller' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/users/#{testuser.id}",
+              "/api/v#{api_version}/users/#{user.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1224,7 +1226,7 @@ describe 'VHost-API User Controller' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/users/#{testuser.id}",
+              "/api/v#{api_version}/users/#{user.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
