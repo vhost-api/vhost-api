@@ -140,10 +140,10 @@ end
 
 def nav_current?(path = '/')
   req_path = request.path.to_s.split('/')[1]
-  (req_path == path || req_path == path + '/') ? 'current' : nil
+  req_path == path || req_path == path + '/' ? 'current' : nil
 end
 
 def sidebar_current?(path = '/')
   req_path = request.path.to_s.split('/')[2]
-  (req_path == path || req_path == path + '/') ? 'current' : nil
+  req_path == path || req_path == path + '/' ? 'current' : nil
 end
