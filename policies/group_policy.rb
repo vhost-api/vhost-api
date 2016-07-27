@@ -9,6 +9,36 @@ class GroupPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
+  # Checks if current user is allowed to show the record
+  #
+  # @return [Boolean]
+  def show?
+    if record.is_a?(DataMapper::Resource)
+      return false if record.destroyed?
+    end
+    super
+  end
+
+  # Checks if current user is allowed to update the record
+  #
+  # @return [Boolean]
+  def update?
+    if record.is_a?(DataMapper::Resource)
+      return false if record.destroyed?
+    end
+    super
+  end
+
+  # Checks if current user is allowed to delete the record
+  #
+  # @return [Boolean]
+  def destroy?
+    if record.is_a?(DataMapper::Resource)
+      return false if record.destroyed?
+    end
+    super
+  end
+
   # Scope for Group
   class Scope < Scope
     def resolve
