@@ -20,9 +20,9 @@ namespace '/api/v1/groups' do
     begin
       # get json data from request body
       request.body.rewind
-      @params = JSON.parse(request.body.read)
+      @_params = JSON.parse(request.body.read)
 
-      @group = Group.new(params)
+      @group = Group.new(@_params)
       if @group.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @group })
@@ -43,7 +43,7 @@ namespace '/api/v1/groups' do
                                      error_id: 'malformed request data',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      if Group.first(params).nil?
+      if Group.first(@_params).nil?
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
                                        error_id: 'could not create',
@@ -99,9 +99,9 @@ namespace '/api/v1/groups' do
       begin
         # get json data from request body
         request.body.rewind
-        @params = JSON.parse(request.body.read)
+        @_params = JSON.parse(request.body.read)
 
-        @result = if @group.update(params)
+        @result = if @group.update(@_params)
                     ApiResponseSuccess.new(data: { object: @group })
                   else
                     # 500 = Internal Server Error
@@ -120,10 +120,10 @@ namespace '/api/v1/groups' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        if Group.first(params).nil?
+        if Group.first(@_params).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not create',
+                                         error_id: 'could not update',
                                          message: $ERROR_INFO.to_s)
         else
           # 409 = Conflict

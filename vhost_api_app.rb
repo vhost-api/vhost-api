@@ -70,7 +70,7 @@ configure :development do
   log_file.sync = true
   my_logger = Logger.new(log_file)
   my_logger.level = Logger::DEBUG
-  set :logger, my_logger
+  # set :logger, my_logger
 end
 
 configure :production do
@@ -85,9 +85,9 @@ use Rack::Session::Cookie, secret: File.read('config/session.secret'),
                            path: settings.session[:path].to_s
 
 # @return [Logger]
-def my_logger
-  settings.logger
-end
+# def my_logger
+  # settings.logger
+# end
 
 before { env['rack.errors'] = error_logger }
 
