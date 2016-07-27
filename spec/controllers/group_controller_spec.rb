@@ -684,7 +684,7 @@ describe 'VHost-API Group Controller' do
                   return_json_pretty(
                     ApiResponseError.new(
                       status_code: 500,
-                      error_id: 'could not create',
+                      error_id: 'could not update',
                       message: invalid_values_msg,
                       data: nil
                     ).to_json
