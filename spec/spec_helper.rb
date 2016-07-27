@@ -16,6 +16,7 @@ require 'rack/test'
 require 'rspec'
 require 'factory_girl'
 require 'database_cleaner'
+require File.expand_path '../support/pundit_matcher.rb', __FILE__
 
 ENV['RACK_ENV'] = 'test'
 
