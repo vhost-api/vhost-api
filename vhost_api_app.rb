@@ -84,11 +84,6 @@ use Rack::Session::Cookie, secret: File.read('config/session.secret'),
                            expire_after: settings.session[:timeout],
                            path: settings.session[:path].to_s
 
-# @return [Logger]
-# def my_logger
-  # settings.logger
-# end
-
 before { env['rack.errors'] = error_logger }
 
 # tell pundit how to find the user
