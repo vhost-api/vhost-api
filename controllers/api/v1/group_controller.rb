@@ -7,24 +7,15 @@ namespace '/api/v1/groups' do
   end
 
   get do
-    # authenticate!
     fetch_scoped_groups
     return_authorized_collection(object: @groups)
   end
 
   post do
-    # authenticate!
-
     @result = nil
 
     # check creation permissions. i.e. admin/quotacheck
-    unless authorize(Group, :create?)
-      error_msg = 'insufficient permissions or quota exhausted'
-      @result = ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: error_msg)
-      return_apiresponse @result
-    end
+    authorize(Group, :create?)
 
     begin
       # get json data from request body
@@ -40,11 +31,6 @@ namespace '/api/v1/groups' do
                                         'v1',
                                         'groups',
                                         @group.id].join('/')
-      else
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
       end
     rescue ArgumentError
       # 422 = Unprocessable Entity
@@ -55,11 +41,6 @@ namespace '/api/v1/groups' do
       # 400 = Bad Request
       @result = ApiResponseError.new(status_code: 400,
                                      error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
-    rescue DataObjects::IntegrityError
-      # 409 = Conflict
-      @result = ApiResponseError.new(status_code: 409,
-                                     error_id: 'resource conflict',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
       if Group.first(params).nil?
@@ -73,13 +54,13 @@ namespace '/api/v1/groups' do
                                        error_id: 'resource conflict',
                                        message: $ERROR_INFO.to_s)
       end
-    rescue
-      p $ERROR_INFO
     end
     return_apiresponse @result
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @group = Group.get(params[:id])
     return_apiresponse(
@@ -91,18 +72,10 @@ namespace '/api/v1/groups' do
 
   namespace '/:id' do
     delete do
-      # authenticate!
-
       @result = nil
 
       # check creation permissions. i.e. admin/quotacheck
-      unless authorize(@group, :destroy?)
-        error_msg = 'insufficient permissions'
-        @result = ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: error_msg)
-        return_apiresponse @result
-      end
+      authorize(@group, :destroy?)
 
       begin
         @result = if @group.destroy
@@ -118,18 +91,10 @@ namespace '/api/v1/groups' do
     end
 
     patch do
-      # authenticate!
-
       @result = nil
 
       # check creation permissions. i.e. admin/quotacheck
-      unless authorize(@group, :update?)
-        error_msg = 'insufficient permissions'
-        @result = ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: error_msg)
-        return_apiresponse @result
-      end
+      authorize(@group, :update?)
 
       begin
         # get json data from request body
@@ -171,7 +136,6 @@ namespace '/api/v1/groups' do
     end
 
     get do
-      # authenticate!
       return_authorized_resource(object: @group) if authorize @group, :show?
     end
   end

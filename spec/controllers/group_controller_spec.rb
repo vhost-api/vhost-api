@@ -772,6 +772,56 @@ describe 'VHost-API Group Controller' do
               end
             end
           end
+
+          context 'operation failed' do
+            let(:patch_error_msg) { '' }
+
+            it 'returns an API Error' do
+              invinciblegroup = create(:group, name: 'invincible')
+              allow(Group).to receive(
+                :get
+              ).with(
+                invinciblegroup.id.to_s
+              ).and_return(
+                invinciblegroup
+              )
+              allow(Group).to receive(
+                :get
+              ).with(
+                admingroup.id
+              ).and_return(
+                admingroup
+              )
+              allow(invinciblegroup).to receive(:update).and_return(false)
+
+              policy = instance_double('GroupPolicy', update?: true)
+              allow(policy).to receive(:update?).and_return(true)
+              allow(GroupPolicy).to receive(:new).and_return(policy)
+
+              clear_cookies
+
+              patch(
+                "/api/v#{api_version}/groups/#{invinciblegroup.id}",
+                attributes_for(:group, name: 'invincible2').to_json,
+                appconfig[:session][:key] => {
+                  user_id: testadmin.id,
+                  group: Group.get(testadmin.group_id).name
+                }
+              )
+
+              expect(last_response.status).to eq(500)
+              expect(last_response.body).to eq(
+                return_json_pretty(
+                  ApiResponseError.new(
+                    status_code: 500,
+                    error_id: 'could not update',
+                    message: patch_error_msg,
+                    data: nil
+                  ).to_json
+                )
+              )
+            end
+          end
         end
 
         describe 'DELETE' do
@@ -809,6 +859,56 @@ describe 'VHost-API Group Controller' do
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
+          end
+
+          context 'operation failed' do
+            let(:delete_error_msg) { '' }
+
+            it 'returns an API Error' do
+              invinciblegroup = create(:group, name: 'invincible')
+              allow(Group).to receive(
+                :get
+              ).with(
+                invinciblegroup.id.to_s
+              ).and_return(
+                invinciblegroup
+              )
+              allow(Group).to receive(
+                :get
+              ).with(
+                admingroup.id
+              ).and_return(
+                admingroup
+              )
+              allow(invinciblegroup).to receive(:destroy).and_return(false)
+
+              policy = instance_double('GroupPolicy', destroy?: true)
+              allow(policy).to receive(:destroy?).and_return(true)
+              allow(GroupPolicy).to receive(:new).and_return(policy)
+
+              clear_cookies
+
+              delete(
+                "/api/v#{api_version}/groups/#{invinciblegroup.id}",
+                nil,
+                appconfig[:session][:key] => {
+                  user_id: testadmin.id,
+                  group: Group.get(testadmin.group_id).name
+                }
+              )
+
+              expect(last_response.status).to eq(500)
+              expect(last_response.body).to eq(
+                return_json_pretty(
+                  ApiResponseError.new(
+                    status_code: 500,
+                    error_id: 'could not delete',
+                    message: delete_error_msg,
+                    data: nil
+                  ).to_json
+                )
+              )
+            end
           end
         end
       end
