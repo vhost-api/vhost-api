@@ -18,8 +18,17 @@ FactoryGirl.define do
       group_name 'user'
     end
 
-    group do
-      Group.first(name: group_name) || create(:group, name: group_name)
+    group_id do
+      if Group.first(name: group_name).nil?
+        create(:group, name: group_name).id
+      else
+        Group.first(name: group_name).id
+      end
+    end
+
+    factory :invalid_user do
+      name nil
+      login nil
     end
 
     factory :admin do
