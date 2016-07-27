@@ -8,7 +8,7 @@ describe 'VHost-API User Controller' do
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an authenticated and authorized user' do
+      context 'by an admin user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testgroup) { create(:group) }
@@ -47,7 +47,11 @@ describe 'VHost-API User Controller' do
         end
 
         describe 'GET one' do
-          it 'authorizes (policies) and returns the user' do
+          it 'authorizes the request by using the policies' do
+            expect(Pundit.authorize(testadmin, testuser, :show?)).to be_truthy
+          end
+
+          it 'returns the user' do
             clear_cookies
 
             get(
