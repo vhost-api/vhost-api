@@ -1,17 +1,29 @@
 # frozen_string_literal: true
 FactoryGirl.define do
+  sequence :domain_name do |n|
+    "example#{n}.org"
+  end
+
   factory :domain, class: Domain do
-    name 'example.com'
+    name { generate(:domain_name) }
     mail_enabled true
     dns_enabled true
     enabled true
 
     transient do
-      user_name 'user'
+      user_login 'user'
     end
 
-    user do
-      User.first(login: user_name) || create(:user, login: user_name)
+    user_id do
+      if User.first(login: user_login).nil?
+        create(:user, login: user_login).id
+      else
+        User.first(login: user_login).id
+      end
+    end
+
+    factory :invalid_domain do
+      name nil
     end
   end
 end
