@@ -64,13 +64,6 @@ configure :development do
   use BetterErrors::Middleware
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
-
-  log_file = File.new('log/' + settings.environment.to_s + '_application.log',
-                      'a+')
-  log_file.sync = true
-  my_logger = Logger.new(log_file)
-  my_logger.level = Logger::DEBUG
-  # set :logger, my_logger
 end
 
 configure :production do
@@ -179,5 +172,5 @@ not_found do
     ApiResponseError.new(status_code: 404,
                          error_id: 'not found',
                          message: 'requested resource does not exist')
-  ) if @group.nil?
+  )
 end
