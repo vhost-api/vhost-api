@@ -18,9 +18,17 @@ namespace '/api/v1/domains' do
     authorize(Domain, :create?)
 
     begin
-      # get json data from request body
+      # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
+      @_params = @_params.reduce({}) do |memo, (k, v)|
+        memo.tap { |m| m[k.to_sym] = v }
+      end
+
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(Domain).create_with?(
+        @_params
+      )
 
       @domain = Domain.new(@_params)
       if @domain.save
@@ -43,7 +51,7 @@ namespace '/api/v1/domains' do
                                      error_id: 'malformed request data',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      if Domain.first(name: @_params['name']).nil?
+      if Domain.first(name: @_params[:name]).nil?
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
                                        error_id: 'could not create',
@@ -93,13 +101,28 @@ namespace '/api/v1/domains' do
     patch do
       @result = nil
 
-      # check creation permissions. i.e. admin/quotacheck
+      # check update permissions. i.e. admin/owner/quotacheck
       authorize(@domain, :update?)
 
       begin
-        # get json data from request body
+        # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
+        @_params = @_params.reduce({}) do |memo, (k, v)|
+          memo.tap { |m| m[k.to_sym] = v }
+        end
+
+        # prevent any action being performed on a detroyed resource
+        return_apiresponse(
+          ApiResponseError.new(status_code: 500,
+                               error_id: 'could not delete',
+                               message: $ERROR_INFO.to_s)
+        ) if @domain.destroyed?
+
+        # check permissions for parameters
+        raise Pundit::NotAuthorizedError unless policy(@domain).update_with?(
+          @_params
+        )
 
         @result = if @domain.update(@_params)
                     ApiResponseSuccess.new(data: { object: @domain })
@@ -121,7 +144,7 @@ namespace '/api/v1/domains' do
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
         # my_logger.debug("UPDATE fail w/ SaveFailureError exception")
-        if Domain.first(name: @_params['name']).nil?
+        if Domain.first(name: @_params[:name]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
                                          error_id: 'could not update',

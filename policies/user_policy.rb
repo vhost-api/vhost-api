@@ -31,6 +31,21 @@ class UserPolicy < ApplicationPolicy
     super
   end
 
+  # Checks if current user is allowed to create a record with given params
+  #
+  # @return [Boolean]
+  def create_with?(params)
+    check_group_id(params[:group_id]) if params.key(:group_id)
+  end
+
+  # Checks if current user is allowed to update the record with given params
+  #
+  # @return [Boolean]
+  def update_with?(params)
+    check_id(params[:id]) if params.key?(:id)
+    check_group_id(params[:group_id]) if params.key(:group_id)
+  end
+
   # Checks if current user is allowed to delete the record
   #
   # @return [Boolean]
@@ -80,6 +95,18 @@ class UserPolicy < ApplicationPolicy
     return false unless user.reseller?
     customer_quota = user.customers.size
     return true if customer_quota < user.quota_customers
+    false
+  end
+
+  def check_id(id)
+    return true if user.admin?
+    return true if id == user.id
+    false
+  end
+
+  def check_group_id(group_id)
+    return true if user.admin?
+    return true if group_id == user.group_id
     false
   end
 end

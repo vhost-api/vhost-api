@@ -31,14 +31,22 @@ class ApplicationPolicy
     false
   end
 
+  # Checks if current user is allowed to update the record with given params
+  #
+  # @return [Boolean]
+  def update_with?(_params)
+    return true if user.admin?
+    false
+  end
+
   # Checks if current user is allowed to delete the record
   #
   # @return [Boolean]
   def destroy?
-    return true if user.admin?
-    return true if user.reseller? && user.customers.include?(record.owner)
-    return true if record.owner == user
-    false
+    if record.is_a?(DataMapper::Resource)
+      return false if record.destroyed?
+    end
+    destroy_check
   end
 
   # Checks if current user is allowed to create
@@ -52,6 +60,14 @@ class ApplicationPolicy
   def create?
     return true if user.admin?
     quotacheck
+  end
+
+  # Checks if current user is allowed to create a record with given params
+  #
+  # @return [Boolean]
+  def create_with?(_params)
+    return true if user.admin?
+    false
   end
 
   # default scope
@@ -94,6 +110,13 @@ class ApplicationPolicy
   private
 
   def quotacheck
+    false
+  end
+
+  def destroy_check
+    return true if user.admin?
+    return true if user.reseller? && user.customers.include?(record.owner)
+    return true if record.owner == user
     false
   end
 end

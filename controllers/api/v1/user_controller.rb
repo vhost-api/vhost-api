@@ -18,9 +18,12 @@ namespace '/api/v1/users' do
     authorize(User, :create?)
 
     begin
-      # get json data from request body
+      # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
+      @_params = @_params.reduce({}) do |memo, (k, v)|
+        memo.tap { |m| m[k.to_sym] = v }
+      end
 
       @_user = User.new(@_params)
       if @_user.save
@@ -43,7 +46,7 @@ namespace '/api/v1/users' do
                                      error_id: 'malformed request data',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      if User.first(login: @_params['login']).nil?
+      if User.first(login: @_params[:login]).nil?
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
                                        error_id: 'could not create',
@@ -97,9 +100,12 @@ namespace '/api/v1/users' do
       authorize(@_user, :update?)
 
       begin
-        # get json data from request body
+        # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
+        @_params = @_params.reduce({}) do |memo, (k, v)|
+          memo.tap { |m| m[k.to_sym] = v }
+        end
 
         @result = if @_user.update(@_params)
                     ApiResponseSuccess.new(data: { object: @_user })
@@ -121,7 +127,7 @@ namespace '/api/v1/users' do
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
         # my_logger.debug("UPDATE fail w/ SaveFailureError exception")
-        if User.first(login: @_params['login']).nil?
+        if User.first(login: @_params[:login]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
                                          error_id: 'could not update',

@@ -18,9 +18,12 @@ namespace '/api/v1/groups' do
     authorize(Group, :create?)
 
     begin
-      # get json data from request body
+      # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
+      @_params = @_params.reduce({}) do |memo, (k, v)|
+        memo.tap { |m| m[k.to_sym] = v }
+      end
 
       @group = Group.new(@_params)
       if @group.save
@@ -43,7 +46,7 @@ namespace '/api/v1/groups' do
                                      error_id: 'malformed request data',
                                      message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      if Group.first(@_params).nil?
+      if Group.first(name: @_params[:name]).nil?
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
                                        error_id: 'could not create',
@@ -97,9 +100,12 @@ namespace '/api/v1/groups' do
       authorize(@group, :update?)
 
       begin
-        # get json data from request body
+        # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
+        @_params = @_params.reduce({}) do |memo, (k, v)|
+          memo.tap { |m| m[k.to_sym] = v }
+        end
 
         @result = if @group.update(@_params)
                     ApiResponseSuccess.new(data: { object: @group })
@@ -120,7 +126,7 @@ namespace '/api/v1/groups' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        if Group.first(@_params).nil?
+        if Group.first(name: @_params[:name]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
                                          error_id: 'could not update',

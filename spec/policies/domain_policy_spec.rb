@@ -11,6 +11,7 @@ describe DomainPolicy do
   context 'for the owner' do
     let(:user) { create(:user_with_domains) }
     let(:domain) { user.domains.first }
+    let(:otheruser) { create(:user) }
 
     context 'with available quota' do
       it { should permit(:create) }
@@ -23,8 +24,19 @@ describe DomainPolicy do
       it { should_not permit(:create) }
     end
 
+    context 'assigning to another user' do
+      let(:params) { attributes_for(:domain, user_id: otheruser.id) }
+      it { should_not permit_args(:update_with, params) }
+      it { should_not permit_args(:create_with, params) }
+    end
+
+    context 'changing attributes w/o changing the owner' do
+      let(:params) { attributes_for(:domain, user_id: user.id) }
+      it { should permit(:update) }
+      it { should permit_args(:update_with, params) }
+    end
+
     it { should permit(:show) }
-    it { should permit(:update) }
     it { should permit(:destroy) }
   end
 

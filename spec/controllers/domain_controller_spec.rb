@@ -50,7 +50,7 @@ describe 'VHost-API Domain Controller' do
             expect(Pundit.authorize(testadmin, testdomain, :show?)).to be_truthy
           end
 
-          it 'returns the user' do
+          it 'returns the domain' do
             clear_cookies
 
             get(
@@ -114,7 +114,7 @@ describe 'VHost-API Domain Controller' do
               expect(Pundit.authorize(testadmin, Domain, :create?)).to be_truthy
             end
 
-            it 'creates a new user' do
+            it 'creates a new domain' do
               clear_cookies
 
               count = Domain.all.count
@@ -131,7 +131,7 @@ describe 'VHost-API Domain Controller' do
               expect(Domain.all.count).to eq(count + 1)
             end
 
-            it 'returns an API Success containing the new user' do
+            it 'returns an API Success containing the new domain' do
               clear_cookies
 
               post(
@@ -169,7 +169,7 @@ describe 'VHost-API Domain Controller' do
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
-            it 'redirects to the new user' do
+            it 'redirects to the new domain' do
               clear_cookies
 
               post(
@@ -196,7 +196,7 @@ describe 'VHost-API Domain Controller' do
                 '784: unexpected token at \'{ , name: \'foo, enabled: true }\''
               end
 
-              it 'does not create a new user' do
+              it 'does not create a new domain' do
                 clear_cookies
 
                 count = Domain.all.count
@@ -255,19 +255,19 @@ describe 'VHost-API Domain Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_domain_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
                 'The attribute \'foo\' is not accessible in Domain'
               end
 
-              it 'does not create a new user' do
+              it 'does not create a new domain' do
                 clear_cookies
 
                 count = Domain.all.count
 
                 post(
                   "/api/v#{api_version}/domains",
-                  invalid_user_attrs.to_json,
+                  invalid_domain_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -282,7 +282,7 @@ describe 'VHost-API Domain Controller' do
 
                 post(
                   "/api/v#{api_version}/domains",
-                  invalid_user_attrs.to_json,
+                  invalid_domain_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -307,7 +307,7 @@ describe 'VHost-API Domain Controller' do
 
                 post(
                   "/api/v#{api_version}/domains",
-                  invalid_user_attrs.to_json,
+                  invalid_domain_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -324,7 +324,7 @@ describe 'VHost-API Domain Controller' do
                 'Domain#save returned false, Domain was not saved'
               end
 
-              it 'does not create a new user' do
+              it 'does not create a new domain' do
                 clear_cookies
 
                 count = Domain.all.count
@@ -393,7 +393,7 @@ describe 'VHost-API Domain Controller' do
                 build(:domain, name: 'existing.domain')
               end
 
-              it 'does not create a new user' do
+              it 'does not create a new domain' do
                 clear_cookies
 
                 count = Domain.all.count
@@ -478,7 +478,7 @@ describe 'VHost-API Domain Controller' do
               expect(Domain.get(testdomain.id).updated_at).to be > prev_tstamp
             end
 
-            it 'returns an API Success containing the updated user' do
+            it 'returns an API Success containing the updated domain' do
               clear_cookies
 
               updated_attrs = attributes_for(:domain, name: 'foo.org')
@@ -528,7 +528,7 @@ describe 'VHost-API Domain Controller' do
                 '784: unexpected token at \'{ , name: \'foo, enabled: true }\''
               end
 
-              it 'does not update the user' do
+              it 'does not update the domain' do
                 clear_cookies
 
                 prev_tstamp = testdomain.updated_at
@@ -593,7 +593,7 @@ describe 'VHost-API Domain Controller' do
                 'The attribute \'foo\' is not accessible in Domain'
               end
 
-              it 'does not update the user' do
+              it 'does not update the domain' do
                 clear_cookies
 
                 prev_tstamp = testdomain.updated_at
@@ -658,7 +658,7 @@ describe 'VHost-API Domain Controller' do
                 'Domain#save returned false, Domain was not saved'
               end
 
-              it 'does not update the user' do
+              it 'does not update the domain' do
                 clear_cookies
 
                 prev_tstamp = testdomain.updated_at
@@ -732,7 +732,7 @@ describe 'VHost-API Domain Controller' do
                 create(:domain, name: 'conflict.domain')
               end
 
-              it 'does not update the user' do
+              it 'does not update the domain' do
                 clear_cookies
 
                 prev_tstamp = conflict_domain.updated_at
@@ -800,13 +800,13 @@ describe 'VHost-API Domain Controller' do
             let(:patch_error_msg) { '' }
 
             it 'returns an API Error' do
-              invincibleuser = create(:user, name: 'invincible')
+              invincibledomain = create(:domain, name: 'invincible.org')
               allow(Domain).to receive(
                 :get
               ).with(
-                invincibleuser.id.to_s
+                invincibledomain.id.to_s
               ).and_return(
-                invincibleuser
+                invincibledomain
               )
               allow(Domain).to receive(
                 :get
@@ -815,16 +815,17 @@ describe 'VHost-API Domain Controller' do
               ).and_return(
                 testadmin
               )
-              allow(invincibleuser).to receive(:update).and_return(false)
+              allow(invincibledomain).to receive(:update).and_return(false)
 
               policy = instance_double('DomainPolicy', update?: true)
               allow(policy).to receive(:update?).and_return(true)
+              allow(policy).to receive(:update_with?).and_return(true)
               allow(DomainPolicy).to receive(:new).and_return(policy)
 
               clear_cookies
 
               patch(
-                "/api/v#{api_version}/domains/#{invincibleuser.id}",
+                "/api/v#{api_version}/domains/#{invincibledomain.id}",
                 attributes_for(:domain, name: 'invincible2.org').to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -852,7 +853,7 @@ describe 'VHost-API Domain Controller' do
             expect(Pundit.authorize(testadmin, Domain, :destroy?)).to be_truthy
           end
 
-          it 'deletes the requested user' do
+          it 'deletes the requested domain' do
             clear_cookies
 
             id = testdomain.id
@@ -1064,7 +1065,7 @@ describe 'VHost-API Domain Controller' do
               end.to raise_exception(Pundit::NotAuthorizedError)
             end
 
-            it 'does not create a new user' do
+            it 'does not create a new domain' do
               clear_cookies
 
               count = Domain.all.count
@@ -1120,10 +1121,16 @@ describe 'VHost-API Domain Controller' do
           end
 
           context 'with available quota' do
-            let(:testuser) { create(:user_with_domains) }
+            let!(:testuser) { create(:user_with_domains) }
+            let!(:newdomain) do
+              attributes_for(:domain, name: 'new.org', user_id: testuser.id)
+            end
             it 'authorizes the request' do
               expect(
                 Pundit.authorize(testuser, Domain, :create?)
+              ).to be_truthy
+              expect(
+                Pundit.policy(testuser, Domain).create_with?(newdomain)
               ).to be_truthy
             end
 
@@ -1134,7 +1141,7 @@ describe 'VHost-API Domain Controller' do
 
               post(
                 "/api/v#{api_version}/domains",
-                attributes_for(:domain, name: 'new.org').to_json,
+                newdomain.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1144,12 +1151,12 @@ describe 'VHost-API Domain Controller' do
               expect(Domain.all.count).to eq(count + 1)
             end
 
-            it 'returns an API Success containing the new user' do
+            it 'returns an API Success containing the new domain' do
               clear_cookies
 
               post(
                 "/api/v#{api_version}/domains",
-                attributes_for(:domain, name: 'new.org').to_json,
+                newdomain.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1172,7 +1179,72 @@ describe 'VHost-API Domain Controller' do
 
               post(
                 "/api/v#{api_version}/domains",
-                attributes_for(:domain, name: 'new.org').to_json,
+                newdomain.to_json,
+                appconfig[:session][:key] => {
+                  user_id: testuser.id,
+                  group: Group.get(testuser.group_id).name
+                }
+              )
+
+              expect { JSON.parse(last_response.body) }.not_to raise_exception
+            end
+          end
+
+          context 'with using different user_id in attributes' do
+            let(:testuser) { create(:user_with_domains) }
+            let(:anotheruser) { create(:user) }
+
+            it 'does not create a new domain' do
+              clear_cookies
+
+              count = Domain.all.count
+
+              post(
+                "/api/v#{api_version}/domains",
+                attributes_for(:domain,
+                               name: 'new.org',
+                               user_id: anotheruser.id).to_json,
+                appconfig[:session][:key] => {
+                  user_id: testuser.id,
+                  group: Group.get(testuser.group_id).name
+                }
+              )
+
+              expect(Domain.all.count).to eq(count)
+            end
+
+            it 'returns an API Error' do
+              clear_cookies
+
+              post(
+                "/api/v#{api_version}/domains",
+                attributes_for(:domain,
+                               name: 'new.org',
+                               user_id: anotheruser.id).to_json,
+                appconfig[:session][:key] => {
+                  user_id: testuser.id,
+                  group: Group.get(testuser.group_id).name
+                }
+              )
+
+              expect(last_response.status).to eq(403)
+              expect(last_response.body).to eq(
+                return_json_pretty(
+                  ApiResponseError.new(status_code: 403,
+                                       error_id: 'unauthorized',
+                                       message: unauthorized_msg).to_json
+                )
+              )
+            end
+
+            it 'returns a valid JSON object' do
+              clear_cookies
+
+              post(
+                "/api/v#{api_version}/domains",
+                attributes_for(:domain,
+                               name: 'new.org',
+                               user_id: anotheruser.id).to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1191,7 +1263,7 @@ describe 'VHost-API Domain Controller' do
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not update the user' do
+          it 'does not update the domain' do
             clear_cookies
 
             updated_attrs = attributes_for(:domain, name: 'foo.org')
@@ -1258,7 +1330,7 @@ describe 'VHost-API Domain Controller' do
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not delete the user' do
+          it 'does not delete the domain' do
             clear_cookies
 
             delete(

@@ -103,7 +103,9 @@ error Pundit::NotAuthorizedError do
 end
 
 before do
-  authenticate! unless request.path_info.include?('/login')
+  authenticate! unless request.path_info.include?('/login') ||
+                       request.path_info.include?('/css/') ||
+                       request.path_info.include?('/js/')
 
   set_title
   set_sidebar_title
