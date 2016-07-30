@@ -14,7 +14,45 @@ describe MailAccountPolicy do
     let(:otheruser) { create(:user_with_domains) }
 
     context 'with available quota' do
-      it { should permit(:create) }
+      context 'CREATE allocation request smaller than remaining quota' do
+        it { should permit(:create) }
+      end
+
+      context 'UPDATE allocation request smaller than remaining quota' do
+        let(:params) do
+          policy = Pundit.policy(user, mailaccount)
+          available = mailaccount.quota + policy.storage_remaining
+          attributes_for(:mailaccount,
+                         domain_id: user.domains.first.id,
+                         quota: available)
+        end
+
+        it { should permit_args(:update_with, params) }
+      end
+    end
+
+    context 'CREATE allocation request exceeding remaining quota' do
+      let(:params) do
+        attributes_for(:mailaccount,
+                       domain_id: user.domains.first.id,
+                       quota: Pundit.policy(
+                         user, MailAccount
+                       ).storage_remaining + 1)
+      end
+
+      it { should_not permit_args(:create_with, params) }
+    end
+
+    context 'UPDATE allocation request exceeding remaining quota' do
+      let(:params) do
+        policy = Pundit.policy(user, mailaccount)
+        too_much = mailaccount.quota + policy.storage_remaining + 1
+        attributes_for(:mailaccount,
+                       domain_id: user.domains.first.id,
+                       quota: too_much)
+      end
+
+      it { should_not permit_args(:update_with, params) }
     end
 
     context 'with exhausted quota' do

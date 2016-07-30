@@ -14,10 +14,7 @@ class MailAccountPolicy < ApplicationPolicy
   # @return [Boolean]
   def create_with?(params)
     return true if user.admin?
-    if params.key?(:domain_id)
-      return false unless check_domain_id(params[:domain_id])
-    end
-    true
+    check_create_params(params)
   end
 
   # Checks if current user is allowed to update the record with given params
@@ -101,6 +98,15 @@ class MailAccountPolicy < ApplicationPolicy
   end
 
   # @retun [Boolean]
+  def check_create_params(params)
+    if params.key?(:domain_id)
+      return false unless check_domain_id(params[:domain_id])
+    end
+    return quotacheck(params[:quota]) if params.key?(:quota)
+    true
+  end
+
+  # @retun [Boolean]
   def check_update_params(params)
     if params.key?(:id)
       return false unless check_id(params[:id])
@@ -108,7 +114,7 @@ class MailAccountPolicy < ApplicationPolicy
     if params.key?(:domain_id)
       return false unless check_domain_id(params[:domain_id])
     end
-    return quotacheck(params[:quota]) if params.key?(:quota)
+    return quotacheck(params[:quota] - record.quota) if params.key?(:quota)
     true
   end
 
