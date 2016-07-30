@@ -35,15 +35,28 @@ class UserPolicy < ApplicationPolicy
   #
   # @return [Boolean]
   def create_with?(params)
-    check_group_id(params[:group_id]) if params.key(:group_id)
+    return true if user.admin?
+    if params.key?(:user_id)
+      result_uid = check_user_id(params[:user_id])
+      return false unless result_uid
+    end
+    true
   end
 
   # Checks if current user is allowed to update the record with given params
   #
   # @return [Boolean]
   def update_with?(params)
-    check_id(params[:id]) if params.key?(:id)
-    check_group_id(params[:group_id]) if params.key(:group_id)
+    return true if user.admin?
+    if params.key?(:id)
+      result_id = check_id(params[:id])
+      return false unless result_id
+    end
+    if params.key?(:user_id)
+      result_uid = check_user_id(params[:user_id])
+      return false unless result_uid
+    end
+    true
   end
 
   # Checks if current user is allowed to delete the record
@@ -98,14 +111,14 @@ class UserPolicy < ApplicationPolicy
     false
   end
 
+  # @return [Boolean]
   def check_id(id)
-    return true if user.admin?
     return true if id == user.id
     false
   end
 
+  # @return [Boolean]
   def check_group_id(group_id)
-    return true if user.admin?
     return true if group_id == user.group_id
     false
   end

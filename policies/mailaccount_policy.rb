@@ -9,6 +9,25 @@ class MailAccountPolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
+  # Checks if current user is allowed to create a record with given params
+  #
+  # @return [Boolean]
+  def create_with?(params)
+    return true if user.admin?
+    if params.key?(:domain_id)
+      return false unless check_domain_id(params[:domain_id])
+    end
+    true
+  end
+
+  # Checks if current user is allowed to update the record with given params
+  #
+  # @return [Boolean]
+  def update_with?(params)
+    return true if user.admin?
+    check_update_params(params)
+  end
+
   # Calculates users remaining MailAccount storage quota.
   # Used when creating new MailAccounts.
   #
@@ -59,7 +78,10 @@ class MailAccountPolicy < ApplicationPolicy
   private
 
   # @return [Boolean]
-  def quotacheck
+  def quotacheck(*requested_quota)
+    unless requested_quota.blank?
+      return false if storage_remaining < requested_quota[0]
+    end
     return true if check_account_num < user.quota_mail_accounts &&
                    check_account_storage < user.quota_mail_storage
     false
@@ -76,5 +98,31 @@ class MailAccountPolicy < ApplicationPolicy
   def check_account_storage
     accounts = Pundit.policy_scope(user, MailAccount)
     accounts.map(&:quota).reduce(0, :+)
+  end
+
+  # @retun [Boolean]
+  def check_update_params(params)
+    if params.key?(:id)
+      return false unless check_id(params[:id])
+    end
+    if params.key?(:domain_id)
+      return false unless check_domain_id(params[:domain_id])
+    end
+    return quotacheck(params[:quota]) if params.key?(:quota)
+    true
+  end
+
+  def check_id(id)
+    return true if id == record.id
+    false
+  end
+
+  def check_domain_id(domain_id)
+    return true if domain_id == record.domain_id
+    return true if user.domains.map(&:id).include?(domain_id)
+    return true if user.reseller? && user.customers.domains.map(&:id).include?(
+      domain_id
+    )
+    false
   end
 end

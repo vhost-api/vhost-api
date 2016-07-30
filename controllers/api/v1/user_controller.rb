@@ -25,6 +25,11 @@ namespace '/api/v1/users' do
         memo.tap { |m| m[k.to_sym] = v }
       end
 
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(User).create_with?(
+        @_params
+      )
+
       @_user = User.new(@_params)
       if @_user.save
         @result = ApiResponseSuccess.new(status_code: 201,
@@ -106,6 +111,11 @@ namespace '/api/v1/users' do
         @_params = @_params.reduce({}) do |memo, (k, v)|
           memo.tap { |m| m[k.to_sym] = v }
         end
+
+        # check permissions for parameters
+        raise Pundit::NotAuthorizedError unless policy(@_user).update_with?(
+          @_params
+        )
 
         @result = if @_user.update(@_params)
                     ApiResponseSuccess.new(data: { object: @_user })

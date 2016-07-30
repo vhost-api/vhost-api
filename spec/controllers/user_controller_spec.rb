@@ -813,6 +813,7 @@ describe 'VHost-API User Controller' do
 
               policy = instance_double('UserPolicy', update?: true)
               allow(policy).to receive(:update?).and_return(true)
+              allow(policy).to receive(:update_with?).and_return(true)
               allow(UserPolicy).to receive(:new).and_return(policy)
 
               clear_cookies

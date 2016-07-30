@@ -7,39 +7,41 @@ namespace '/api/v1/mailaccounts' do
   end
 
   get do
-    authenticate!
     fetch_scoped_mailaccounts
-    return_authorized_resource(object: @mailaccounts)
-    # return_resource object: @mailaccounts
+    return_authorized_collection(object: @mailaccounts)
   end
 
   post do
-    authenticate!
-
-    # 400 = Bad Request
-    # halt 400 unless request.body.size > 0
-
     @result = nil
+
+    # check creation permissions. i.e. admin/quotacheck
+    authorize(MailAccount, :create?)
+
     begin
-      # get json data from request body
+      # get json data from request body and symbolize all keys
       request.body.rewind
-      @params = JSON.parse(request.body.read)
+      @_params = JSON.parse(request.body.read)
+      @_params = @_params.reduce({}) do |memo, (k, v)|
+        memo.tap { |m| m[k.to_sym] = v }
+      end
 
       # generate dovecot password hash from plaintex
-      params['password'] = gen_doveadm_pwhash(params['password'].to_s)
+      @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
 
-      @mailaccount = MailAccount.new(params)
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(MailAccount).create_with?(
+        @_params
+      )
+
+      @mailaccount = MailAccount.new(@_params)
       if @mailaccount.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailaccount })
         response.headers['Location'] = [request.base_url,
+                                        'api',
+                                        'v1',
                                         'mailaccounts',
                                         @mailaccount.id].join('/')
-      else
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
       end
     rescue ArgumentError
       # 422 = Unprocessable Entity
@@ -51,13 +53,8 @@ namespace '/api/v1/mailaccounts' do
       @result = ApiResponseError.new(status_code: 400,
                                      error_id: 'malformed request data',
                                      message: $ERROR_INFO.to_s)
-    rescue DataObjects::IntegrityError
-      # 409 = Conflict
-      @result = ApiResponseError.new(status_code: 409,
-                                     error_id: 'resource conflict',
-                                     message: $ERROR_INFO.to_s)
     rescue DataMapper::SaveFailureError
-      if MailAccount.first(params).nil?
+      if MailAccount.first(email: @_params[:email]).nil?
         # 500 = Internal Server Error
         @result = ApiResponseError.new(status_code: 500,
                                        error_id: 'could not create',
@@ -73,17 +70,34 @@ namespace '/api/v1/mailaccounts' do
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
+    authenticate! if @user.nil?
     @mailaccount = MailAccount.get(params[:id])
-    # 404 = Not Found
-    halt 404 if @mailaccount.nil?
+    return_apiresponse(
+      ApiResponseError.new(status_code: 404,
+                           error_id: 'not found',
+                           message: 'requested resource does not exist')
+    ) if @mailaccount.nil?
   end
 
   namespace '/:id' do
     delete do
       @result = nil
+
+      # prevent any action being performed on a detroyed resource
+      return_apiresponse(
+        ApiResponseError.new(status_code: 500,
+                             error_id: 'could not delete',
+                             message: $ERROR_INFO.to_s)
+      ) if @mailaccount.destroyed?
+
+      # check creation permissions. i.e. admin/quotacheck
+      authorize(@mailaccount, :destroy?)
+
       begin
         @result = if @mailaccount.destroy
-                    ApiResponseSuccess.new(nil)
+                    ApiResponseSuccess.new
                   else
                     # 500 = Internal Server Error
                     ApiResponseError.new(status_code: 500,
@@ -95,20 +109,37 @@ namespace '/api/v1/mailaccounts' do
     end
 
     patch do
-      authenticate!
-
-      authorize @mailaccount, :update?
-
       @result = nil
+
+      # check update permissions. i.e. admin/owner/quotacheck
+      authorize(@mailaccount, :update?)
+
       begin
-        # get json data from request body
+        # get json data from request body and symbolize all keys
         request.body.rewind
-        @params = JSON.parse(request.body.read)
+        @_params = JSON.parse(request.body.read)
+        @_params = @_params.reduce({}) do |memo, (k, v)|
+          memo.tap { |m| m[k.to_sym] = v }
+        end
+
+        # prevent any action being performed on a detroyed resource
+        return_apiresponse(
+          ApiResponseError.new(status_code: 500,
+                               error_id: 'could not delete',
+                               message: $ERROR_INFO.to_s)
+        ) if @mailaccount.destroyed?
 
         # generate dovecot password hash from plaintex
-        params['password'] = gen_doveadm_pwhash(params['password'].to_s)
+        @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
 
-        @result = if @mailaccount.update(params)
+        # check permissions for parameters
+        raise Pundit::NotAuthorizedError unless policy(
+          @mailaccount
+        ).update_with?(
+          @_params
+        )
+
+        @result = if @mailaccount.update(@_params)
                     ApiResponseSuccess.new(data: { object: @mailaccount })
                   else
                     # 500 = Internal Server Error
@@ -127,10 +158,11 @@ namespace '/api/v1/mailaccounts' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        if MailAccount.first(params).nil?
+        # my_logger.debug("UPDATE fail w/ SaveFailureError exception")
+        if MailAccount.first(email: @_params[:email]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not create',
+                                         error_id: 'could not update',
                                          message: $ERROR_INFO.to_s)
         else
           # 409 = Conflict
@@ -143,19 +175,10 @@ namespace '/api/v1/mailaccounts' do
     end
 
     get do
-      authenticate!
-      return_resource object: @mailaccount
-    end
-
-    get '/edit' do
-      authenticate!
-      unless @user.admin? || @user.owner_of?(@mailaccount)
-        @mailaccount = nil
-        flash[:error] = 'Not authorized!'
-        session[:return_to] = nil
-        redirect '/'
-      end
-      haml :edit_mailaccount
+      return_authorized_resource(object: @mailaccount) if authorize(
+        @mailaccount,
+        :show?
+      )
     end
   end
 end

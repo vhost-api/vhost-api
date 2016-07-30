@@ -61,6 +61,22 @@ FactoryGirl.define do
       quota_domains 0
     end
 
+    factory :reseller_with_exhausted_mailaccount_quota, parent: :reseller do
+      quota_mail_accounts 0
+    end
+
+    factory :reseller_with_exhausted_mailalias_quota, parent: :reseller do
+      quota_mail_aliases 0
+    end
+
+    factory :reseller_with_exhausted_mailsource_quota, parent: :reseller do
+      quota_mail_sources 0
+    end
+
+    factory :reseller_with_exhausted_mailstorage_quota, parent: :reseller do
+      quota_mail_storage 0
+    end
+
     factory :reseller_with_customers, parent: :reseller do
       transient do
         customer_count 3
@@ -99,9 +115,38 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_customers_and_mailaccounts,
+            parent: :reseller_with_customers_and_domains do
+      transient do
+        mailaccount_count 3
+      end
+
+      quota_mail_accounts 45
+      quota_mail_storage 471_859_200 # 45 * 10 MiB
+
+      after(:create) do |reseller, evaluator|
+        reseller.domains.each do |domain|
+          create_list(:mailaccount,
+                      evaluator.mailaccount_count,
+                      domain_id: domain.id)
+        end
+        reseller.customers.domains.each do |domain|
+          create_list(:mailaccount,
+                      evaluator.mailaccount_count,
+                      domain_id: domain.id)
+        end
+      end
+    end
+
     factory :reseller_with_customers_and_domains_and_exhausted_domain_quota,
             parent: :reseller_with_customers_and_domains do
       quota_domains 12
+    end
+
+    factory :reseller_with_customers_and_mailaccounts_and_exhausted_quota,
+            parent: :reseller_with_customers_and_mailaccounts do
+      quota_domains 12
+      quota_mail_accounts 36
     end
 
     factory :user_with_exhausted_domain_quota do
@@ -149,6 +194,28 @@ FactoryGirl.define do
     factory :user_with_domains_and_exhausted_domain_quota,
             parent: :user_with_domains do
       quota_domains 3
+    end
+
+    factory :user_with_mailaccounts_and_exhausted_mailaccount_quota,
+            parent: :user_with_mailaccounts do
+      quota_domains 3
+      quota_mail_accounts 9
+    end
+
+    factory :user_with_mailaccounts, parent: :user_with_domains do
+      transient do
+        mailaccount_count 3
+      end
+
+      quota_mail_accounts 15
+
+      after(:create) do |user, evaluator|
+        user.domains.each do |domain|
+          create_list(:mailaccount,
+                      evaluator.mailaccount_count,
+                      domain_id: domain.id)
+        end
+      end
     end
   end
 end

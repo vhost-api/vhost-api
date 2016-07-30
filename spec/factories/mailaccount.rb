@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 FactoryGirl.define do
   sequence :account_email do |n|
-    "test#{n}@example.com"
+    "test#{n}@example.org"
   end
 
   factory :mailaccount, class: MailAccount do
@@ -12,11 +12,19 @@ FactoryGirl.define do
     enabled true
 
     transient do
-      domain_name 'example.com'
+      domain_name 'example.org'
     end
 
-    domain do
-      Domain.first(name: domain_name) || create(:domain, name: domain_name)
+    domain_id do
+      if Domain.first(name: domain_name).nil?
+        create(:domain, name: domain_name).id
+      else
+        Domain.first(name: domain_name).id
+      end
+    end
+
+    factory :invalid_mailaccount do
+      email nil
     end
 
     factory :mailaccount_with_aliases_and_sources do

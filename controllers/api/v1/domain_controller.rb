@@ -160,7 +160,7 @@ namespace '/api/v1/domains' do
     end
 
     get do
-      return_authorized_resource(object: @domain) if authorize @domain, :show?
+      return_authorized_resource(object: @domain) if authorize(@domain, :show?)
     end
   end
 end
