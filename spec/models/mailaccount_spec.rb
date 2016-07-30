@@ -33,4 +33,64 @@ describe 'VHost-API MailAccount Model' do
     test = create(:mailaccount)
     expect(test.owner).to be_an_instance_of(User)
   end
+
+  it 'returns quotausage in Bytes' do
+    testmailaccount = create(:mailaccount)
+    email = testmailaccount.email.split('@')[0]
+    domain = testmailaccount.email.split('@')[1]
+    quotafile_name = "testdata/vmail/#{domain}/#{email}/.quotausage"
+
+    allow(testmailaccount).to receive(:quotafile).and_return(quotafile_name)
+    allow(File).to receive(:exist?).with(quotafile_name).and_return(true)
+    allow(IO).to receive(:read).with(quotafile_name).and_return(
+      "priv/quota/messages\n932\npriv/quota/storage\n67664\n"
+    )
+
+    expect(testmailaccount.quotausage).to eq(67_664)
+  end
+
+  it 'returns quotausage_rel in Percent' do
+    testmailaccount = create(:mailaccount)
+    email = testmailaccount.email.split('@')[0]
+    domain = testmailaccount.email.split('@')[1]
+    quotafile_name = "testdata/vmail/#{domain}/#{email}/.quotausage"
+
+    allow(testmailaccount).to receive(:quotafile).and_return(quotafile_name)
+    allow(File).to receive(:exist?).with(quotafile_name).and_return(true)
+    allow(IO).to receive(:read).with(quotafile_name).and_return(
+      "priv/quota/messages\n932\npriv/quota/storage\n67664\n"
+    )
+
+    expect(testmailaccount.quotausage_rel).to eq(
+      (67_664 * 100 / testmailaccount.quota).round(1)
+    )
+  end
+
+  it 'returns sieveusage in Bytes' do
+    testmailaccount = create(:mailaccount)
+    email = testmailaccount.email.split('@')[0]
+    domain = testmailaccount.email.split('@')[1]
+    sievefile_name = "testdata/vmail/#{domain}/#{email}/dovecot.sieve"
+
+    allow(testmailaccount).to receive(:sievefile).and_return(sievefile_name)
+    allow(File).to receive(:exist?).with(sievefile_name).and_return(true)
+    allow(File).to receive(:size).with(sievefile_name).and_return(13_728)
+
+    expect(testmailaccount.sieveusage).to eq(13_728)
+  end
+
+  it 'returns sieveusage_rel in Percent' do
+    testmailaccount = create(:mailaccount)
+    email = testmailaccount.email.split('@')[0]
+    domain = testmailaccount.email.split('@')[1]
+    sievefile_name = "testdata/vmail/#{domain}/#{email}/dovecot.sieve"
+
+    allow(testmailaccount).to receive(:sievefile).and_return(sievefile_name)
+    allow(File).to receive(:exist?).with(sievefile_name).and_return(true)
+    allow(File).to receive(:size).with(sievefile_name).and_return(13_728)
+
+    expect(testmailaccount.sieveusage_rel).to eq(
+      (13_728 * 100 / testmailaccount.quota_sieve_script).round(1)
+    )
+  end
 end
