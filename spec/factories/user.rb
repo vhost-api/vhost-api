@@ -138,6 +138,30 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_customers_and_mailaliases,
+            parent: :reseller_with_customers_and_mailaccounts do
+      transient do
+        mailalias_count 3
+      end
+
+      quota_mail_aliases 120
+
+      after(:create) do |reseller, evaluator|
+        reseller.domains.mail_accounts.each do |mailaccount|
+          aliases = create_list(:mailalias,
+                                evaluator.mailalias_count,
+                                domain_id: mailaccount.domain_id)
+          mailaccount.mail_aliases = aliases
+        end
+        reseller.customers.domains.mail_accounts.each do |mailaccount|
+          aliases = create_list(:mailalias,
+                                evaluator.mailalias_count,
+                                domain_id: mailaccount.domain_id)
+          mailaccount.mail_aliases = aliases
+        end
+      end
+    end
+
     factory :reseller_with_customers_and_domains_and_exhausted_domain_quota,
             parent: :reseller_with_customers_and_domains do
       quota_domains 12
@@ -147,6 +171,11 @@ FactoryGirl.define do
             parent: :reseller_with_customers_and_mailaccounts do
       quota_domains 12
       quota_mail_accounts 36
+    end
+
+    factory :reseller_with_customers_and_mailaliases_and_exhausted_quota,
+            parent: :reseller_with_customers_and_mailaliases do
+      quota_mail_aliases 108
     end
 
     factory :user_with_exhausted_domain_quota do
@@ -202,6 +231,11 @@ FactoryGirl.define do
       quota_mail_accounts 9
     end
 
+    factory :user_with_mailaliases_and_exhausted_mailalias_quota,
+            parent: :user_with_mailaliases do
+      quota_mail_aliases 27
+    end
+
     factory :user_with_mailaccounts, parent: :user_with_domains do
       transient do
         mailaccount_count 3
@@ -214,6 +248,23 @@ FactoryGirl.define do
           create_list(:mailaccount,
                       evaluator.mailaccount_count,
                       domain_id: domain.id)
+        end
+      end
+    end
+
+    factory :user_with_mailaliases, parent: :user_with_mailaccounts do
+      transient do
+        mailalias_count 3
+      end
+
+      quota_mail_aliases 30
+
+      after(:create) do |user, evaluator|
+        user.domains.mail_accounts.each do |mailaccount|
+          aliases = create_list(:mailalias,
+                                evaluator.mailalias_count,
+                                domain_id: mailaccount.domain_id)
+          mailaccount.mail_aliases = aliases
         end
       end
     end

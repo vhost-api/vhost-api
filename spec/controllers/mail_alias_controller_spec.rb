@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require File.expand_path '../../spec_helper.rb', __FILE__
 
-describe 'VHost-API MailAccount Controller' do
+describe 'VHost-API MailAlias Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
   api_versions = %w(1)
@@ -11,7 +11,7 @@ describe 'VHost-API MailAccount Controller' do
       context 'by an admin user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
-        let!(:testmailaccount) { create(:mailaccount) }
+        let!(:testmailalias) { create(:mailalias) }
         let!(:testadmin) { create(:admin, password: 'secret') }
 
         describe 'GET all' do
@@ -19,7 +19,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts", nil,
+              "/api/v#{api_version}/mailaliases", nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
                 group: Group.get(testadmin.group_id).name
@@ -28,7 +28,7 @@ describe 'VHost-API MailAccount Controller' do
 
             expect(last_response.body).to eq(
               return_json_pretty(
-                Pundit.policy_scope(testadmin, MailAccount).to_json
+                Pundit.policy_scope(testadmin, MailAlias).to_json
               )
             )
           end
@@ -37,7 +37,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts", nil,
+              "/api/v#{api_version}/mailaliases", nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
                 group: Group.get(testadmin.group_id).name
@@ -50,15 +50,15 @@ describe 'VHost-API MailAccount Controller' do
         describe 'GET one' do
           it 'authorizes the request by using the policies' do
             expect(
-              Pundit.authorize(testadmin, testmailaccount, :show?)
+              Pundit.authorize(testadmin, testmailalias, :show?)
             ).to be_truthy
           end
 
-          it 'returns the mailaccount' do
+          it 'returns the mailalias' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
                 group: Group.get(testadmin.group_id).name
@@ -67,7 +67,7 @@ describe 'VHost-API MailAccount Controller' do
 
             @user = testadmin
             expect(last_response.body).to eq(
-              return_authorized_resource(object: testmailaccount)
+              return_authorized_resource(object: testmailalias)
             )
           end
 
@@ -75,7 +75,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
                 group: Group.get(testadmin.group_id).name
@@ -90,11 +90,11 @@ describe 'VHost-API MailAccount Controller' do
           it 'returns an API Error' do
             clear_cookies
 
-            inexistent = testmailaccount.id
-            testmailaccount.destroy
+            inexistent = testmailalias.id
+            testmailalias.destroy
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{inexistent}", nil,
+              "/api/v#{api_version}/mailaliases/#{inexistent}", nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
                 group: Group.get(testadmin.group_id).name
@@ -116,27 +116,27 @@ describe 'VHost-API MailAccount Controller' do
           let(:domain) do
             create(:domain, name: 'new.org', user_id: testadmin.id)
           end
-          let(:email) { 'new@new.org' }
+          let(:address) { 'new@new.org' }
           let(:new_attributes) do
-            attributes_for(:mailaccount,
-                           email: email,
+            attributes_for(:mailalias,
+                           address: address,
                            domain_id: domain.id)
           end
 
           context 'with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
-                Pundit.authorize(testadmin, MailAccount, :create?)
+                Pundit.authorize(testadmin, MailAlias, :create?)
               ).to be_truthy
             end
 
-            it 'creates a new mailaccount' do
+            it 'creates a new mailalias' do
               clear_cookies
 
-              count = MailAccount.all.count
+              count = MailAlias.all.count
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new_attributes.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -144,14 +144,14 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              expect(MailAccount.all.count).to eq(count + 1)
+              expect(MailAlias.all.count).to eq(count + 1)
             end
 
-            it 'returns an API Success containing the new mailaccount' do
+            it 'returns an API Success containing the new mailalias' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new_attributes.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -159,7 +159,7 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              new = MailAccount.last
+              new = MailAlias.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
@@ -174,7 +174,7 @@ describe 'VHost-API MailAccount Controller' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new_attributes.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -185,11 +185,11 @@ describe 'VHost-API MailAccount Controller' do
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
-            it 'redirects to the new mailaccount' do
+            it 'redirects to the new mailalias' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new_attributes.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -197,28 +197,28 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              new = MailAccount.last
+              new = MailAlias.last
 
               expect(last_response.location).to eq(
-                "http://example.org/api/v#{api_version}/mailaccounts/#{new.id}"
+                "http://example.org/api/v#{api_version}/mailaliases/#{new.id}"
               )
             end
           end
 
           context 'with malformed request data' do
             context 'invalid json' do
-              let(:invalid_json) { '{ , email: \'foo, enabled: true }' }
+              let(:invalid_json) { '{ , address: \'foo, enabled:true}' }
               let(:invalid_json_msg) do
-                '784: unexpected token at \'{ , email: \'foo, enabled: true }\''
+                '784: unexpected token at \'{ , address: \'foo, enabled:true}\''
               end
 
-              it 'does not create a new mailaccount' do
+              it 'does not create a new mailalias' do
                 clear_cookies
 
-                count = MailAccount.all.count
+                count = MailAlias.all.count
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -226,14 +226,14 @@ describe 'VHost-API MailAccount Controller' do
                   }
                 )
 
-                expect(MailAccount.all.count).to eq(count)
+                expect(MailAlias.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -258,7 +258,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -271,34 +271,34 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_mailaccount_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_mailalias_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
                 'invalid email address'
               end
 
-              it 'does not create a new mailaccount' do
+              it 'does not create a new mailalias' do
                 clear_cookies
 
-                count = MailAccount.all.count
+                count = MailAlias.all.count
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  invalid_mailaccount_attrs.to_json,
+                  "/api/v#{api_version}/mailaliases",
+                  invalid_mailalias_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
                   }
                 )
 
-                expect(MailAccount.all.count).to eq(count)
+                expect(MailAlias.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  invalid_mailaccount_attrs.to_json,
+                  "/api/v#{api_version}/mailaliases",
+                  invalid_mailalias_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -322,8 +322,8 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  invalid_mailaccount_attrs.to_json,
+                  "/api/v#{api_version}/mailaliases",
+                  invalid_mailalias_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -335,18 +335,18 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             context 'with invalid values' do
-              let(:invalid_values) { attributes_for(:invalid_mailaccount) }
+              let(:invalid_values) { attributes_for(:invalid_mailalias) }
               let(:invalid_values_msg) do
                 'invalid email address'
               end
 
-              it 'does not create a new mailaccount' do
+              it 'does not create a new mailalias' do
                 clear_cookies
 
-                count = MailAccount.all.count
+                count = MailAlias.all.count
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -354,14 +354,14 @@ describe 'VHost-API MailAccount Controller' do
                   }
                 )
 
-                expect(MailAccount.all.count).to eq(count)
+                expect(MailAlias.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -386,7 +386,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
+                  "/api/v#{api_version}/mailaliases",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -400,49 +400,45 @@ describe 'VHost-API MailAccount Controller' do
 
             context 'with a resource conflict' do
               let(:resource_conflict_msg) do
-                'MailAccount#save returned false, MailAccount was not saved'
+                'MailAlias#save returned false, MailAlias was not saved'
               end
 
-              let(:domain) { create(:domain, name: 'mailaccount.org') }
+              let(:domain) { create(:domain, name: 'mailalias.org') }
 
               before(:each) do
-                create(:mailaccount,
-                       email: 'existing@mailaccount.org',
+                create(:mailalias,
+                       address: 'existing@mailalias.org',
                        domain_id: domain.id)
               end
               let(:resource_conflict) do
-                conflict = build(:mailaccount,
-                                 email: 'existing@mailaccount.org',
-                                 password: 'foobar',
-                                 domain_id: domain.id)
-                data = conflict.as_json(methods: nil)
-                data['password'] = conflict.password
-                data
+                build(:mailalias,
+                      address: 'existing@mailalias.org',
+                      domain_id: domain.id).as_json(methods: nil)
               end
 
-              it 'does not create a new mailaccount' do
+              it 'does not create a new mailalias' do
                 clear_cookies
 
-                count = MailAccount.all.count
+                count = MailAlias.all.count
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
+                  "/api/v#{api_version}/mailaliases",
+                  resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
                   }
                 )
 
-                expect(MailAccount.all.count).to eq(count)
+                expect(MailAlias.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
+                  "/api/v#{api_version}/mailaliases",
+                  resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -466,8 +462,8 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 post(
-                  "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
+                  "/api/v#{api_version}/mailaliases",
+                  resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -484,7 +480,7 @@ describe 'VHost-API MailAccount Controller' do
           context 'with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
-                Pundit.authorize(testadmin, MailAccount, :create?)
+                Pundit.authorize(testadmin, MailAlias, :create?)
               ).to be_truthy
             end
 
@@ -492,13 +488,13 @@ describe 'VHost-API MailAccount Controller' do
               clear_cookies
 
               updated_attrs = attributes_for(
-                :mailaccount,
-                email: "foo@#{testmailaccount.domain.name}"
+                :mailalias,
+                address: "foo@#{testmailalias.domain.name}"
               )
-              prev_tstamp = testmailaccount.updated_at
+              prev_tstamp = testmailalias.updated_at
 
               patch(
-                "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                 updated_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -507,23 +503,23 @@ describe 'VHost-API MailAccount Controller' do
               )
 
               expect(
-                MailAccount.get(testmailaccount.id).email
-              ).to eq(updated_attrs[:email])
+                MailAlias.get(testmailalias.id).address
+              ).to eq(updated_attrs[:address])
               expect(
-                MailAccount.get(testmailaccount.id).updated_at
+                MailAlias.get(testmailalias.id).updated_at
               ).to be > prev_tstamp
             end
 
-            it 'returns an API Success containing the updated mailaccount' do
+            it 'returns an API Success containing the updated mailalias' do
               clear_cookies
 
               updated_attrs = attributes_for(
-                :mailaccount,
-                email: "foo@#{testmailaccount.domain.name}"
+                :mailalias,
+                address: "foo@#{testmailalias.domain.name}"
               )
 
               patch(
-                "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                 updated_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -531,13 +527,13 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              upd_acc = MailAccount.get(testmailaccount.id)
+              upd_alias = MailAlias.get(testmailalias.id)
 
               expect(last_response.status).to eq(200)
               expect(last_response.body).to eq(
                 return_json_pretty(
                   ApiResponseSuccess.new(status_code: 200,
-                                         data: { object: upd_acc }).to_json
+                                         data: { object: upd_alias }).to_json
                 )
               )
             end
@@ -545,10 +541,10 @@ describe 'VHost-API MailAccount Controller' do
             it 'returns a valid JSON object' do
               clear_cookies
 
-              updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
+              updated_attrs = attributes_for(:mailalias, address: 'foo@foo.org')
 
               patch(
-                "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                 updated_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -562,18 +558,18 @@ describe 'VHost-API MailAccount Controller' do
 
           context 'with malformed request data' do
             context 'invalid json' do
-              let(:invalid_json) { '{ , email: \'foo, enabled: true }' }
+              let(:invalid_json) { '{ , address: \'foo, enabled:true}' }
               let(:invalid_json_msg) do
-                '784: unexpected token at \'{ , email: \'foo, enabled: true }\''
+                '784: unexpected token at \'{ , address: \'foo, enabled:true}\''
               end
 
-              it 'does not update the mailaccount' do
+              it 'does not update the mailalias' do
                 clear_cookies
 
-                prev_tstamp = testmailaccount.updated_at
+                prev_tstamp = testmailalias.updated_at
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -582,10 +578,10 @@ describe 'VHost-API MailAccount Controller' do
                 )
 
                 expect(
-                  MailAccount.get(testmailaccount.id).email
-                ).to eq(testmailaccount.email)
+                  MailAlias.get(testmailalias.id).address
+                ).to eq(testmailalias.address)
                 expect(
-                  MailAccount.get(testmailaccount.id).updated_at
+                  MailAlias.get(testmailalias.id).updated_at
                 ).to eq(prev_tstamp)
               end
 
@@ -593,7 +589,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -618,7 +614,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -636,13 +632,13 @@ describe 'VHost-API MailAccount Controller' do
                 'invalid email address'
               end
 
-              it 'does not update the mailaccount' do
+              it 'does not update the mailalias' do
                 clear_cookies
 
-                prev_tstamp = testmailaccount.updated_at
+                prev_tstamp = testmailalias.updated_at
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_user_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -651,10 +647,10 @@ describe 'VHost-API MailAccount Controller' do
                 )
 
                 expect(
-                  MailAccount.get(testmailaccount.id).email
-                ).to eq(testmailaccount.email)
+                  MailAlias.get(testmailalias.id).address
+                ).to eq(testmailalias.address)
                 expect(
-                  MailAccount.get(testmailaccount.id).updated_at
+                  MailAlias.get(testmailalias.id).updated_at
                 ).to eq(prev_tstamp)
               end
 
@@ -662,7 +658,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_user_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -687,7 +683,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_user_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -700,18 +696,18 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             context 'with invalid values' do
-              let(:invalid_values) { attributes_for(:invalid_mailaccount) }
+              let(:invalid_values) { attributes_for(:invalid_mailalias) }
               let(:invalid_values_msg) do
                 'invalid email address'
               end
 
-              it 'does not update the mailaccount' do
+              it 'does not update the mailalias' do
                 clear_cookies
 
-                prev_tstamp = testmailaccount.updated_at
+                prev_tstamp = testmailalias.updated_at
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -720,10 +716,10 @@ describe 'VHost-API MailAccount Controller' do
                 )
 
                 expect(
-                  MailAccount.get(testmailaccount.id).email
-                ).to eq(testmailaccount.email)
+                  MailAlias.get(testmailalias.id).address
+                ).to eq(testmailalias.address)
                 expect(
-                  MailAccount.get(testmailaccount.id).updated_at
+                  MailAlias.get(testmailalias.id).updated_at
                 ).to eq(prev_tstamp)
               end
 
@@ -731,7 +727,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -756,7 +752,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+                  "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
                   invalid_values.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -769,33 +765,33 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             context 'with a resource conflict' do
-              let(:domain) { create(:domain, name: 'mailaccount.org') }
+              let(:domain) { create(:domain, name: 'mailalias.org') }
               let(:resource_conflict) do
-                attributes_for(:mailaccount,
-                               email: 'existing@mailaccount.org',
+                attributes_for(:mailalias,
+                               address: 'existing@mailalias.org',
                                domain_id: domain.id)
               end
               let(:resource_conflict_msg) do
-                'MailAccount#save returned false, MailAccount was not saved'
+                'MailAlias#save returned false, MailAlias was not saved'
               end
               before(:each) do
-                create(:mailaccount,
-                       email: 'existing@mailaccount.org',
+                create(:mailalias,
+                       address: 'existing@mailalias.org',
                        domain_id: domain.id)
               end
               let(:conflict) do
-                create(:mailaccount,
-                       email: 'conflict@mailaccount.org',
+                create(:mailalias,
+                       address: 'conflict@mailalias.org',
                        domain_id: domain.id)
               end
 
-              it 'does not update the mailaccount' do
+              it 'does not update the mailalias' do
                 clear_cookies
 
                 prev_tstamp = conflict.updated_at
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{conflict.id}",
+                  "/api/v#{api_version}/mailaliases/#{conflict.id}",
                   resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -803,10 +799,10 @@ describe 'VHost-API MailAccount Controller' do
                   }
                 )
 
-                expect(MailAccount.get(conflict.id).email).to eq(
-                  conflict.email
+                expect(MailAlias.get(conflict.id).address).to eq(
+                  conflict.address
                 )
-                expect(MailAccount.get(conflict.id).updated_at).to eq(
+                expect(MailAlias.get(conflict.id).updated_at).to eq(
                   prev_tstamp
                 )
               end
@@ -815,7 +811,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{conflict.id}",
+                  "/api/v#{api_version}/mailaliases/#{conflict.id}",
                   resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -840,7 +836,7 @@ describe 'VHost-API MailAccount Controller' do
                 clear_cookies
 
                 patch(
-                  "/api/v#{api_version}/mailaccounts/#{conflict.id}",
+                  "/api/v#{api_version}/mailaliases/#{conflict.id}",
                   resource_conflict.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
@@ -858,10 +854,10 @@ describe 'VHost-API MailAccount Controller' do
             let(:domain) { create(:domain, name: 'invincible.de') }
 
             it 'returns an API Error' do
-              invincible = create(:mailaccount,
-                                  email: 'foo@invincible.de',
+              invincible = create(:mailalias,
+                                  address: 'foo@invincible.de',
                                   domain_id: domain.id)
-              allow(MailAccount).to receive(
+              allow(MailAlias).to receive(
                 :get
               ).with(
                 invincible.id.to_s
@@ -869,16 +865,16 @@ describe 'VHost-API MailAccount Controller' do
                 invincible
               )
               allow(invincible).to receive(:update).and_return(false)
-              policy = instance_double('MailAccountPolicy', update?: true)
+              policy = instance_double('MailAliasPolicy', update?: true)
               allow(policy).to receive(:update?).and_return(true)
               allow(policy).to receive(:update_with?).and_return(true)
-              allow(MailAccountPolicy).to receive(:new).and_return(policy)
+              allow(MailAliasPolicy).to receive(:new).and_return(policy)
 
               clear_cookies
 
               patch(
-                "/api/v#{api_version}/mailaccounts/#{invincible.id}",
-                attributes_for(:mailaccount, email: 'f2@invincible.de').to_json,
+                "/api/v#{api_version}/mailaliases/#{invincible.id}",
+                attributes_for(:mailalias, address: 'f2@invincible.de').to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
                   group: Group.get(testadmin.group_id).name
@@ -903,17 +899,17 @@ describe 'VHost-API MailAccount Controller' do
         describe 'DELETE' do
           it 'authorizes the request by using the policies' do
             expect(
-              Pundit.authorize(testadmin, MailAccount, :destroy?)
+              Pundit.authorize(testadmin, MailAlias, :destroy?)
             ).to be_truthy
           end
 
-          it 'deletes the requested mailaccount' do
+          it 'deletes the requested mailalias' do
             clear_cookies
 
-            id = testmailaccount.id
+            id = testmailalias.id
 
             delete(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
@@ -921,14 +917,14 @@ describe 'VHost-API MailAccount Controller' do
               }
             )
 
-            expect(MailAccount.get(id)).to eq(nil)
+            expect(MailAlias.get(id)).to eq(nil)
           end
 
           it 'returns a valid JSON object' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testadmin.id,
@@ -943,9 +939,9 @@ describe 'VHost-API MailAccount Controller' do
             let(:delete_error_msg) { '' }
 
             it 'returns an API Error' do
-              invincible = create(:mailaccount,
-                                  email: 'foo@invincible.org')
-              allow(MailAccount).to receive(
+              invincible = create(:mailalias,
+                                  address: 'foo@invincible.org')
+              allow(MailAlias).to receive(
                 :get
               ).with(
                 invincible.id.to_s
@@ -953,14 +949,14 @@ describe 'VHost-API MailAccount Controller' do
                 invincible
               )
               allow(invincible).to receive(:destroy).and_return(false)
-              policy = instance_double('MailAccountPolicy', destroy?: true)
+              policy = instance_double('MailAliasPolicy', destroy?: true)
               allow(policy).to receive(:destroy?).and_return(true)
-              allow(MailAccountPolicy).to receive(:new).and_return(policy)
+              allow(MailAliasPolicy).to receive(:new).and_return(policy)
 
               clear_cookies
 
               delete(
-                "/api/v#{api_version}/mailaccounts/#{invincible.id}",
+                "/api/v#{api_version}/mailaliases/#{invincible.id}",
                 nil,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
@@ -988,19 +984,19 @@ describe 'VHost-API MailAccount Controller' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:usergroup) { create(:group) }
-        let!(:testuser) { create(:user_with_mailaccounts) }
-        let!(:owner) { create(:user_with_mailaccounts) }
-        let!(:testmailaccount) do
-          MailAccount.first(domain_id: owner.domains.first.id)
+        let!(:testuser) { create(:user_with_mailaliases) }
+        let!(:owner) { create(:user_with_mailaliases) }
+        let!(:testmailalias) do
+          MailAlias.first(domain_id: owner.domains.first.id)
         end
         let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         describe 'GET all' do
-          it 'returns only its own mailaccounts' do
+          it 'returns only its own mailaliases' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts", nil,
+              "/api/v#{api_version}/mailaliases", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1009,7 +1005,7 @@ describe 'VHost-API MailAccount Controller' do
 
             expect(last_response.body).to eq(
               return_json_pretty(
-                Pundit.policy_scope(testuser, MailAccount).to_json
+                Pundit.policy_scope(testuser, MailAlias).to_json
               )
             )
           end
@@ -1018,7 +1014,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts", nil,
+              "/api/v#{api_version}/mailaliases", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1032,7 +1028,7 @@ describe 'VHost-API MailAccount Controller' do
         describe 'GET one' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testmailaccount, :show?)
+              Pundit.authorize(testuser, testmailalias, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
@@ -1040,7 +1036,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1061,7 +1057,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1077,19 +1073,19 @@ describe 'VHost-API MailAccount Controller' do
 
           it 'does not authorize the request' do
             expect do
-              testmailaccount.destroy
-              Pundit.authorize(testuser, testmailaccount, :show?)
+              testmailalias.destroy
+              Pundit.authorize(testuser, testmailalias, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
           it 'returns an API Error' do
             clear_cookies
 
-            inexistent = testmailaccount.id
-            testmailaccount.destroy
+            inexistent = testmailalias.id
+            testmailalias.destroy
 
             get(
-              "/api/v#{api_version}/mailaccounts/#{inexistent}", nil,
+              "/api/v#{api_version}/mailaliases/#{inexistent}", nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
                 group: Group.get(testuser.group_id).name
@@ -1109,36 +1105,36 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'POST' do
           context 'with exhausted quota' do
-            let(:testuser) { create(:user_with_exhausted_mailaccount_quota) }
+            let(:testuser) { create(:user_with_exhausted_mailalias_quota) }
             it 'does not authorize the request' do
               expect do
-                Pundit.authorize(testuser, MailAccount, :create?)
+                Pundit.authorize(testuser, MailAlias, :create?)
               end.to raise_exception(Pundit::NotAuthorizedError)
             end
 
-            it 'does not create a new mailaccount' do
+            it 'does not create a new mailalias' do
               clear_cookies
 
-              count = MailAccount.all.count
+              count = MailAlias.all.count
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount, mail: 'new@new.org').to_json,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias, mail: 'new@new.org').to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
                 }
               )
 
-              expect(MailAccount.all.count).to eq(count)
+              expect(MailAlias.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount, email: 'new@new.org').to_json,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias, address: 'new@new.org').to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1159,8 +1155,8 @@ describe 'VHost-API MailAccount Controller' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount, email: 'new@new.org').to_json,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias, address: 'new@new.org').to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1172,30 +1168,30 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           context 'with available quota' do
-            let(:testuser) { create(:user_with_mailaccounts) }
+            let(:testuser) { create(:user_with_mailaliases) }
             let(:domain) { testuser.domains.first }
             let(:new) do
-              attributes_for(:mailaccount,
-                             email: "new@#{domain.name}",
+              attributes_for(:mailalias,
+                             address: "new@#{domain.name}",
                              domain_id: domain.id)
             end
 
             it 'authorizes the request' do
               expect(
-                Pundit.authorize(testuser, MailAccount, :create?)
+                Pundit.authorize(testuser, MailAlias, :create?)
               ).to be_truthy
               expect(
-                Pundit.policy(testuser, MailAccount).create_with?(new)
+                Pundit.policy(testuser, MailAlias).create_with?(new)
               ).to be_truthy
             end
 
-            it 'does create a new mailaccount' do
+            it 'does create a new mailalias' do
               clear_cookies
 
-              count = MailAccount.all.count
+              count = MailAlias.all.count
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
@@ -1203,14 +1199,14 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              expect(MailAccount.all.count).to eq(count + 1)
+              expect(MailAlias.all.count).to eq(count + 1)
             end
 
-            it 'returns an API Success containing the new mailaccount' do
+            it 'returns an API Success containing the new mailalias' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
@@ -1218,7 +1214,7 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              new = MailAccount.last
+              new = MailAlias.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
@@ -1233,7 +1229,7 @@ describe 'VHost-API MailAccount Controller' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
+                "/api/v#{api_version}/mailaliases",
                 new.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
@@ -1246,17 +1242,17 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           context 'with using different user_id in attributes' do
-            let(:testuser) { create(:user_with_mailaccounts) }
+            let(:testuser) { create(:user_with_mailaliases) }
             let(:anotheruser) { create(:user_with_domains) }
 
-            it 'does not create a new mailaccount' do
+            it 'does not create a new mailalias' do
               clear_cookies
 
-              count = MailAccount.all.count
+              count = MailAlias.all.count
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 appconfig[:session][:key] => {
@@ -1265,15 +1261,15 @@ describe 'VHost-API MailAccount Controller' do
                 }
               )
 
-              expect(MailAccount.all.count).to eq(count)
+              expect(MailAlias.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 appconfig[:session][:key] => {
@@ -1296,8 +1292,8 @@ describe 'VHost-API MailAccount Controller' do
               clear_cookies
 
               post(
-                "/api/v#{api_version}/mailaccounts",
-                attributes_for(:mailaccount,
+                "/api/v#{api_version}/mailaliases",
+                attributes_for(:mailalias,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 appconfig[:session][:key] => {
@@ -1314,18 +1310,18 @@ describe 'VHost-API MailAccount Controller' do
         describe 'PATCH' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testmailaccount, :update?)
+              Pundit.authorize(testuser, testmailalias, :update?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not update the mailaccount' do
+          it 'does not update the mailalias' do
             clear_cookies
 
-            updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
-            prev_tstamp = testmailaccount.updated_at
+            updated_attrs = attributes_for(:mailalias, address: 'foo@foo.org')
+            prev_tstamp = testmailalias.updated_at
 
             patch(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               updated_attrs.to_json,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1333,16 +1329,16 @@ describe 'VHost-API MailAccount Controller' do
               }
             )
 
-            expect(testmailaccount.updated_at).to eq(prev_tstamp)
+            expect(testmailalias.updated_at).to eq(prev_tstamp)
           end
 
           it 'returns an API Error' do
             clear_cookies
 
-            updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
+            updated_attrs = attributes_for(:mailalias, address: 'foo@foo.org')
 
             patch(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               updated_attrs.to_json,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1363,10 +1359,10 @@ describe 'VHost-API MailAccount Controller' do
           it 'returns a valid JSON object' do
             clear_cookies
 
-            updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
+            updated_attrs = attributes_for(:mailalias, address: 'foo@foo.org')
 
             patch(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               updated_attrs.to_json,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1381,15 +1377,15 @@ describe 'VHost-API MailAccount Controller' do
         describe 'DELETE' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testmailaccount, :destroy?)
+              Pundit.authorize(testuser, testmailalias, :destroy?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not delete the mailaccount' do
+          it 'does not delete the mailalias' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1397,15 +1393,15 @@ describe 'VHost-API MailAccount Controller' do
               }
             )
 
-            expect(MailAccount.get(testmailaccount.id)).not_to eq(nil)
-            expect(MailAccount.get(testmailaccount.id)).to eq(testmailaccount)
+            expect(MailAlias.get(testmailalias.id)).not_to eq(nil)
+            expect(MailAlias.get(testmailalias.id)).to eq(testmailalias)
           end
 
           it 'returns an API Error' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1427,7 +1423,7 @@ describe 'VHost-API MailAccount Controller' do
             clear_cookies
 
             delete(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
+              "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
               nil,
               appconfig[:session][:key] => {
                 user_id: testuser.id,
@@ -1441,7 +1437,7 @@ describe 'VHost-API MailAccount Controller' do
       end
 
       context 'by an unauthenticated (thus unauthorized) user' do
-        let!(:testmailaccount) { create(:mailaccount) }
+        let!(:testmailalias) { create(:mailalias) }
         let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         before(:each) do
@@ -1453,7 +1449,7 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'GET all' do
           it 'returns an an API unauthorized error' do
-            get "/api/v#{api_version}/mailaccounts"
+            get "/api/v#{api_version}/mailaliases"
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
@@ -1467,7 +1463,7 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'GET one' do
           it 'returns an an API unauthorized error' do
-            get "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}"
+            get "/api/v#{api_version}/mailaliases/#{testmailalias.id}"
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
@@ -1481,9 +1477,9 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'GET inexistent record' do
           it 'returns an an API unauthorized error' do
-            inexistent = testmailaccount.id
-            testmailaccount.destroy
-            get "/api/v#{api_version}/mailaccounts/#{inexistent}"
+            inexistent = testmailalias.id
+            testmailalias.destroy
+            get "/api/v#{api_version}/mailaliases/#{inexistent}"
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
@@ -1498,8 +1494,8 @@ describe 'VHost-API MailAccount Controller' do
         describe 'POST' do
           it 'returns an an API unauthorized error' do
             post(
-              "/api/v#{api_version}/mailaccounts",
-              'mailaccount' => attributes_for(:mailaccount)
+              "/api/v#{api_version}/mailaliases",
+              'mailalias' => attributes_for(:mailalias)
             )
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
@@ -1514,10 +1510,10 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'PATCH' do
           it 'returns an an API unauthorized error' do
-            testmailaccount_foo = create(:mailaccount, email: 'foo@foo.org')
+            testmailalias_foo = create(:mailalias, address: 'foo@foo.org')
             patch(
-              "/api/v#{api_version}/mailaccounts/#{testmailaccount_foo.id}",
-              'mailaccount' => attributes_for(:mailaccount)
+              "/api/v#{api_version}/mailaliases/#{testmailalias_foo.id}",
+              'mailalias' => attributes_for(:mailalias)
             )
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
@@ -1532,7 +1528,7 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'DELETE' do
           it 'returns an an API unauthorized error' do
-            delete "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}"
+            delete "/api/v#{api_version}/mailaliases/#{testmailalias.id}"
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(

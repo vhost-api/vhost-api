@@ -99,9 +99,7 @@ class MailAccountPolicy < ApplicationPolicy
 
   # @retun [Boolean]
   def check_create_params(params)
-    if params.key?(:domain_id)
-      return false unless check_domain_id(params[:domain_id])
-    end
+    return false unless check_domain_id(params[:domain_id])
     return quotacheck(params[:quota]) if params.key?(:quota)
     true
   end
@@ -124,7 +122,6 @@ class MailAccountPolicy < ApplicationPolicy
   end
 
   def check_domain_id(domain_id)
-    return true if domain_id == record.domain_id
     return true if user.domains.map(&:id).include?(domain_id)
     return true if user.reseller? && user.customers.domains.map(&:id).include?(
       domain_id
