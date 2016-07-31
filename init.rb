@@ -19,6 +19,7 @@ when 'MYSQL'
 end
 
 require 'bcrypt'
+require 'sshkey'
 
 # load models and stuff
 require_relative 'models/group'
