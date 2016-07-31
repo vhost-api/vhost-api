@@ -176,7 +176,6 @@ namespace '/api/v1/mailaliases' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        # my_logger.debug("UPDATE fail w/ SaveFailureError exception")
         if MailAlias.first(address: @_params[:address]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,

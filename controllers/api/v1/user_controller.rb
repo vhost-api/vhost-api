@@ -136,7 +136,6 @@ namespace '/api/v1/users' do
                                        error_id: 'malformed request data',
                                        message: $ERROR_INFO.to_s)
       rescue DataMapper::SaveFailureError
-        # my_logger.debug("UPDATE fail w/ SaveFailureError exception")
         if User.first(login: @_params[:login]).nil?
           # 500 = Internal Server Error
           @result = ApiResponseError.new(status_code: 500,
