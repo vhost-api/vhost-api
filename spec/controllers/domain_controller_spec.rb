@@ -257,7 +257,7 @@ describe 'VHost-API Domain Controller' do
             context 'invalid attributes' do
               let(:invalid_domain_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in Domain'
+                'invalid domain name'
               end
 
               it 'does not create a new domain' do
@@ -321,7 +321,7 @@ describe 'VHost-API Domain Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_domain) }
               let(:invalid_values_msg) do
-                'Domain#save returned false, Domain was not saved'
+                'invalid domain name'
               end
 
               it 'does not create a new domain' do
@@ -353,12 +353,12 @@ describe 'VHost-API Domain Controller' do
                   }
                 )
 
-                expect(last_response.status).to eq(500)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
                     ApiResponseError.new(
-                      status_code: 500,
-                      error_id: 'could not create',
+                      status_code: 422,
+                      error_id: 'invalid request data',
                       message: invalid_values_msg,
                       data: nil
                     ).to_json
@@ -590,7 +590,7 @@ describe 'VHost-API Domain Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in Domain'
+                'invalid domain name'
               end
 
               it 'does not update the domain' do
@@ -655,7 +655,7 @@ describe 'VHost-API Domain Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_domain) }
               let(:invalid_values_msg) do
-                'Domain#save returned false, Domain was not saved'
+                'invalid domain name'
               end
 
               it 'does not update the domain' do
@@ -688,12 +688,12 @@ describe 'VHost-API Domain Controller' do
                   }
                 )
 
-                expect(last_response.status).to eq(500)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
                     ApiResponseError.new(
-                      status_code: 500,
-                      error_id: 'could not update',
+                      status_code: 422,
+                      error_id: 'invalid request data',
                       message: invalid_values_msg,
                       data: nil
                     ).to_json

@@ -25,12 +25,27 @@ namespace '/api/v1/mailaccounts' do
         memo.tap { |m| m[k.to_sym] = v }
       end
 
+      # email addr must not be nil
+      raise(ArgumentError, 'invalid email address') if @_params[:email].nil?
+
+      # password must not be nil
+      raise(ArgumentError, 'password is mandatory') if @_params[:password].nil?
+
       # generate dovecot password hash from plaintex
       @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
+
+      # force lowercase on email addr
+      @_params[:email].downcase!
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(MailAccount).create_with?(
         @_params
+      )
+
+      # perform sanity checks
+      check_email_address_for_domain(
+        email: @_params[:email],
+        domain_id: @_params[:domain_id]
       )
 
       @mailaccount = MailAccount.new(@_params)
@@ -130,13 +145,27 @@ namespace '/api/v1/mailaccounts' do
         ) if @mailaccount.destroyed?
 
         # generate dovecot password hash from plaintex
-        @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
+        unless @_params[:password].nil?
+          @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
+        end
+
+        # email addr must not be nil
+        raise(ArgumentError, 'invalid email address') if @_params[:email].nil?
+
+        # force lowercase on email addr
+        @_params[:email].downcase!
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
           @mailaccount
         ).update_with?(
           @_params
+        )
+
+        # perform sanity checks
+        check_email_address_for_domain(
+          email: @_params[:email],
+          domain_id: @mailaccount.domain_id
         )
 
         @result = if @mailaccount.update(@_params)

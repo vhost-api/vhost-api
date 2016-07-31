@@ -25,6 +25,12 @@ namespace '/api/v1/domains' do
         memo.tap { |m| m[k.to_sym] = v }
       end
 
+      # domain name must not be nil
+      raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
+
+      # force lowercase on domain name
+      @_params[:name].downcase!
+
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(Domain).create_with?(
         @_params
@@ -111,6 +117,12 @@ namespace '/api/v1/domains' do
         @_params = @_params.reduce({}) do |memo, (k, v)|
           memo.tap { |m| m[k.to_sym] = v }
         end
+
+        # domain name must not be nil
+        raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
+
+        # force lowercase on domain name
+        @_params[:name].downcase!
 
         # prevent any action being performed on a detroyed resource
         return_apiresponse(
