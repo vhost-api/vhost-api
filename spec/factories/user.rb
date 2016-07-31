@@ -186,6 +186,18 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_customers_and_dkims,
+            parent: :reseller_with_customers_and_mailaccounts do
+      after(:create) do |reseller, _evaluator|
+        reseller.domains.each do |domain|
+          create(:dkim, domain_id: domain.id)
+        end
+        reseller.customers.domains.each do |domain|
+          create(:dkim, domain_id: domain.id)
+        end
+      end
+    end
+
     factory :reseller_with_customers_and_domains_and_exhausted_domain_quota,
             parent: :reseller_with_customers_and_domains do
       quota_domains 12
@@ -316,6 +328,14 @@ FactoryGirl.define do
                                 evaluator.mailsource_count,
                                 domain_id: mailaccount.domain_id)
           mailaccount.mail_sources = sources
+        end
+      end
+    end
+
+    factory :user_with_dkims, parent: :user_with_mailaccounts do
+      after(:create) do |user, _evaluator|
+        user.domains.each do |domain|
+          create(:dkim, domain_id: domain.id)
         end
       end
     end
