@@ -15,7 +15,7 @@ describe 'VHost-API Domain Controller' do
         let!(:testadmin) { create(:admin, password: 'secret') }
 
         describe 'GET all' do
-          it 'authorizes (policies) and returns an array of users' do
+          it 'authorizes (policies) and returns an array of domains' do
             clear_cookies
 
             get(
@@ -459,7 +459,7 @@ describe 'VHost-API Domain Controller' do
               expect(Pundit.authorize(testadmin, Domain, :create?)).to be_truthy
             end
 
-            it 'updates an existing user with new values' do
+            it 'updates an existing domain with new values' do
               clear_cookies
 
               updated_attrs = attributes_for(:domain, name: 'foo.org')

@@ -12,8 +12,16 @@ FactoryGirl.define do
       domain_name 'example.com'
     end
 
-    domain do
-      Domain.first(name: domain_name) || create(:domain, name: domain_name)
+    domain_id do
+      if Domain.first(name: domain_name).nil?
+        create(:domain, name: domain_name).id
+      else
+        Domain.first(name: domain_name).id
+      end
+    end
+
+    factory :invalid_mailsource, parent: :mailsource do
+      address nil
     end
   end
 end

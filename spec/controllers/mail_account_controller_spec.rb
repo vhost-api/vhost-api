@@ -15,7 +15,7 @@ describe 'VHost-API MailAccount Controller' do
         let!(:testadmin) { create(:admin, password: 'secret') }
 
         describe 'GET all' do
-          it 'authorizes (policies) and returns an array of users' do
+          it 'authorizes (policies) and returns an array of mailaccounts' do
             clear_cookies
 
             get(
@@ -488,7 +488,7 @@ describe 'VHost-API MailAccount Controller' do
               ).to be_truthy
             end
 
-            it 'updates an existing user with new values' do
+            it 'updates an existing mailaccount with new values' do
               clear_cookies
 
               updated_attrs = attributes_for(

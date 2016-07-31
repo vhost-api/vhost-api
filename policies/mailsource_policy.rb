@@ -9,6 +9,22 @@ class MailSourcePolicy < ApplicationPolicy
     Permissions::User.new(record).attributes
   end
 
+  # Checks if current user is allowed to create a record with given params
+  #
+  # @return [Boolean]
+  def create_with?(params)
+    return true if user.admin?
+    check_create_params(params)
+  end
+
+  # Checks if current user is allowed to update the record with given params
+  #
+  # @return [Boolean]
+  def update_with?(params)
+    return true if user.admin?
+    check_update_params(params)
+  end
+
   # Scope for MailSource
   class Scope < Scope
     def resolve
@@ -26,7 +42,7 @@ class MailSourcePolicy < ApplicationPolicy
   end
 
   class Permissions < ApplicationPermissions
-    # include allowed_from method
+    # include destinations method
     class Admin < self
       def attributes
         super << :allowed_from
@@ -53,5 +69,35 @@ class MailSourcePolicy < ApplicationPolicy
     source_usage = user.domains.mail_sources.size
     source_usage += user.customers.domains.mail_sources.size if user.reseller?
     source_usage
+  end
+
+  # @retun [Boolean]
+  def check_create_params(params)
+    return false unless check_domain_id(params[:domain_id])
+    true
+  end
+
+  # @retun [Boolean]
+  def check_update_params(params)
+    if params.key?(:id)
+      return false unless check_id(params[:id])
+    end
+    if params.key?(:domain_id)
+      return false unless check_domain_id(params[:domain_id])
+    end
+    true
+  end
+
+  def check_id(id)
+    return true if id == record.id
+    false
+  end
+
+  def check_domain_id(domain_id)
+    return true if user.domains.map(&:id).include?(domain_id)
+    return true if user.reseller? && user.customers.domains.map(&:id).include?(
+      domain_id
+    )
+    false
   end
 end
