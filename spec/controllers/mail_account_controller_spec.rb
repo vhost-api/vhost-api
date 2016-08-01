@@ -633,7 +633,7 @@ describe 'VHost-API MailAccount Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid email address'
+                'The attribute \'foo\' is not accessible in MailAccount'
               end
 
               it 'does not update the mailaccount' do

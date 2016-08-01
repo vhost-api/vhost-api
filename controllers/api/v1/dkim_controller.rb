@@ -131,15 +131,15 @@ namespace '/api/v1/dkims' do
         if @_params.key?(:selector)
           # selector must not be nil
           raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
+
+          # force lowercase on selector
+          @_params[:selector].downcase!
         end
 
         if @_params.key?(:domain_id)
           # domain_id must not be nil
           raise(ArgumentError, 'invalid domain id') if @_params[:domain_id].nil?
         end
-
-        # force lowercase on selector
-        @_params[:selector].downcase! if @_params.key?(:selector)
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(

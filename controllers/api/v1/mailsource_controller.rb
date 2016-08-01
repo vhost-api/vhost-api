@@ -28,19 +28,30 @@ namespace '/api/v1/mailsources' do
       # email addr must not be nil
       raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
 
+      # sources must not be nil
+      raise(ArgumentError, 'invalid sources') if @_params[:src].nil?
+
       # force lowercase on email addr
       @_params[:address].downcase!
-
-      # check permissions for parameters
-      raise Pundit::NotAuthorizedError unless policy(MailSource).create_with?(
-        @_params
-      )
 
       # perform sanity checks
       check_email_address_for_domain(
         email: @_params[:address],
         domain_id: @_params[:domain_id]
       )
+
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(MailSource).create_with?(
+        @_params
+      )
+
+      # fetch sources as an array of mailaccounts
+      @sources = MailAccount.all(id: 0)
+      mailaccount_ids = @_params.delete(:src)
+      mailaccount_ids.each do |acc_id|
+        @sources.push(MailAccount.get(acc_id))
+      end
+      @_params[:mail_accounts] = @sources
 
       @mailsource = MailSource.new(@_params)
       if @mailsource.save
@@ -138,11 +149,25 @@ namespace '/api/v1/mailsources' do
                                message: $ERROR_INFO.to_s)
         ) if @mailsource.destroyed?
 
-        # email addr must not be nil
-        raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
+        if @_params.key?(:address)
+          # email addr must not be nil
+          msg = 'invalid email address'
+          raise(ArgumentError, msg) if @_params[:address].nil?
 
-        # force lowercase on email addr
-        @_params[:address].downcase!
+          # force lowercase on email addr
+          @_params[:address].downcase!
+
+          # perform sanity checks
+          check_email_address_for_domain(
+            email: @_params[:address],
+            domain_id: @mailsource.domain_id
+          )
+        end
+
+        if @_params.key?(:src)
+          # sources must not be nil
+          raise(ArgumentError, 'invalid sources') if @_params[:src].nil?
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
@@ -151,11 +176,15 @@ namespace '/api/v1/mailsources' do
           @_params
         )
 
-        # perform sanity checks
-        check_email_address_for_domain(
-          email: @_params[:address],
-          domain_id: @mailsource.domain_id
-        )
+        if @_params.key?(:src)
+          # fetch sources as an array of mailaccounts
+          @sources = MailAccount.all(id: 0)
+          mailaccount_ids = @_params.delete(:src)
+          mailaccount_ids.each do |acc_id|
+            @sources.push(MailAccount.get(acc_id))
+          end
+          @_params[:mail_accounts] = @sources
+        end
 
         @result = if @mailsource.update(@_params)
                     ApiResponseSuccess.new(data: { object: @mailsource })

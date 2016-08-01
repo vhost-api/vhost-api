@@ -74,6 +74,7 @@ class MailAliasPolicy < ApplicationPolicy
   # @retun [Boolean]
   def check_create_params(params)
     return false unless check_domain_id(params[:domain_id])
+    return false unless check_mailaccount_set(params[:dest].to_set)
     true
   end
 
@@ -85,6 +86,7 @@ class MailAliasPolicy < ApplicationPolicy
     if params.key?(:domain_id)
       return false unless check_domain_id(params[:domain_id])
     end
+    return check_mailaccount_set(params[:dest].to_set) if params.key?(:dest)
     true
   end
 
@@ -99,5 +101,28 @@ class MailAliasPolicy < ApplicationPolicy
       domain_id
     )
     false
+  end
+
+  def check_mailaccount_set(set)
+    return true if mailaccount_set.superset?(set)
+    false
+  end
+
+  def mailaccount_set
+    return user_mailaccount_set unless user.reseller?
+    return reseller_mailaccount_set if user.reseller?
+    []
+  end
+
+  def user_mailaccount_set
+    return user.domains.mail_accounts.map(&:id).to_set unless user.reseller?
+    []
+  end
+
+  def reseller_mailaccount_set
+    return user.domains.mail_accounts.map(&:id).concat(
+      user.customers.domains.mail_accounts.map(&:id)
+    ).to_set if user.reseller?
+    []
   end
 end

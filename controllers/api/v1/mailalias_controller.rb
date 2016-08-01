@@ -28,6 +28,9 @@ namespace '/api/v1/mailaliases' do
       # email addr must not be nil
       raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
 
+      # destinations must not be nil
+      raise(ArgumentError, 'invalid destinations') if @_params[:dest].nil?
+
       # force lowercase on email addr
       @_params[:address].downcase!
 
@@ -41,6 +44,14 @@ namespace '/api/v1/mailaliases' do
         email: @_params[:address],
         domain_id: @_params[:domain_id]
       )
+
+      # fetch destinations as an array of mailaccounts
+      @destinations = MailAccount.all(id: 0)
+      mailaccount_ids = @_params.delete(:dest)
+      mailaccount_ids.each do |acc_id|
+        @destinations.push(MailAccount.get(acc_id))
+      end
+      @_params[:mail_accounts] = @destinations
 
       @mailalias = MailAlias.new(@_params)
       if @mailalias.save
@@ -138,11 +149,25 @@ namespace '/api/v1/mailaliases' do
                                message: $ERROR_INFO.to_s)
         ) if @mailalias.destroyed?
 
-        # email addr must not be nil
-        raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
+        if @_params.key?(:address)
+          # email addr must not be nil
+          msg = 'invalid email address'
+          raise(ArgumentError, msg) if @_params[:address].nil?
 
-        # force lowercase on email addr
-        @_params[:address].downcase!
+          # force lowercase on email addr
+          @_params[:address].downcase!
+
+          # perform sanity checks
+          check_email_address_for_domain(
+            email: @_params[:address],
+            domain_id: @mailalias.domain_id
+          )
+        end
+
+        if @_params.key?(:dest)
+          # destinations must not be nil
+          raise(ArgumentError, 'invalid destinations') if @_params[:dest].nil?
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
@@ -151,11 +176,15 @@ namespace '/api/v1/mailaliases' do
           @_params
         )
 
-        # perform sanity checks
-        check_email_address_for_domain(
-          email: @_params[:address],
-          domain_id: @mailalias.domain_id
-        )
+        if @_params.key?(:dest)
+          # fetch destinations as an array of mailaccounts
+          @destinations = MailAccount.all(id: 0)
+          mailaccount_ids = @_params.delete(:dest)
+          mailaccount_ids.each do |acc_id|
+            @destinations.push(MailAccount.get(acc_id))
+          end
+          @_params[:mail_accounts] = @destinations
+        end
 
         @result = if @mailalias.update(@_params)
                     ApiResponseSuccess.new(data: { object: @mailalias })

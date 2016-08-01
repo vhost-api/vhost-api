@@ -8,7 +8,7 @@ describe 'VHost-API MailSource Controller' do
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an admin user' do
+      context 'by an admin' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testmailsource) { create(:mailsource) }
@@ -116,11 +116,17 @@ describe 'VHost-API MailSource Controller' do
           let(:domain) do
             create(:domain, name: 'new.org', user_id: testadmin.id)
           end
+          let(:mailaccount) do
+            create(:mailaccount,
+                   email: "admin@#{domain.name}",
+                   domain_id: domain.id)
+          end
           let(:address) { 'new@new.org' }
           let(:new_attributes) do
             attributes_for(:mailsource,
                            address: address,
-                           domain_id: domain.id)
+                           domain_id: domain.id,
+                           src: [mailaccount.id])
           end
 
           context 'with valid attributes' do
@@ -404,6 +410,11 @@ describe 'VHost-API MailSource Controller' do
               end
 
               let(:domain) { create(:domain, name: 'mailsource.org') }
+              let(:mailaccount) do
+                create(:mailaccount,
+                       email: 'foobar@mailsource.org',
+                       domain_id: domain.id)
+              end
 
               before(:each) do
                 create(:mailsource,
@@ -411,9 +422,10 @@ describe 'VHost-API MailSource Controller' do
                        domain_id: domain.id)
               end
               let(:resource_conflict) do
-                build(:mailsource,
-                      address: 'existing@mailsource.org',
-                      domain_id: domain.id).as_json(methods: nil)
+                attributes_for(:mailsource,
+                               address: 'existing@mailsource.org',
+                               domain_id: domain.id,
+                               src: [mailaccount.id])
               end
 
               it 'does not create a new mailsource' do
@@ -478,19 +490,36 @@ describe 'VHost-API MailSource Controller' do
 
         describe 'PATCH' do
           context 'with valid attributes' do
-            it 'authorizes the request by using the policies' do
-              expect(
-                Pundit.authorize(testadmin, MailSource, :create?)
-              ).to be_truthy
+            let(:domain) { testmailsource.domain }
+            let(:mailaccount) do
+              create(:mailaccount,
+                     email: "example@#{domain.name}",
+                     domain_id: domain.id)
+            end
+            let(:mailaccount2) do
+              create(:mailaccount,
+                     email: "herpderp@#{domain.name}",
+                     domain_id: domain.id)
+            end
+            let(:mailaccount3) do
+              create(:mailaccount,
+                     email: "user@#{domain.name}",
+                     domain_id: domain.id)
+            end
+            let(:sources) do
+              [mailaccount.id, mailaccount2.id, mailaccount3.id]
+            end
+            let(:upd_attrs) do
+              attributes_for(
+                :mailsource,
+                address: "foo@#{domain.name}",
+                src: sources
+              )
             end
 
             it 'updates an existing mailsource with new values' do
               clear_cookies
 
-              upd_attrs = attributes_for(
-                :mailsource,
-                address: "foo@#{testmailsource.domain.name}"
-              )
               prev_tstamp = testmailsource.updated_at
 
               patch(
@@ -512,11 +541,6 @@ describe 'VHost-API MailSource Controller' do
 
             it 'returns an API Success containing the updated mailsource' do
               clear_cookies
-
-              upd_attrs = attributes_for(
-                :mailsource,
-                address: "foo@#{testmailsource.domain.name}"
-              )
 
               patch(
                 "/api/v#{api_version}/mailsources/#{testmailsource.id}",
@@ -540,8 +564,6 @@ describe 'VHost-API MailSource Controller' do
 
             it 'returns a valid JSON object' do
               clear_cookies
-
-              upd_attrs = attributes_for(:mailsource, address: 'foo@foo.org')
 
               patch(
                 "/api/v#{api_version}/mailsources/#{testmailsource.id}",
@@ -629,7 +651,7 @@ describe 'VHost-API MailSource Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid email address'
+                'The attribute \'foo\' is not accessible in MailSource'
               end
 
               it 'does not update the mailsource' do
@@ -1170,10 +1192,12 @@ describe 'VHost-API MailSource Controller' do
           context 'with available quota' do
             let(:testuser) { create(:user_with_mailsources) }
             let(:domain) { testuser.domains.first }
+            let(:mailaccount) { domain.mail_accounts.first }
             let(:new) do
               attributes_for(:mailsource,
                              address: "new@#{domain.name}",
-                             domain_id: domain.id)
+                             domain_id: domain.id,
+                             src: [mailaccount.id])
             end
 
             it 'authorizes the request' do
@@ -1243,7 +1267,17 @@ describe 'VHost-API MailSource Controller' do
 
           context 'with using different user_id in attributes' do
             let(:testuser) { create(:user_with_mailsources) }
-            let(:anotheruser) { create(:user_with_domains) }
+            let(:anotheruser) { create(:user_with_mailaccounts) }
+            let(:domain) { anotheruser.domains.first }
+            let(:mailaccount) { domain.mail_accounts.first }
+            let(:new_attrs) do
+              attributes_for(
+                :mailsource,
+                address: "new@#{domain.name}",
+                domain_id: domain.id,
+                src: [mailaccount.id]
+              )
+            end
 
             it 'does not create a new mailsource' do
               clear_cookies
@@ -1252,9 +1286,7 @@ describe 'VHost-API MailSource Controller' do
 
               post(
                 "/api/v#{api_version}/mailsources",
-                attributes_for(:mailsource,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1269,9 +1301,7 @@ describe 'VHost-API MailSource Controller' do
 
               post(
                 "/api/v#{api_version}/mailsources",
-                attributes_for(:mailsource,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1293,9 +1323,7 @@ describe 'VHost-API MailSource Controller' do
 
               post(
                 "/api/v#{api_version}/mailsources",
-                attributes_for(:mailsource,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name

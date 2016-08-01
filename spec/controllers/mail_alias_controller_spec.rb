@@ -8,7 +8,7 @@ describe 'VHost-API MailAlias Controller' do
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an admin user' do
+      context 'by an admin' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testmailalias) { create(:mailalias) }
@@ -116,11 +116,17 @@ describe 'VHost-API MailAlias Controller' do
           let(:domain) do
             create(:domain, name: 'new.org', user_id: testadmin.id)
           end
+          let(:mailaccount) do
+            create(:mailaccount,
+                   email: "admin@#{domain.name}",
+                   domain_id: domain.id)
+          end
           let(:address) { 'new@new.org' }
           let(:new_attributes) do
             attributes_for(:mailalias,
                            address: address,
-                           domain_id: domain.id)
+                           domain_id: domain.id,
+                           dest: [mailaccount.id])
           end
 
           context 'with valid attributes' do
@@ -404,6 +410,11 @@ describe 'VHost-API MailAlias Controller' do
               end
 
               let(:domain) { create(:domain, name: 'mailalias.org') }
+              let(:mailaccount) do
+                create(:mailaccount,
+                       email: 'foobar@mailalias.org',
+                       domain_id: domain.id)
+              end
 
               before(:each) do
                 create(:mailalias,
@@ -411,9 +422,10 @@ describe 'VHost-API MailAlias Controller' do
                        domain_id: domain.id)
               end
               let(:resource_conflict) do
-                build(:mailalias,
-                      address: 'existing@mailalias.org',
-                      domain_id: domain.id).as_json(methods: nil)
+                attributes_for(:mailalias,
+                               address: 'existing@mailalias.org',
+                               domain_id: domain.id,
+                               dest: [mailaccount.id])
               end
 
               it 'does not create a new mailalias' do
@@ -478,24 +490,40 @@ describe 'VHost-API MailAlias Controller' do
 
         describe 'PATCH' do
           context 'with valid attributes' do
-            it 'authorizes the request by using the policies' do
-              expect(
-                Pundit.authorize(testadmin, MailAlias, :create?)
-              ).to be_truthy
+            let(:domain) { testmailalias.domain }
+            let(:mailaccount) do
+              create(:mailaccount,
+                     email: "example@#{domain.name}",
+                     domain_id: domain.id)
             end
-
+            let(:mailaccount2) do
+              create(:mailaccount,
+                     email: "herpderp@#{domain.name}",
+                     domain_id: domain.id)
+            end
+            let(:mailaccount3) do
+              create(:mailaccount,
+                     email: "user@#{domain.name}",
+                     domain_id: domain.id)
+            end
+            let(:destinations) do
+              [mailaccount.id, mailaccount2.id, mailaccount3.id]
+            end
+            let(:upd_attrs) do
+              attributes_for(
+                :mailalias,
+                address: "foo@#{domain.name}",
+                dest: destinations
+              )
+            end
             it 'updates an existing mailalias with new values' do
               clear_cookies
 
-              updated_attrs = attributes_for(
-                :mailalias,
-                address: "foo@#{testmailalias.domain.name}"
-              )
               prev_tstamp = testmailalias.updated_at
 
               patch(
                 "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
                   group: Group.get(testadmin.group_id).name
@@ -504,7 +532,7 @@ describe 'VHost-API MailAlias Controller' do
 
               expect(
                 MailAlias.get(testmailalias.id).address
-              ).to eq(updated_attrs[:address])
+              ).to eq(upd_attrs[:address])
               expect(
                 MailAlias.get(testmailalias.id).updated_at
               ).to be > prev_tstamp
@@ -513,14 +541,9 @@ describe 'VHost-API MailAlias Controller' do
             it 'returns an API Success containing the updated mailalias' do
               clear_cookies
 
-              updated_attrs = attributes_for(
-                :mailalias,
-                address: "foo@#{testmailalias.domain.name}"
-              )
-
               patch(
                 "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
                   group: Group.get(testadmin.group_id).name
@@ -541,11 +564,9 @@ describe 'VHost-API MailAlias Controller' do
             it 'returns a valid JSON object' do
               clear_cookies
 
-              updated_attrs = attributes_for(:mailalias, address: 'foo@foo.org')
-
               patch(
                 "/api/v#{api_version}/mailaliases/#{testmailalias.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testadmin.id,
                   group: Group.get(testadmin.group_id).name
@@ -629,7 +650,7 @@ describe 'VHost-API MailAlias Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid email address'
+                'The attribute \'foo\' is not accessible in MailAlias'
               end
 
               it 'does not update the mailalias' do
@@ -1170,10 +1191,12 @@ describe 'VHost-API MailAlias Controller' do
           context 'with available quota' do
             let(:testuser) { create(:user_with_mailaliases) }
             let(:domain) { testuser.domains.first }
+            let(:mailaccount) { domain.mail_accounts.first }
             let(:new) do
               attributes_for(:mailalias,
                              address: "new@#{domain.name}",
-                             domain_id: domain.id)
+                             domain_id: domain.id,
+                             dest: [mailaccount.id])
             end
 
             it 'authorizes the request' do
@@ -1243,7 +1266,15 @@ describe 'VHost-API MailAlias Controller' do
 
           context 'with using different user_id in attributes' do
             let(:testuser) { create(:user_with_mailaliases) }
-            let(:anotheruser) { create(:user_with_domains) }
+            let(:anotheruser) { create(:user_with_mailaccounts) }
+            let(:new_attrs) do
+              attributes_for(
+                :mailalias,
+                name: "foo@#{anotheruser.domains.first.name}",
+                domain_id: anotheruser.domains.first.id,
+                dest: [anotheruser.domains.first.mail_accounts.first.id]
+              )
+            end
 
             it 'does not create a new mailalias' do
               clear_cookies
@@ -1252,9 +1283,7 @@ describe 'VHost-API MailAlias Controller' do
 
               post(
                 "/api/v#{api_version}/mailaliases",
-                attributes_for(:mailalias,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1266,12 +1295,9 @@ describe 'VHost-API MailAlias Controller' do
 
             it 'returns an API Error' do
               clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaliases",
-                attributes_for(:mailalias,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name
@@ -1293,9 +1319,7 @@ describe 'VHost-API MailAlias Controller' do
 
               post(
                 "/api/v#{api_version}/mailaliases",
-                attributes_for(:mailalias,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
+                new_attrs.to_json,
                 appconfig[:session][:key] => {
                   user_id: testuser.id,
                   group: Group.get(testuser.group_id).name

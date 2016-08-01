@@ -149,23 +149,25 @@ namespace '/api/v1/mailaccounts' do
           @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
         end
 
-        # email addr must not be nil
-        raise(ArgumentError, 'invalid email address') if @_params[:email].nil?
+        if @_params.key?(:email)
+          # email addr must not be nil
+          raise(ArgumentError, 'invalid email address') if @_params[:email].nil?
 
-        # force lowercase on email addr
-        @_params[:email].downcase!
+          # force lowercase on email addr
+          @_params[:email].downcase!
+
+          # perform sanity checks
+          check_email_address_for_domain(
+            email: @_params[:email],
+            domain_id: @mailaccount.domain_id
+          )
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
           @mailaccount
         ).update_with?(
           @_params
-        )
-
-        # perform sanity checks
-        check_email_address_for_domain(
-          email: @_params[:email],
-          domain_id: @mailaccount.domain_id
         )
 
         @result = if @mailaccount.update(@_params)
