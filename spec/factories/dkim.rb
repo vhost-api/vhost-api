@@ -26,7 +26,7 @@ FactoryGirl.define do
       end
     end
 
-    factory :invalid_dkim, parent: :mailsource do
+    factory :invalid_dkim, parent: :dkim do
       selector nil
     end
   end

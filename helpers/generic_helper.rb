@@ -179,3 +179,26 @@ def check_email_address_for_domain(email: nil, domain_id: nil)
   check_email_localpart(email: email, domain: str_domain)
   true
 end
+
+def check_dkim_author(author: nil)
+  # some messages
+  msg_invalid = 'invalid author'
+  msg_length = 'author is too long'
+
+  # check if requested email is "valid"
+  raise(ArgumentError, msg_invalid) unless author.count('@') == 1
+  raise(ArgumentError, msg_length) unless author.length <= 254
+  true
+end
+
+def check_dkim_author_for_dkim(author: nil, dkim_id: nil)
+  check_dkim_author(author: author)
+  msg_mismatch = 'author does not belong to requested dkim/domain'
+  # check if requested email belongs to requested domain
+  str_domain = author.split('@')[1]
+  dkid = dkim_id
+  raise(ArgumentError, msg_mismatch) unless str_domain == Domain.get(
+    Dkim.get(dkid).domain_id
+  ).name
+  true
+end

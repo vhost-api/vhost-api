@@ -25,13 +25,21 @@ Dir.glob('./controllers/api/v1/*.rb').each { |file| require file }
 
 # setup database connection
 # DataMapper::Logger.new($stdout, :debug)
-DataMapper::Logger.new($stdout, :info)
+DataMapper::Logger.new("log/datamapper_#{settings.environment}", :info)
 DataMapper::Property::String.length(255)
 DataMapper::Model.raise_on_save_failure = true
 DataMapper.setup(:default,
-                 [@dbconfig[:db_adapter], '://',
-                  @dbconfig[:db_user], ':', @dbconfig[:db_pass], '@',
-                  @dbconfig[:db_host], '/', @dbconfig[:db_name]].join)
+                 [
+                   @dbconfig[:db_adapter],
+                   '://',
+                   @dbconfig[:db_user],
+                   ':',
+                   @dbconfig[:db_pass],
+                   '@',
+                   @dbconfig[:db_host],
+                   '/',
+                   @dbconfig[:db_name]
+                 ].join)
 
 ::Logger.class_eval { alias_method :write, :'<<' }
 access_log = 'log/' + settings.environment.to_s + '_access.log'
@@ -58,6 +66,15 @@ configure do
 end
 
 configure :development do
+  require 'pry'
+  set :show_exceptions, :after_handler
+  set :raise_errors, false
+  use BetterErrors::Middleware
+  BetterErrors.application_root = __dir__
+  BetterErrors.use_pry!
+end
+
+configure :test do
   require 'pry'
   set :show_exceptions, :after_handler
   set :raise_errors, false

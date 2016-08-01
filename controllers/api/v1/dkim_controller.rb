@@ -28,6 +28,9 @@ namespace '/api/v1/dkims' do
       # selector must not be nil
       raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
 
+      # domain_id must not be nil
+      raise(ArgumentError, 'invalid domain id') if @_params[:domain_id].nil?
+
       # force lowercase on selector
       @_params[:selector].downcase!
 
@@ -125,11 +128,18 @@ namespace '/api/v1/dkims' do
                                message: $ERROR_INFO.to_s)
         ) if @dkim.destroyed?
 
-        # selector must not be nil
-        raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
+        if @_params.key?(:selector)
+          # selector must not be nil
+          raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
+        end
+
+        if @_params.key?(:domain_id)
+          # domain_id must not be nil
+          raise(ArgumentError, 'invalid domain id') if @_params[:domain_id].nil?
+        end
 
         # force lowercase on selector
-        @_params[:selector].downcase!
+        @_params[:selector].downcase! if @_params.key?(:selector)
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(

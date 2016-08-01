@@ -50,7 +50,7 @@ describe 'VHost-API Authentication' do
                                        ).name }
     expect(last_response.redirect?).to be_truthy
     follow_redirect!
-    expect(last_request.path).to eq('/')
+    expect(last_request.path).to eq('/login')
   end
 
   it 'shows users name in topnav when logged in' do

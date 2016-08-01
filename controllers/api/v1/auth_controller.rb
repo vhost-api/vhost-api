@@ -51,6 +51,6 @@ namespace '/api/v1/auth' do
                   '<pre>' + gen_session_json(session: session) + '</pre>'
     end
     flash[:success] = flashmsg
-    redirect '/'
+    redirect '/login'
   end
 end

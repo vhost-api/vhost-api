@@ -553,7 +553,7 @@ describe 'VHost-API Dkim Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid selector'
+                'The attribute \'foo\' is not accessible in Dkim'
               end
 
               it 'does not update the dkim' do
