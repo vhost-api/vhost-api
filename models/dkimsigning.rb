@@ -8,7 +8,7 @@ class DkimSigning
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :author, String, required: true, key: true, length: 255
+  property :author, String, required: true, length: 255
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
   property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
