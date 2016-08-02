@@ -118,11 +118,13 @@ namespace '/api/v1/domains' do
           memo.tap { |m| m[k.to_sym] = v }
         end
 
-        # domain name must not be nil
-        raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
+        # domain name must not be nil if present
+        if @_params.key?(:name)
+          raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
 
-        # force lowercase on domain name
-        @_params[:name].downcase!
+          # force lowercase on domain name
+          @_params[:name].downcase!
+        end
 
         # prevent any action being performed on a detroyed resource
         return_apiresponse(

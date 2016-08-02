@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 begin
-  require 'haml_lint/rake_task'
-  require 'benchmark'
+  unless ENV['RACK_ENV'] == 'production'
+    require 'haml_lint/rake_task'
+    require 'benchmark'
 
-  HamlLint::RakeTask.new do |t|
-    t.files = ['views/*.haml']
+    HamlLint::RakeTask.new do |t|
+      t.files = ['views/*.haml']
+    end
   end
 end

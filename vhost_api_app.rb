@@ -15,8 +15,6 @@ require 'filesize'
 require 'tilt/sass'
 require 'sass'
 require 'English'
-require 'better_errors'
-require 'binding_of_caller'
 
 # load models and stuff
 require_relative './init'
@@ -67,6 +65,8 @@ end
 
 configure :development do
   require 'pry'
+  require 'better_errors'
+  require 'binding_of_caller'
   set :show_exceptions, :after_handler
   set :raise_errors, false
   use BetterErrors::Middleware
@@ -76,6 +76,8 @@ end
 
 configure :test do
   require 'pry'
+  require 'better_errors'
+  require 'binding_of_caller'
   set :show_exceptions, :after_handler
   set :raise_errors, false
   use BetterErrors::Middleware

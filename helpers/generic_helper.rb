@@ -130,9 +130,7 @@ end
 
 def authenticate!
   if apikey_headers?(request.env)
-    p 'has valid apikey headers'
     @user = User.get(request.env['HTTP_X_VHOSTAPI_USER'])
-    p @user
     valid_apikey?(request.env['HTTP_X_VHOSTAPI_KEY'])
   else
     @user = User.get(session[:user_id])

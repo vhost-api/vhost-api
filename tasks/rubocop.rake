@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 begin
-  require 'rubocop/rake_task'
-  require 'benchmark'
+  unless ENV['RACK_ENV'] == 'production'
+    require 'rubocop/rake_task'
+    require 'benchmark'
 
-  RuboCop::RakeTask.new(:rubocop) do |t|
-    t.options = ['-D', '-S', '-E']
+    RuboCop::RakeTask.new(:rubocop) do |t|
+      t.options = ['-D', '-S', '-E']
+    end
   end
 end
