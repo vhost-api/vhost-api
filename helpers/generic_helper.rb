@@ -129,13 +129,27 @@ def mailaccount_quotausage(mailaccount)
 end
 
 def authenticate!
-  @user = User.get(session[:user_id])
-  # p 'User: ' + user?.to_s + ' ' + @user.to_s
-  return_apiresponse(
-    ApiResponseError.new(status_code: 403,
-                         error_id: 'unauthorized',
-                         message: unauthorized_msg)
-  ) if @user.nil?
+  if apikey_headers?(request.env)
+    p 'has valid apikey headers'
+    @user = User.get(request.env['HTTP_X_VHOSTAPI_USER'])
+    p @user
+    valid_apikey?(request.env['HTTP_X_VHOSTAPI_KEY'])
+  else
+    @user = User.get(session[:user_id])
+  end
+  raise Pundit::NotAuthorizedError if @user.nil?
+  @user
+end
+
+def valid_apikey?(key)
+  # verify apikey
+  # TODO: FIXME: implement real check
+  return true if key == settings.apikey.to_s
+  raise Pundit::NotAuthorizedError
+end
+
+def apikey_headers?(env)
+  env['HTTP_X_VHOSTAPI_USER'] && env['HTTP_X_VHOSTAPI_KEY']
 end
 
 def nav_current?(path = '/')
@@ -185,20 +199,30 @@ def check_dkim_author(author: nil)
   msg_invalid = 'invalid author'
   msg_length = 'author is too long'
 
-  # check if requested email is "valid"
-  raise(ArgumentError, msg_invalid) unless author.count('@') == 1
+  # check if requested author is "valid"
   raise(ArgumentError, msg_length) unless author.length <= 254
+  if author.include?('@')
+    raise(ArgumentError, msg_invalid) unless author.count('@') == 1
+  end
+  true
+end
+
+def check_dkim_domain(str_domain: nil, dkim_id: nil)
+  msg_mismatch = 'author does not belong to requested dkim/domain'
+  raise(ArgumentError, msg_mismatch) unless str_domain == Domain.get(
+    Dkim.get(dkim_id).domain_id
+  ).name
   true
 end
 
 def check_dkim_author_for_dkim(author: nil, dkim_id: nil)
   check_dkim_author(author: author)
-  msg_mismatch = 'author does not belong to requested dkim/domain'
   # check if requested email belongs to requested domain
-  str_domain = author.split('@')[1]
-  dkid = dkim_id
-  raise(ArgumentError, msg_mismatch) unless str_domain == Domain.get(
-    Dkim.get(dkid).domain_id
-  ).name
+  str_domain = if author.include?('@')
+                 author.split('@')[1]
+               else
+                 author
+               end
+  check_dkim_domain(str_domain: str_domain, dkim_id: dkim_id)
   true
 end

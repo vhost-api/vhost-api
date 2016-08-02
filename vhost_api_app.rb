@@ -98,7 +98,8 @@ before { env['rack.errors'] = error_logger }
 
 # tell pundit how to find the user
 current_user do
-  User.get(session[:user_id])
+  # User.get(session[:user_id])
+  authenticate!
 end
 
 # @return [Boolean]

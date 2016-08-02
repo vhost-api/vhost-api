@@ -39,6 +39,25 @@ namespace '/api/v1/dkims' do
         @_params
       )
 
+      # require both or none of the keys (XOR)
+      if @_params[:private_key].nil? ^ @_params[:public_key].nil?
+        raise(ArgumentError,
+              'invalid private or public key, either specify both or none')
+      end
+
+      # generate new keypar if nothing provided in request
+      if @_params[:private_key].nil? && @_params[:public_key].nil?
+        keypair = SSHKey.generate(
+          type: 'RSA',
+          bits: 4096,
+          comment: nil,
+          passphrase: nil
+        )
+
+        @_params[:private_key] = keypair.private_key
+        @_params[:public_key] = keypair.public_key
+      end
+
       @dkim = Dkim.new(@_params)
       if @dkim.save
         @result = ApiResponseSuccess.new(status_code: 201,

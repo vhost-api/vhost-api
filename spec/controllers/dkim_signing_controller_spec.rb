@@ -119,7 +119,7 @@ describe 'VHost-API DkimSigning Controller' do
           let(:dkim) do
             create(:dkim, domain_id: domain.id)
           end
-          let(:author) { "@#{domain.name}" }
+          let(:author) { domain.name }
           let(:new_attributes) do
             attributes_for(:dkimsigning,
                            author: author,
@@ -416,7 +416,7 @@ describe 'VHost-API DkimSigning Controller' do
 
               upd_attrs = attributes_for(
                 :dkimsigning,
-                author: "@#{testdkimsigning.dkim.domain.name}"
+                author: testdkimsigning.dkim.domain.name
               )
               prev_tstamp = testdkimsigning.updated_at
 
@@ -1032,7 +1032,7 @@ describe 'VHost-API DkimSigning Controller' do
                 "/api/v#{api_version}/dkimsignings",
                 attributes_for(
                   :dkimsigning,
-                  author: "@#{anotheruser.domains.first.name}",
+                  author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
                 appconfig[:session][:key] => {
@@ -1051,7 +1051,7 @@ describe 'VHost-API DkimSigning Controller' do
                 "/api/v#{api_version}/dkimsignings",
                 attributes_for(
                   :dkimsigning,
-                  author: "@#{anotheruser.domains.first.name}",
+                  author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
                 appconfig[:session][:key] => {
@@ -1077,7 +1077,7 @@ describe 'VHost-API DkimSigning Controller' do
                 "/api/v#{api_version}/dkimsignings",
                 attributes_for(
                   :dkimsigning,
-                  author: "@#{anotheruser.domains.first.name}",
+                  author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
                 appconfig[:session][:key] => {
@@ -1294,7 +1294,7 @@ describe 'VHost-API DkimSigning Controller' do
 
         describe 'PATCH' do
           it 'returns an an API unauthorized error' do
-            testdkimsigning_foo = create(:dkimsigning, author: '@foo.org')
+            testdkimsigning_foo = create(:dkimsigning, author: 'foo.org')
             patch(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning_foo.id}",
               'dkimsigning' => attributes_for(:dkimsigning)
