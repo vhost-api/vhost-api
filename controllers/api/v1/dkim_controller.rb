@@ -147,18 +147,15 @@ namespace '/api/v1/dkims' do
                                message: $ERROR_INFO.to_s)
         ) if @dkim.destroyed?
 
-        if @_params.key?(:selector)
-          # selector must not be nil
-          raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
-
-          # force lowercase on selector
-          @_params[:selector].downcase!
+        [:selector, :domain_id, :private_key, :public_key].each do |key|
+          if @_params.key?(key)
+            # key must not be nil
+            raise(ArgumentError, "invalid #{key}") if @_params[key].nil?
+          end
         end
 
-        if @_params.key?(:domain_id)
-          # domain_id must not be nil
-          raise(ArgumentError, 'invalid domain id') if @_params[:domain_id].nil?
-        end
+        # force lowercase on selector
+        @_params[:selector].downcase! if @_params.key?(:selector)
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(

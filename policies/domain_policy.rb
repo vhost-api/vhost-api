@@ -15,10 +15,7 @@ class DomainPolicy < ApplicationPolicy
   # @return [Boolean]
   def create_with?(params)
     return true if user.admin?
-    if params.key?(:user_id)
-      result_uid = check_user_id(params[:user_id])
-      return false unless result_uid
-    end
+    return check_user_id(params[:user_id]) if params.key?(:user_id)
     true
   end
 
@@ -28,12 +25,10 @@ class DomainPolicy < ApplicationPolicy
   def update_with?(params)
     return true if user.admin?
     if params.key?(:id)
-      result_id = check_id(params[:id])
-      return false unless result_id
+      return false unless check_id(params[:id])
     end
     if params.key?(:user_id)
-      result_uid = check_user_id(params[:user_id])
-      return false unless result_uid
+      return false unless check_user_id(params[:user_id])
     end
     true
   end
@@ -48,6 +43,7 @@ class DomainPolicy < ApplicationPolicy
 
     private
 
+    # @return [Array(Domain)]
     def domains
       result = user.domains.all
       result.concat(user.customers.domains) if user.reseller?
@@ -86,11 +82,13 @@ class DomainPolicy < ApplicationPolicy
     false
   end
 
+  # @return [Boolean]
   def check_id(id)
     return true if id == record.id
     false
   end
 
+  # @return [Boolean]
   def check_user_id(user_id)
     return true if user_id == user.id
     return true if user.reseller? && user.customers.include?(

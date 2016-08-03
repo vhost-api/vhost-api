@@ -59,7 +59,7 @@ class MailAccount
     domain.owner
   end
 
-  # @return [User]
+  # @return [Hash]
   def customer
     { id: domain.user.id, name: domain.user.name, login: domain.user.login }
   end

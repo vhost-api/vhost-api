@@ -551,7 +551,7 @@ describe 'VHost-API Dkim Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
                 'The attribute \'foo\' is not accessible in Dkim'
               end
@@ -563,7 +563,7 @@ describe 'VHost-API Dkim Controller' do
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkim_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -583,7 +583,7 @@ describe 'VHost-API Dkim Controller' do
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkim_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name
@@ -608,7 +608,7 @@ describe 'VHost-API Dkim Controller' do
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkim_attrs.to_json,
                   appconfig[:session][:key] => {
                     user_id: testadmin.id,
                     group: Group.get(testadmin.group_id).name

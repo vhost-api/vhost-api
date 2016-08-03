@@ -45,8 +45,8 @@ class Domain
     user
   end
 
-  # @return [JSON]
+  # @return [Hash]
   def customer
-    user.to_json(only: [:id, :name, :login])
+    { id: user.id, name: user.name, login: user.login }
   end
 end

@@ -590,7 +590,7 @@ describe 'VHost-API Domain Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid domain name'
+                'The attribute \'foo\' is not accessible in Domain'
               end
 
               it 'does not update the domain' do

@@ -24,7 +24,7 @@ describe 'VHost-API Domain Model' do
 
   it 'returns the owner as a User object' do
     _testadmin = create(:admin)
-    test = create(:dkim)
+    test = create(:domain)
     expect(test.owner).to be_an_instance_of(User)
   end
 end
