@@ -15,20 +15,22 @@ namespace '/api/v1/auth' do
       session[:user_id] = user.id
       session[:group] = user.group.name
 
-      flashmsg = 'Successfully logged in.'
-      if settings.environment == :development
-        flashmsg = flashmsg.dup
-        flashmsg << '</br><pre>' + gen_session_json(session: session) + '</pre>'
-      end
-      flash[:success] = flashmsg
+      # flashmsg = 'Successfully logged in.'
+      # if settings.environment == :development
+      # flashmsg = flashmsg.dup
+      # flashmsg << '</br><pre>' + gen_session_json(session: session) + '</pre>'
+      # end
+      # flash[:success] = flashmsg
 
-      if session[:return_to].nil?
-        redirect '/'
-      else
-        original_request = session[:return_to]
-        session[:return_to] = nil
-        redirect original_request
-      end
+      status 200
+
+      # if session[:return_to].nil?
+      # redirect '/'
+      # else
+      # original_request = session[:return_to]
+      # session[:return_to] = nil
+      # redirect original_request
+      # end
     else
       flash[:error] = 'Invalid Login'
       redirect '/login'

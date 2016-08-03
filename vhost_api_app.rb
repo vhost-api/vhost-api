@@ -132,6 +132,7 @@ before do
   # last_modified settings.start_time
   # etag settings.start_time.to_s
   # cache_control :public, :must_revalidate
+  p request.cookies
 end
 
 # check if request wants json
