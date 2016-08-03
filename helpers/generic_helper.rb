@@ -129,20 +129,16 @@ def mailaccount_quotausage(mailaccount)
 end
 
 def authenticate!
-  if apikey_headers?(request.env)
-    @user = User.get(request.env['HTTP_X_VHOSTAPI_USER'])
-    valid_apikey?(request.env['HTTP_X_VHOSTAPI_KEY'])
-  else
-    @user = User.get(session[:user_id])
-  end
+  @user = valid_apikey?(request.env) if apikey_headers?(request.env)
+  @user = User.get(session[:user_id]) unless session[:user_id].nil?
   raise Pundit::NotAuthorizedError if @user.nil?
   @user
 end
 
-def valid_apikey?(key)
-  # verify apikey
-  # TODO: FIXME: implement real check
-  return true if key == settings.apikey.to_s
+def valid_apikey?(env)
+  user = User.get(env['HTTP_X_VHOSTAPI_USER'])
+  key = env['HTTP_X_VHOSTAPI_KEY']
+  return user if user.apikeys.map(&:apikey).include?(key)
   raise Pundit::NotAuthorizedError
 end
 

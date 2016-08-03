@@ -15,6 +15,7 @@ FactoryGirl.define do
     enabled true
     quota_customers 5
     quota_domains 1
+    quota_apikeys 1
 
     transient do
       group_name 'user'
@@ -57,6 +58,10 @@ FactoryGirl.define do
       quota_customers 0
     end
 
+    factory :reseller_with_exhausted_apikey_quota, parent: :reseller do
+      quota_apikeys 0
+    end
+
     factory :reseller_with_exhausted_domain_quota, parent: :reseller do
       quota_domains 0
     end
@@ -88,6 +93,25 @@ FactoryGirl.define do
         create_list(:user,
                     evaluator.customer_count,
                     reseller_id: reseller.id)
+      end
+    end
+
+    factory :reseller_with_customers_and_apikeys, parent: :reseller do
+      transient do
+        customer_count 3
+        apikey_count 1
+      end
+
+      quota_customers 5
+      quota_apikeys 5
+
+      after(:create) do |reseller, evaluator|
+        create_list(:user, evaluator.customer_count, reseller_id: reseller.id)
+        create(:apikey, user_id: reseller.id)
+
+        reseller.customers.each do |customer|
+          create(:apikey, user_id: customer.id)
+        end
       end
     end
 
@@ -214,6 +238,11 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_customers_and_apikeys_and_exhausted_apikey_quota,
+            parent: :reseller_with_customers_and_apikeys do
+      quota_apikeys 4
+    end
+
     factory :reseller_with_customers_and_domains_and_exhausted_domain_quota,
             parent: :reseller_with_customers_and_domains do
       quota_domains 12
@@ -233,6 +262,10 @@ FactoryGirl.define do
     factory :reseller_with_customers_and_mailsources_and_exhausted_quota,
             parent: :reseller_with_customers_and_mailsources do
       quota_mail_sources 108
+    end
+
+    factory :user_with_exhausted_apikey_quota do
+      quota_apikeys 0
     end
 
     factory :user_with_exhausted_domain_quota do
@@ -263,6 +296,18 @@ FactoryGirl.define do
       quota_dns_zones 0
     end
 
+    factory :user_with_apikeys, parent: :user do
+      transient do
+        apikey_count 1
+      end
+
+      quota_apikeys 3
+
+      after(:create) do |user, _evaluator|
+        create(:apikey, user_id: user.id)
+      end
+    end
+
     factory :user_with_domains do
       transient do
         domain_count 3
@@ -275,6 +320,11 @@ FactoryGirl.define do
                     evaluator.domain_count,
                     user_id: user.id)
       end
+    end
+
+    factory :user_with_apikeys_and_exhausted_apikey_quota,
+            parent: :user_with_apikeys do
+      quota_apikeys 1
     end
 
     factory :user_with_domains_and_exhausted_domain_quota,
