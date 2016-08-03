@@ -28,8 +28,10 @@ namespace '/api/v1/mailaliases' do
       # email addr must not be nil
       raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
 
-      # destinations must not be nil
-      raise(ArgumentError, 'invalid destinations') if @_params[:dest].nil?
+      # destinations must be an array
+      if @_params[:dest].nil? || !@_params[:dest].is_a?(Array)
+        raise(ArgumentError, 'invalid destinations')
+      end
 
       # force lowercase on email addr
       @_params[:address].downcase!
@@ -165,8 +167,10 @@ namespace '/api/v1/mailaliases' do
         end
 
         if @_params.key?(:dest)
-          # destinations must not be nil
-          raise(ArgumentError, 'invalid destinations') if @_params[:dest].nil?
+          # destinations must be an array
+          if @_params[:dest].nil? || !@_params[:dest].is_a?(Array)
+            raise(ArgumentError, 'invalid destinations')
+          end
         end
 
         # check permissions for parameters

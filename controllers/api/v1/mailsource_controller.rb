@@ -28,8 +28,10 @@ namespace '/api/v1/mailsources' do
       # email addr must not be nil
       raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
 
-      # sources must not be nil
-      raise(ArgumentError, 'invalid sources') if @_params[:src].nil?
+      # sources must be an Array
+      if @_params[:src].nil? || !@_params[:src].is_a?(Array)
+        raise(ArgumentError, 'invalid sources')
+      end
 
       # force lowercase on email addr
       @_params[:address].downcase!
@@ -165,8 +167,10 @@ namespace '/api/v1/mailsources' do
         end
 
         if @_params.key?(:src)
-          # sources must not be nil
-          raise(ArgumentError, 'invalid sources') if @_params[:src].nil?
+          # sources must be an Array
+          if @_params[:src].nil? || !@_params[:src].is_a?(Array)
+            raise(ArgumentError, 'invalid sources')
+          end
         end
 
         # check permissions for parameters
