@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/mailaliases' do
-  helpers do
-    def fetch_scoped_mailaliases
-      @mailaliases = policy_scope(MailAlias)
-    end
-  end
-
   get do
-    fetch_scoped_mailaliases
-    return_authorized_collection(object: @mailaliases)
+    @mailaliases = policy_scope(MailAlias)
+    return_authorized_collection(object: @mailaliases, params: params)
   end
 
   post do
@@ -21,16 +15,16 @@ namespace '/api/v1/mailaliases' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
 
       # email addr must not be nil
-      raise(ArgumentError, 'invalid email address') if @_params[:address].nil?
+      return_api_error(
+        ApiErrors.[](:invalid_email)
+      ) if @_params[:address].nil?
 
       # destinations must be an array
       if @_params[:dest].nil? || !@_params[:dest].is_a?(Array)
-        raise(ArgumentError, 'invalid destinations')
+        return_api_error(ApiErrors.[](:invalid_alias_destinations))
       end
 
       # force lowercase on email addr
@@ -59,34 +53,19 @@ namespace '/api/v1/mailaliases' do
       if @mailalias.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailalias })
-        response.headers['Location'] = [request.base_url,
-                                        'api',
-                                        'v1',
-                                        'mailaliases',
-                                        @mailalias.id].join('/')
+        loc = "#{request.base_url}/api/v1/mailaliases/#{@mailalias.id}"
+        response.headers['Location'] = loc
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      if MailAlias.first(address: @_params[:address]).nil?
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
-      else
-        # 409 = Conflict
-        @result = ApiResponseError.new(status_code: 409,
-                                       error_id: 'resource conflict',
-                                       message: $ERROR_INFO.to_s)
-      end
+      @result = if MailAlias.first(address: @_params[:address]).nil?
+                  api_error(ApiErrors.[](:failed_create))
+                else
+                  api_error(ApiErrors.[](:resource_conflict))
+                end
     end
     return_apiresponse @result
   end
@@ -96,11 +75,7 @@ namespace '/api/v1/mailaliases' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @mailalias = MailAlias.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @mailalias.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @mailalias.nil?
   end
 
   namespace '/:id' do
@@ -108,11 +83,7 @@ namespace '/api/v1/mailaliases' do
       @result = nil
 
       # prevent any action being performed on a detroyed resource
-      return_apiresponse(
-        ApiResponseError.new(status_code: 500,
-                             error_id: 'could not delete',
-                             message: $ERROR_INFO.to_s)
-      ) if @mailalias.destroyed?
+      return_api_error(ApiErrors.[](:failed_delete)) if @mailalias.destroyed?
 
       # check creation permissions. i.e. admin/quotacheck
       authorize(@mailalias, :destroy?)
@@ -121,10 +92,7 @@ namespace '/api/v1/mailaliases' do
         @result = if @mailalias.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -140,21 +108,16 @@ namespace '/api/v1/mailaliases' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
-        end
+        @_params = symbolize_params_hash(@_params)
 
         # prevent any action being performed on a detroyed resource
-        return_apiresponse(
-          ApiResponseError.new(status_code: 500,
-                               error_id: 'could not delete',
-                               message: $ERROR_INFO.to_s)
-        ) if @mailalias.destroyed?
+        return_api_error(ApiErrors.[](:failed_update)) if @mailalias.destroyed?
 
         if @_params.key?(:address)
           # email addr must not be nil
-          msg = 'invalid email address'
-          raise(ArgumentError, msg) if @_params[:address].nil?
+          return_api_error(
+            ApiErrors.[](:invalid_email)
+          ) if @_params[:address].nil?
 
           # force lowercase on email addr
           @_params[:address].downcase!
@@ -169,7 +132,7 @@ namespace '/api/v1/mailaliases' do
         if @_params.key?(:dest)
           # destinations must be an array
           if @_params[:dest].nil? || !@_params[:dest].is_a?(Array)
-            raise(ArgumentError, 'invalid destinations')
+            return_api_error(ApiErrors.[](:invalid_alias_destinations))
           end
         end
 
@@ -193,33 +156,18 @@ namespace '/api/v1/mailaliases' do
         @result = if @mailalias.update(@_params)
                     ApiResponseSuccess.new(data: { object: @mailalias })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        if MailAlias.first(address: @_params[:address]).nil?
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
-        else
-          # 409 = Conflict
-          @result = ApiResponseError.new(status_code: 409,
-                                         error_id: 'resource conflict',
-                                         message: $ERROR_INFO.to_s)
-        end
+        @result = if MailAlias.first(address: @_params[:address]).nil?
+                    api_error(ApiErrors.[](:failed_update))
+                  else
+                    api_error(ApiErrors.[](:resource_conflict))
+                  end
       end
       return_apiresponse @result
     end

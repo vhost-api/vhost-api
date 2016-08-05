@@ -115,11 +115,7 @@ end
 
 error Pundit::NotAuthorizedError do
   flash[:alert] = 'not authorized'
-  return_apiresponse(
-    ApiResponseError.new(status_code: 403,
-                         error_id: 'unauthorized',
-                         message: unauthorized_msg)
-  )
+  return_api_error(ApiErrors.[](:unauthorized))
 end
 
 before do
@@ -132,7 +128,7 @@ before do
   # last_modified settings.start_time
   # etag settings.start_time.to_s
   # cache_control :public, :must_revalidate
-  p request.cookies
+  # p request.cookies
 end
 
 # check if request wants json
@@ -191,9 +187,5 @@ get '/contact' do
 end
 
 not_found do
-  return_apiresponse(
-    ApiResponseError.new(status_code: 404,
-                         error_id: 'not found',
-                         message: 'requested resource does not exist')
-  )
+  return_api_error(ApiErrors.[](:not_found))
 end

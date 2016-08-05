@@ -82,7 +82,7 @@ describe 'VHost-API Domain Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
+          let(:error_msg) { ApiErrors.[](:not_found)[:message] }
           it 'returns an API Error' do
             clear_cookies
 
@@ -100,9 +100,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -228,12 +226,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -257,7 +250,7 @@ describe 'VHost-API Domain Controller' do
             context 'invalid attributes' do
               let(:invalid_domain_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'invalid domain name'
+                ApiErrors.[](:invalid_domain)[:message]
               end
 
               it 'does not create a new domain' do
@@ -292,12 +285,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_domain)).to_json
                   )
                 )
               end
@@ -321,7 +309,7 @@ describe 'VHost-API Domain Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_domain) }
               let(:invalid_values_msg) do
-                'invalid domain name'
+                ApiErrors.[](:invalid_domain)[:message]
               end
 
               it 'does not create a new domain' do
@@ -356,12 +344,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_domain)).to_json
                   )
                 )
               end
@@ -384,7 +367,7 @@ describe 'VHost-API Domain Controller' do
 
             context 'with a resource conflict' do
               let(:resource_conflict_msg) do
-                'Domain#save returned false, Domain was not saved'
+                ApiErrors.[](:resource_conflict)[:message]
               end
               before(:each) do
                 create(:domain, name: 'existing.domain')
@@ -425,12 +408,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -561,12 +539,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -590,7 +563,7 @@ describe 'VHost-API Domain Controller' do
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in Domain'
+                ApiErrors.[](:invalid_request)[:message]
               end
 
               it 'does not update the domain' do
@@ -626,12 +599,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -655,7 +623,7 @@ describe 'VHost-API Domain Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_domain) }
               let(:invalid_values_msg) do
-                'invalid domain name'
+                ApiErrors.[](:invalid_domain)[:message]
               end
 
               it 'does not update the domain' do
@@ -691,12 +659,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_domain)).to_json
                   )
                 )
               end
@@ -723,7 +686,7 @@ describe 'VHost-API Domain Controller' do
                                name: 'existing.domain')
               end
               let(:resource_conflict_msg) do
-                'Domain#save returned false, Domain was not saved'
+                ApiErrors.[](:resource_conflict)[:message]
               end
               before(:each) do
                 create(:domain, name: 'existing.domain')
@@ -769,12 +732,7 @@ describe 'VHost-API Domain Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -797,7 +755,9 @@ describe 'VHost-API Domain Controller' do
           end
 
           context 'operation failed' do
-            let(:patch_error_msg) { '' }
+            let(:patch_error_msg) do
+              ApiErrors.[](:failed_update)[:message]
+            end
 
             it 'returns an API Error' do
               invincibledomain = create(:domain, name: 'invincible.org')
@@ -828,12 +788,7 @@ describe 'VHost-API Domain Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not update',
-                    message: patch_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
             end
@@ -878,7 +833,9 @@ describe 'VHost-API Domain Controller' do
           end
 
           context 'operation failed' do
-            let(:delete_error_msg) { '' }
+            let(:delete_error_msg) do
+              ApiErrors.[](:failed_delete)[:message]
+            end
 
             it 'returns an API Error' do
               invincibledomain = create(:domain, name: 'invincible.org')
@@ -908,12 +865,7 @@ describe 'VHost-API Domain Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not delete',
-                    message: delete_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
             end
@@ -928,7 +880,9 @@ describe 'VHost-API Domain Controller' do
         let!(:testuser) { create(:user_with_domains) }
         let!(:owner) { create(:user_with_domains) }
         let!(:testdomain) { owner.domains.first }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
+        let(:unauthorized_msg) do
+          ApiErrors.[](:unauthorized)[:message]
+        end
 
         describe 'GET all' do
           it 'returns only its own domains' do
@@ -942,8 +896,12 @@ describe 'VHost-API Domain Controller' do
               }
             )
 
+            scope = Pundit.policy_scope(testuser, Domain)
+            policy = Pundit.policy(testuser, scope)
+            permitted = policy.permitted_attributes
+
             expect(last_response.body).to eq(
-              return_json_pretty(Pundit.policy_scope(testuser, Domain).to_json)
+              return_json_pretty(scope.to_json(only: permitted))
             )
           end
 
@@ -983,9 +941,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1006,7 +962,9 @@ describe 'VHost-API Domain Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
+          let(:error_msg) do
+            ApiErrors.[](:not_found)[:message]
+          end
 
           it 'does not authorize the request' do
             expect do
@@ -1032,9 +990,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -1081,9 +1037,7 @@ describe 'VHost-API Domain Controller' do
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
@@ -1214,9 +1168,7 @@ describe 'VHost-API Domain Controller' do
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
@@ -1282,9 +1234,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1345,9 +1295,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1371,7 +1319,9 @@ describe 'VHost-API Domain Controller' do
 
       context 'by an unauthenticated (thus unauthorized) user' do
         let!(:testdomain) { create(:domain) }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
+        let(:unauthorized_msg) do
+          ApiErrors.[](:unauthorized)[:message]
+        end
 
         before(:each) do
           create(:user, name: 'admin')
@@ -1386,9 +1336,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1400,9 +1348,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1416,9 +1362,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1433,9 +1377,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1451,9 +1393,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1465,9 +1405,7 @@ describe 'VHost-API Domain Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end

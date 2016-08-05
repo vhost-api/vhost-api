@@ -104,9 +104,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -250,12 +248,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -314,12 +307,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
@@ -378,12 +366,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
@@ -460,12 +443,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -621,12 +599,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -690,12 +663,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -759,12 +727,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
@@ -843,12 +806,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -905,12 +863,7 @@ describe 'VHost-API MailAlias Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not update',
-                    message: patch_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
             end
@@ -988,12 +941,7 @@ describe 'VHost-API MailAlias Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not delete',
-                    message: delete_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
             end
@@ -1067,9 +1015,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1116,9 +1062,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -1165,9 +1109,7 @@ describe 'VHost-API MailAlias Controller' do
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
@@ -1307,9 +1249,7 @@ describe 'VHost-API MailAlias Controller' do
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
@@ -1373,9 +1313,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1436,9 +1374,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1477,9 +1413,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1491,9 +1425,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1507,9 +1439,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1524,9 +1454,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1542,9 +1470,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1556,9 +1482,7 @@ describe 'VHost-API MailAlias Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end

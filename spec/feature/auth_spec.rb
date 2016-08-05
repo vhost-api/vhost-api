@@ -23,9 +23,7 @@ describe 'VHost-API Authentication' do
       clear_cookies
       post '/api/v1/auth/login', 'user' => { 'login' => testuser.login,
                                              'password' => password }
-      expect(last_response.redirect?).to be_truthy
-      follow_redirect!
-      expect(last_request.path).to eq('/')
+      expect(last_response.status).to eq(200)
     end
   end
 

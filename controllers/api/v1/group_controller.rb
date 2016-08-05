@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/groups' do
-  helpers do
-    def fetch_scoped_groups
-      @groups = policy_scope(Group)
-    end
-  end
-
   get do
-    fetch_scoped_groups
-    return_authorized_collection(object: @groups)
+    @groups = policy_scope(Group)
+    return_authorized_collection(object: @groups, params: params)
   end
 
   post do
@@ -21,42 +15,28 @@ namespace '/api/v1/groups' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
+
+      # group name must not be nil
+      return_api_error(ApiErrors.[](:invalid_group)) if @_params[:name].nil?
 
       @group = Group.new(@_params)
       if @group.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @group })
-        response.headers['Location'] = [request.base_url,
-                                        'api',
-                                        'v1',
-                                        'groups',
-                                        @group.id].join('/')
+        loc = [request.base_url, 'api', 'v1', 'groups', @group.id].join('/')
+        response.headers['Location'] = loc
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      if Group.first(name: @_params[:name]).nil?
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
-      else
-        # 409 = Conflict
-        @result = ApiResponseError.new(status_code: 409,
-                                       error_id: 'resource conflict',
-                                       message: $ERROR_INFO.to_s)
-      end
+      @result = if Group.first(name: @_params[:name]).nil?
+                  api_error(ApiErrors.[](:failed_create))
+                else
+                  api_error(ApiErrors.[](:resource_conflict))
+                end
     end
     return_apiresponse @result
   end
@@ -66,11 +46,7 @@ namespace '/api/v1/groups' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @group = Group.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @group.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @group.nil?
   end
 
   namespace '/:id' do
@@ -84,10 +60,7 @@ namespace '/api/v1/groups' do
         @result = if @group.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -103,46 +76,36 @@ namespace '/api/v1/groups' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
+        @_params = symbolize_params_hash(@_params)
+
+        # group name must not be nil if present
+        if @_params.key?(:name)
+          return_api_error(
+            ApiErrors.[](:invalid_group)
+          ) if @_params[:name].nil?
         end
 
         @result = if @group.update(@_params)
                     ApiResponseSuccess.new(data: { object: @group })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        if Group.first(name: @_params[:name]).nil?
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
-        else
-          # 409 = Conflict
-          @result = ApiResponseError.new(status_code: 409,
-                                         error_id: 'resource conflict',
-                                         message: $ERROR_INFO.to_s)
-        end
+        @result = if Group.first(name: @_params[:name]).nil?
+                    api_error(ApiErrors.[](:failed_update))
+                  else
+                    api_error(ApiErrors.[](:resource_conflict))
+                  end
       end
       return_apiresponse @result
     end
 
     get do
-      return_authorized_resource(object: @group) if authorize @group, :show?
+      return_authorized_resource(object: @group) if authorize(@group, :show?)
     end
   end
 end

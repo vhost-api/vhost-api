@@ -1,15 +1,17 @@
 # frozen_string_literal: true
+def symbolize_params_hash(params)
+  params.reduce({}) do |memo, (k, v)|
+    memo.tap { |m| m[k.to_sym] = v }
+  end
+end
+
 def return_json_pretty(json)
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end
 
 def return_authorized_resource(object: nil)
   return return_json_pretty(
-    ApiResponseError.new(
-      status_code: 403,
-      error_id: 'Not authorized',
-      message: $ERROR_INFO.to_s
-    ).to_json
+    api_error(ApiErrors.[](:unauthorized)).to_json
   ) if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil?
@@ -18,22 +20,7 @@ def return_authorized_resource(object: nil)
   return_json_pretty(object.to_json(only: permitted_attributes))
 end
 
-def return_authorized_collection(object: nil)
-  return return_json_pretty(
-    ApiResponseError.new(
-      status_code: 403,
-      error_id: 'Not authorized',
-      message: $ERROR_INFO.to_s
-    ).to_json
-  ) if @user.nil?
-
-  return return_json_pretty({}.to_json) if object.nil? || object.empty?
-
-  permitted_attributes = Pundit.policy(@user, object).permitted_attributes
-  return_json_pretty(object.sort.to_json(only: permitted_attributes))
-end
-
-def return_authorized_collection_p(object: nil, params: nil)
+def return_authorized_collection(object: nil, params: nil)
   raise Pundit::NotAuthorizedError if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
@@ -80,11 +67,7 @@ def prepare_collection(collection: nil, fields: nil)
 end
 
 def invalid_query_params
-  ApiResponseError.new(
-    status_code: 400,
-    error_id: 'invalid query parameters',
-    message: 'TODO FIXME'
-  )
+  api_error(ApiErrors.[](:invalid_query)).to_json
 end
 
 def field_list(permitted: nil, requested: nil)

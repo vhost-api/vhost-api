@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/domains' do
-  helpers do
-    def fetch_scoped_domains
-      @domains = policy_scope(Domain)
-    end
-  end
-
   get do
-    fetch_scoped_domains
-    return_authorized_collection_p(object: @domains, params: params)
+    @domains = policy_scope(Domain)
+    return_authorized_collection(object: @domains, params: params)
   end
 
   post do
@@ -21,12 +15,10 @@ namespace '/api/v1/domains' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
 
       # domain name must not be nil
-      raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
+      return_api_error(ApiErrors.[](:invalid_domain)) if @_params[:name].nil?
 
       # force lowercase on domain name
       @_params[:name].downcase!
@@ -47,27 +39,15 @@ namespace '/api/v1/domains' do
                                         @domain.id].join('/')
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      if Domain.first(name: @_params[:name]).nil?
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
-      else
-        # 409 = Conflict
-        @result = ApiResponseError.new(status_code: 409,
-                                       error_id: 'resource conflict',
-                                       message: $ERROR_INFO.to_s)
-      end
+      @result = if Domain.first(name: @_params[:name]).nil?
+                  api_error(ApiErrors.[](:failed_create))
+                else
+                  api_error(ApiErrors.[](:resource_conflict))
+                end
     end
     return_apiresponse @result
   end
@@ -77,11 +57,7 @@ namespace '/api/v1/domains' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @domain = Domain.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @domain.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @domain.nil?
   end
 
   namespace '/:id' do
@@ -95,10 +71,7 @@ namespace '/api/v1/domains' do
         @result = if @domain.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -114,24 +87,20 @@ namespace '/api/v1/domains' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
-        end
+        @_params = symbolize_params_hash(@_params)
 
         # domain name must not be nil if present
         if @_params.key?(:name)
-          raise(ArgumentError, 'invalid domain name') if @_params[:name].nil?
+          return_api_error(
+            ApiErrors.[](:invalid_domain)
+          ) if @_params[:name].nil?
 
           # force lowercase on domain name
           @_params[:name].downcase!
         end
 
         # prevent any action being performed on a detroyed resource
-        return_apiresponse(
-          ApiResponseError.new(status_code: 500,
-                               error_id: 'could not delete',
-                               message: $ERROR_INFO.to_s)
-        ) if @domain.destroyed?
+        return_api_error(ApiErrors.[](:failed_delete)) if @domain.destroyed?
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(@domain).update_with?(
@@ -141,33 +110,18 @@ namespace '/api/v1/domains' do
         @result = if @domain.update(@_params)
                     ApiResponseSuccess.new(data: { object: @domain })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        if Domain.first(name: @_params[:name]).nil?
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
-        else
-          # 409 = Conflict
-          @result = ApiResponseError.new(status_code: 409,
-                                         error_id: 'resource conflict',
-                                         message: $ERROR_INFO.to_s)
-        end
+        @result = if Domain.first(name: @_params[:name]).nil?
+                    api_error(ApiErrors.[](:failed_update))
+                  else
+                    api_error(ApiErrors.[](:resource_conflict))
+                  end
       end
       return_apiresponse @result
     end

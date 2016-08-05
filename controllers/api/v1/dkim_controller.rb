@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/dkims' do
-  helpers do
-    def fetch_scoped_dkims
-      @dkims = policy_scope(Dkim)
-    end
-  end
-
   get do
-    fetch_scoped_dkims
-    return_authorized_collection(object: @dkims)
+    @dkims = policy_scope(Dkim)
+    return_authorized_collection(object: @dkims, params: params)
   end
 
   post do
@@ -21,15 +15,17 @@ namespace '/api/v1/dkims' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
 
       # selector must not be nil
-      raise(ArgumentError, 'invalid selector') if @_params[:selector].nil?
+      return_api_error(
+        ApiErrors.[](:invalid_dkim_selector)
+      ) if @_params[:selector].nil?
 
       # domain_id must not be nil
-      raise(ArgumentError, 'invalid domain id') if @_params[:domain_id].nil?
+      return_api_error(
+        ApiErrors.[](:invalid_dkim_domain_id)
+      ) if @_params[:domain_id].nil?
 
       # force lowercase on selector
       @_params[:selector].downcase!
@@ -41,8 +37,7 @@ namespace '/api/v1/dkims' do
 
       # require both or none of the keys (XOR)
       if @_params[:private_key].nil? ^ @_params[:public_key].nil?
-        raise(ArgumentError,
-              'invalid private or public key, either specify both or none')
+        return_api_error(ApiErrors.[](:invalid_dkim_keypair))
       end
 
       # generate new keypar if nothing provided in request
@@ -62,27 +57,15 @@ namespace '/api/v1/dkims' do
       if @dkim.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @dkim })
-        response.headers['Location'] = [request.base_url,
-                                        'api',
-                                        'v1',
-                                        'dkims',
-                                        @dkim.id].join('/')
+        loc = [request.base_url, 'api', 'v1', 'dkims', @dkim.id].join('/')
+        response.headers['Location'] = loc
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      # 500 = Internal Server Error
-      @result = ApiResponseError.new(status_code: 500,
-                                     error_id: 'could not create',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:failed_create))
     end
     return_apiresponse @result
   end
@@ -92,11 +75,7 @@ namespace '/api/v1/dkims' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @dkim = Dkim.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @dkim.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @dkim.nil?
   end
 
   namespace '/:id' do
@@ -104,11 +83,7 @@ namespace '/api/v1/dkims' do
       @result = nil
 
       # prevent any action being performed on a detroyed resource
-      return_apiresponse(
-        ApiResponseError.new(status_code: 500,
-                             error_id: 'could not delete',
-                             message: $ERROR_INFO.to_s)
-      ) if @dkim.destroyed?
+      return_api_error(ApiErrors.[](:failed_delete)) if @dkim.destroyed?
 
       # check creation permissions. i.e. admin/quotacheck
       authorize(@dkim, :destroy?)
@@ -117,10 +92,7 @@ namespace '/api/v1/dkims' do
         @result = if @dkim.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -136,22 +108,17 @@ namespace '/api/v1/dkims' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
-        end
+        @_params = symbolize_params_hash(@_params)
 
         # prevent any action being performed on a detroyed resource
-        return_apiresponse(
-          ApiResponseError.new(status_code: 500,
-                               error_id: 'could not delete',
-                               message: $ERROR_INFO.to_s)
-        ) if @dkim.destroyed?
+        return_api_error(ApiErrors.[](:failed_update)) if @dkim.destroyed?
 
         [:selector, :domain_id, :private_key, :public_key].each do |key|
-          if @_params.key?(key)
-            # key must not be nil
-            raise(ArgumentError, "invalid #{key}") if @_params[key].nil?
-          end
+          next unless @_params.key?(key)
+          # key must not be nil
+          return_api_error(
+            ApiErrors.[]("invalid_dkim_#{key}".to_sym)
+          ) if @_params[key].nil?
         end
 
         # force lowercase on selector
@@ -167,26 +134,14 @@ namespace '/api/v1/dkims' do
         @result = if @dkim.update(@_params)
                     ApiResponseSuccess.new(data: { object: @dkim })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not update',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:failed_update))
       end
       return_apiresponse @result
     end

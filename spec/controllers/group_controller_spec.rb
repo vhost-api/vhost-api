@@ -78,7 +78,7 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
+          let(:error_msg) { ApiErrors.[](:not_found)[:message] }
           it 'returns an API Error' do
             clear_cookies
 
@@ -96,9 +96,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -224,12 +222,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -253,7 +246,7 @@ describe 'VHost-API Group Controller' do
             context 'invalid attributes' do
               let(:invalid_group_attrs) { { foo: 'bar', disabled: 1234 } }
               let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in Group'
+                ApiErrors.[](:invalid_group)[:message]
               end
 
               it 'does not create a new group' do
@@ -288,12 +281,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_group)).to_json
                   )
                 )
               end
@@ -317,7 +305,7 @@ describe 'VHost-API Group Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_group) }
               let(:invalid_values_msg) do
-                'Group#save returned false, Group was not saved'
+                ApiErrors.[](:invalid_group)[:message]
               end
 
               it 'does not create a new group' do
@@ -349,15 +337,10 @@ describe 'VHost-API Group Controller' do
                   }
                 )
 
-                expect(last_response.status).to eq(500)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 500,
-                      error_id: 'could not create',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_group)).to_json
                   )
                 )
               end
@@ -381,7 +364,7 @@ describe 'VHost-API Group Controller' do
             context 'with a resource conflict' do
               let(:resource_conflict) { attributes_for(:group) }
               let(:resource_conflict_msg) do
-                'Group#save returned false, Group was not saved'
+                ApiErrors.[](:resource_conflict)[:message]
               end
 
               it 'does not create a new group' do
@@ -416,12 +399,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -552,12 +530,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
@@ -617,12 +590,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -646,7 +614,7 @@ describe 'VHost-API Group Controller' do
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_group) }
               let(:invalid_values_msg) do
-                'Group#save returned false, Group was not saved'
+                ApiErrors.[](:invalid_group)[:message]
               end
 
               it 'does not update the group' do
@@ -679,15 +647,10 @@ describe 'VHost-API Group Controller' do
                   }
                 )
 
-                expect(last_response.status).to eq(500)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 500,
-                      error_id: 'could not update',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:invalid_group)).to_json
                   )
                 )
               end
@@ -711,7 +674,7 @@ describe 'VHost-API Group Controller' do
             context 'with a resource conflict' do
               let(:resource_conflict) { attributes_for(:group, name: 'admin') }
               let(:resource_conflict_msg) do
-                'Group#save returned false, Group was not saved'
+                ApiErrors.[](:invalid_group)[:resource_conflict]
               end
 
               it 'does not update the group' do
@@ -746,12 +709,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
                   return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
@@ -774,7 +732,9 @@ describe 'VHost-API Group Controller' do
           end
 
           context 'operation failed' do
-            let(:patch_error_msg) { '' }
+            let(:patch_error_msg) do
+              ApiErrors.[](:failed_update)[:message]
+            end
 
             it 'returns an API Error' do
               invinciblegroup = create(:group, name: 'invincible')
@@ -812,12 +772,7 @@ describe 'VHost-API Group Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not update',
-                    message: patch_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
             end
@@ -862,7 +817,9 @@ describe 'VHost-API Group Controller' do
           end
 
           context 'operation failed' do
-            let(:delete_error_msg) { '' }
+            let(:delete_error_msg) do
+              ApiErrors.[](:failed_delete)[:message]
+            end
 
             it 'returns an API Error' do
               invinciblegroup = create(:group, name: 'invincible')
@@ -900,12 +857,7 @@ describe 'VHost-API Group Controller' do
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
                 return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not delete',
-                    message: delete_error_msg,
-                    data: nil
-                  ).to_json
+                  api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
             end
@@ -918,7 +870,9 @@ describe 'VHost-API Group Controller' do
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testgroup) { create(:group) }
         let!(:testuser) { create(:user, name: 'herpderp') }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
+        let(:unauthorized_msg) do
+          ApiErrors.[](:unauthorized)[:message]
+        end
 
         describe 'GET all' do
           it 'returns no records' do
@@ -973,9 +927,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -996,7 +948,9 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
+          let(:error_msg) do
+            ApiErrors.[](:not_found)[:message]
+          end
 
           it 'does not authorize the request' do
             expect do
@@ -1021,9 +975,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1068,9 +1020,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1133,9 +1083,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1196,9 +1144,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1221,7 +1167,9 @@ describe 'VHost-API Group Controller' do
       end
 
       context 'by an unauthenticated (thus unauthorized) user' do
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
+        let(:unauthorized_msg) do
+          ApiErrors.[](:unauthorized)[:message]
+        end
 
         before(:each) do
           create(:group, name: 'admin')
@@ -1236,9 +1184,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1250,9 +1196,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1266,9 +1210,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1283,9 +1225,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1301,9 +1241,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
@@ -1315,9 +1253,7 @@ describe 'VHost-API Group Controller' do
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
               return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end

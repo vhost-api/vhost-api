@@ -10,9 +10,7 @@ describe 'VHost-API Application' do
       expect(last_response.status).to eq(403)
       expect(last_response.body).to eq(
         return_json_pretty(
-          ApiResponseError.new(status_code: 403,
-                               error_id: 'unauthorized',
-                               message: unauthorized_msg).to_json
+          api_error(ApiErrors.[](:unauthorized)).to_json
         )
       )
     end
@@ -22,7 +20,6 @@ describe 'VHost-API Application' do
     clear_cookies
 
     testuser = create(:admin)
-    error_msg = 'requested resource does not exist'
 
     get(
       '/herp/derp/fooobar',
@@ -36,9 +33,7 @@ describe 'VHost-API Application' do
     expect(last_response.status).to eq(404)
     expect(last_response.body).to eq(
       return_json_pretty(
-        ApiResponseError.new(status_code: 404,
-                             error_id: 'not found',
-                             message: error_msg).to_json
+        api_error(ApiErrors.[](:not_found)).to_json
       )
     )
   end

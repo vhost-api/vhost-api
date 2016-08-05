@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/apikeys' do
-  helpers do
-    def fetch_scoped_apikeys
-      @apikeys = policy_scope(Apikey)
-    end
-  end
-
   get do
-    fetch_scoped_apikeys
-    return_authorized_collection(object: @apikeys)
+    @apikeys = policy_scope(Apikey)
+    return_authorized_collection(object: @apikeys, params: params)
   end
 
   post do
@@ -21,16 +15,15 @@ namespace '/api/v1/apikeys' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
 
       # generate fresh apikey if nil
       @_params[:apikey] = SecureRandom.hex(32) if @_params[:apikey].nil?
 
       # if apikey was provided it has to be 64 characters long
-      msg_too_short = 'invalid apikey, has to be 64 characters'
-      raise(ArgumentError, msg_too_short) if @_params[:apikey].length < 64
+      return_api_error(
+        ApiErrors.[](:apikey_too_short)
+      ) if @_params[:apikey].length < 64
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(Apikey).create_with?(
@@ -41,34 +34,19 @@ namespace '/api/v1/apikeys' do
       if @apikey.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @apikey })
-        response.headers['Location'] = [request.base_url,
-                                        'api',
-                                        'v1',
-                                        'apikeys',
-                                        @apikey.id].join('/')
+        loc = [request.base_url, 'api', 'v1', 'apikeys', @apikey.id].join('/')
+        response.headers['Location'] = loc
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      if Apikey.first(apikey: @_params[:apikey]).nil?
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
-      else
-        # 409 = Conflict
-        @result = ApiResponseError.new(status_code: 409,
-                                       error_id: 'resource conflict',
-                                       message: $ERROR_INFO.to_s)
-      end
+      @result = if Apikey.first(apikey: @_params[:apikey]).nil?
+                  api_error(ApiErrors.[](:failed_create))
+                else
+                  api_error(ApiErrors.[](:resource_conflict))
+                end
     end
     return_apiresponse @result
   end
@@ -78,11 +56,7 @@ namespace '/api/v1/apikeys' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @apikey = Apikey.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @apikey.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @apikey.nil?
   end
 
   namespace '/:id' do
@@ -96,10 +70,7 @@ namespace '/api/v1/apikeys' do
         @result = if @apikey.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -115,23 +86,21 @@ namespace '/api/v1/apikeys' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
-        end
+        @_params = symbolize_params_hash(@_params)
 
-        # apikey name must not be nil if present
+        # if apikey was provided it has to be 64 characters long
         if @_params.key?(:apikey)
-          raise(ArgumentError, 'invalid apikey') if @_params[:apikey].nil?
-          msg_too_short = 'invalid apikey, has to be 64 characters'
-          raise(ArgumentError, msg_too_short) if @_params[:apikey].length < 64
+          return_api_error(
+            ApiErrors.[](:invalid_apikey)
+          ) if @_params[:apikey].nil?
+
+          return_api_error(
+            ApiErrors.[](:apikey_too_short)
+          ) if @_params[:apikey].length < 64
         end
 
         # prevent any action being performed on a detroyed resource
-        return_apiresponse(
-          ApiResponseError.new(status_code: 500,
-                               error_id: 'could not delete',
-                               message: $ERROR_INFO.to_s)
-        ) if @apikey.destroyed?
+        return_api_error(ApiErrors.[](:failed_update)) if @apikey.destroyed?
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(@apikey).update_with?(
@@ -141,33 +110,18 @@ namespace '/api/v1/apikeys' do
         @result = if @apikey.update(@_params)
                     ApiResponseSuccess.new(data: { object: @apikey })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        if Apikey.first(apikey: @_params[:apikey]).nil?
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
-        else
-          # 409 = Conflict
-          @result = ApiResponseError.new(status_code: 409,
-                                         error_id: 'resource conflict',
-                                         message: $ERROR_INFO.to_s)
-        end
+        @result = if Apikey.first(apikey: @_params[:apikey]).nil?
+                    api_error(ApiErrors.[](:failed_update))
+                  else
+                    api_error(ApiErrors.[](:resource_conflict))
+                  end
       end
       return_apiresponse @result
     end

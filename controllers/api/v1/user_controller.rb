@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 namespace '/api/v1/users' do
-  helpers do
-    def fetch_scoped_users
-      @users = policy_scope(User)
-    end
-  end
-
   get do
-    fetch_scoped_users
-    return_authorized_collection(object: @users)
+    @users = policy_scope(User)
+    return_authorized_collection(object: @users, params: params)
   end
 
   post do
@@ -21,9 +15,10 @@ namespace '/api/v1/users' do
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
-      @_params = @_params.reduce({}) do |memo, (k, v)|
-        memo.tap { |m| m[k.to_sym] = v }
-      end
+      @_params = symbolize_params_hash(@_params)
+
+      # login must not be nil
+      return_api_error(ApiErrors.[](:invalid_login)) if @_params[:login].nil?
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(User).create_with?(
@@ -34,34 +29,19 @@ namespace '/api/v1/users' do
       if @_user.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @_user })
-        response.headers['Location'] = [request.base_url,
-                                        'api',
-                                        'v1',
-                                        'users',
-                                        @_user.id].join('/')
+        loc = [request.base_url, 'api', 'v1', 'users', @_user.id].join('/')
+        response.headers['Location'] = loc
       end
     rescue ArgumentError
-      # 422 = Unprocessable Entity
-      @result = ApiResponseError.new(status_code: 422,
-                                     error_id: 'invalid request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError
-      # 400 = Bad Request
-      @result = ApiResponseError.new(status_code: 400,
-                                     error_id: 'malformed request data',
-                                     message: $ERROR_INFO.to_s)
+      @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError
-      if User.first(login: @_params[:login]).nil?
-        # 500 = Internal Server Error
-        @result = ApiResponseError.new(status_code: 500,
-                                       error_id: 'could not create',
-                                       message: $ERROR_INFO.to_s)
-      else
-        # 409 = Conflict
-        @result = ApiResponseError.new(status_code: 409,
-                                       error_id: 'resource conflict',
-                                       message: $ERROR_INFO.to_s)
-      end
+      @result = if User.first(login: @_params[:login]).nil?
+                  api_error(ApiErrors.[](:failed_create))
+                else
+                  api_error(ApiErrors.[](:resource_conflict))
+                end
     end
     return_apiresponse @result
   end
@@ -71,11 +51,7 @@ namespace '/api/v1/users' do
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
     @_user = User.get(params[:id])
-    return_apiresponse(
-      ApiResponseError.new(status_code: 404,
-                           error_id: 'not found',
-                           message: 'requested resource does not exist')
-    ) if @_user.nil?
+    return_api_error(ApiErrors.[](:not_found)) if @_user.nil?
   end
 
   namespace '/:id' do
@@ -89,10 +65,7 @@ namespace '/api/v1/users' do
         @result = if @_user.destroy
                     ApiResponseSuccess.new
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not delete',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_delete))
                   end
       end
       return_apiresponse @result
@@ -108,9 +81,7 @@ namespace '/api/v1/users' do
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
-        @_params = @_params.reduce({}) do |memo, (k, v)|
-          memo.tap { |m| m[k.to_sym] = v }
-        end
+        @_params = symbolize_params_hash(@_params)
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(@_user).update_with?(
@@ -120,39 +91,24 @@ namespace '/api/v1/users' do
         @result = if @_user.update(@_params)
                     ApiResponseSuccess.new(data: { object: @_user })
                   else
-                    # 500 = Internal Server Error
-                    ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
+                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue ArgumentError
-        # 422 = Unprocessable Entity
-        @result = ApiResponseError.new(status_code: 422,
-                                       error_id: 'invalid request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError
-        # 400 = Bad Request
-        @result = ApiResponseError.new(status_code: 400,
-                                       error_id: 'malformed request data',
-                                       message: $ERROR_INFO.to_s)
+        @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError
-        if User.first(login: @_params[:login]).nil?
-          # 500 = Internal Server Error
-          @result = ApiResponseError.new(status_code: 500,
-                                         error_id: 'could not update',
-                                         message: $ERROR_INFO.to_s)
-        else
-          # 409 = Conflict
-          @result = ApiResponseError.new(status_code: 409,
-                                         error_id: 'resource conflict',
-                                         message: $ERROR_INFO.to_s)
-        end
+        @result = if User.first(login: @_params[:login]).nil?
+                    api_error(ApiErrors.[](:failed_update))
+                  else
+                    api_error(ApiErrors.[](:resource_conflict))
+                  end
       end
       return_apiresponse @result
     end
 
     get do
-      return_authorized_resource(object: @_user) if authorize @_user, :show?
+      return_authorized_resource(object: @_user) if authorize(@_user, :show?)
     end
   end
 end
