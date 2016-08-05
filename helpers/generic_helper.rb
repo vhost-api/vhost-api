@@ -33,21 +33,63 @@ def return_authorized_collection(object: nil)
   return_json_pretty(object.sort.to_json(only: permitted_attributes))
 end
 
-def return_authorized_collection_fields(object: nil, fields: nil)
+def return_authorized_collection_p(object: nil, params: nil)
   raise Pundit::NotAuthorizedError if @user.nil?
 
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
 
-  permitted_attributes = Pundit.policy(@user, object).permitted_attributes
+  result = limited_collection(collection: object, params: params)
 
-  result_fields = permitted_attributes
-  result_fields = permitted_attributes & fields unless fields.nil?
-
-  result = []
-  object.sort.each do |record|
-    result.push(record.as_json(only: result_fields))
-  end
   return_json_pretty(result.to_json)
+end
+
+def limited_collection(collection: nil, params: nil)
+  collection = filter_collection(collection: collection,
+                                 params: params) unless params.empty?
+
+  return invalid_query_params if collection.nil? || collection.empty?
+
+  fields = field_list(
+    permitted: Pundit.policy(@user, collection).permitted_attributes,
+    requested: params[:fields]
+  )
+
+  prepare_collection(collection: collection, fields: fields)
+end
+
+def filter_collection(collection: nil, params: nil)
+  return collection if params.nil? || params.empty?
+  limit = params[:limit].to_i
+  offset = params[:offset].to_i
+
+  if limit
+    collection = collection.all(limit: limit, offset: offset)
+  else
+    invalid_query_params
+  end
+
+  collection
+end
+
+def prepare_collection(collection: nil, fields: nil)
+  result = []
+  collection.sort.each do |record|
+    result.push(record.as_json(only: fields))
+  end
+  result
+end
+
+def invalid_query_params
+  ApiResponseError.new(
+    status_code: 400,
+    error_id: 'invalid query parameters',
+    message: 'TODO FIXME'
+  )
+end
+
+def field_list(permitted: nil, requested: nil)
+  return permitted if requested.nil?
+  permitted & params[:fields].map(&:to_sym)
 end
 
 def return_resource(object: nil)
