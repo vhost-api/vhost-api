@@ -8,7 +8,32 @@ namespace '/api/v1/domains' do
 
   get do
     fetch_scoped_domains
-    return_authorized_collection(object: @domains)
+    fields = nil
+    # filter the result set if query params where provided
+    unless params.nil?
+      if params[:limit] && params[:offset]
+        @domains = @domains.all(limit: params[:limit].to_i,
+                                offset: params[:offset].to_i)
+      elsif params[:limit] && params[:offset].nil?
+        @domains = @domains.all(limit: params[:limit].to_i)
+      elsif (params[:limit].nil? || params[:limit].to_i.zero?) && params[:offset]
+        # cannot use offset without limit
+        return_apiresponse(
+          ApiResponseError.new(
+            status_code: 400,
+            error_id: 'invalid query parameters',
+            message: 'cannot use offet without limit'
+          )
+        )
+      end
+      # symbolize fields array if provided
+      fields = params[:fields].map(&:to_sym) if params[:fields]
+    end
+    if fields.nil?
+      return_authorized_collection(object: @domains)
+    else
+      return_authorized_collection_fields(object: @domains, fields: fields)
+    end
   end
 
   post do

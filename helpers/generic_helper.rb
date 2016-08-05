@@ -33,6 +33,23 @@ def return_authorized_collection(object: nil)
   return_json_pretty(object.sort.to_json(only: permitted_attributes))
 end
 
+def return_authorized_collection_fields(object: nil, fields: nil)
+  raise Pundit::NotAuthorizedError if @user.nil?
+
+  return return_json_pretty({}.to_json) if object.nil? || object.empty?
+
+  permitted_attributes = Pundit.policy(@user, object).permitted_attributes
+
+  result_fields = permitted_attributes
+  result_fields = permitted_attributes & fields unless fields.nil?
+
+  result = []
+  object.sort.each do |record|
+    result.push(record.as_json(only: result_fields))
+  end
+  return_json_pretty(result.to_json)
+end
+
 def return_resource(object: nil)
   clazz = object.model.to_s.downcase.pluralize
 
