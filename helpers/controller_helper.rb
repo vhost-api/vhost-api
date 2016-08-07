@@ -7,7 +7,11 @@ end
 
 def return_json_pretty(json)
   content_type :json, charset: 'utf-8'
-  JSON.pretty_generate(JSON.load(json)) + "\n"
+  result = JSON.pretty_generate(JSON.load(json)) + "\n"
+  result_digest = Digest::SHA256.hexdigest(result)
+  etag result_digest
+  halt 304 if request.env['HTTP_IF_NONE_MATCH'] == result_digest
+  result
 end
 
 def return_authorized_resource(object: nil)

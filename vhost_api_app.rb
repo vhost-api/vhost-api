@@ -3,17 +3,13 @@ require 'bundler/setup'
 
 require 'sinatra'
 require 'sinatra/contrib'
-require 'sinatra/flash'
 require 'sinatra/pundit'
-require 'tilt/haml'
 require 'json'
 require 'active_support/inflector'
 require 'securerandom'
 require 'digest/sha1'
 require 'logger'
 require 'filesize'
-require 'tilt/sass'
-require 'sass'
 require 'English'
 
 # load models and stuff
@@ -49,11 +45,6 @@ error_logger.sync = true
 configure do
   use ::Rack::CommonLogger, access_logger
   set :root, File.expand_path('../', __FILE__)
-  set :views, File.expand_path('../views', __FILE__)
-  set :jsdir, 'js'
-  set :cssdir, 'css'
-  enable :coffeescript
-  set :cssengine, 'scss'
   set :start_time, Time.now
   @appconfig = YAML.load(
     File.read('config/appconfig.yml')
@@ -118,7 +109,7 @@ before do
   content_type :json, charset: 'utf-8'
   # last_modified settings.start_time
   # etag settings.start_time.to_s
-  # cache_control :public, :must_revalidate
+  cache_control :public, :must_revalidate
 end
 
 get '/' do
