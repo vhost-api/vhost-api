@@ -113,6 +113,11 @@ def unauthorized_msg
   'insufficient permissions or quota exhausted'
 end
 
+error AuthenticationError do
+  headers['WWW-Authenticate'] = 'Basic realm="Vhost-API"'
+  return_api_error(ApiErrors.[](:authentication_failed))
+end
+
 error Pundit::NotAuthorizedError do
   flash[:alert] = 'not authorized'
   return_api_error(ApiErrors.[](:unauthorized))

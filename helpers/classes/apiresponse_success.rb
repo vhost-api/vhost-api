@@ -7,7 +7,10 @@ class ApiResponseSuccess < ApiResponse
   end
 
   def to_json
-    { status: @status, data: @data }.to_json
+    {
+      status: @status,
+      data: @data
+    }.to_json
   end
 
   attr_reader :data

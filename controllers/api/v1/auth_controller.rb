@@ -1,58 +1,28 @@
 # frozen_string_literal: true
 namespace '/api/v1/auth' do
   post '/login' do
-    params['user'] && params['user']['login'] && params['user']['password']
+    p params
+    return_api_error(
+      ApiErrors.[](:invalid_request)
+    ) unless params['user'] && params['password'] && params['apikey']
 
-    user = User.first(login: params['user']['login'])
+    user = User.first(login: params['user'])
 
-    if user.nil? || !user.enabled
-      flash[:error] = 'Invalid Login'
-      redirect '/login'
+    raise AuthenticationError if user.nil? || !user.enabled?
+
+    raise AuthenticationError unless user.authenticate(params['password'])
+
+    # fetch desired apikey
+    apikey = user.apikeys.first_or_new(comment: params['apikey'])
+
+    # if we have initialized a new apikey, generate random key and save it
+    if apikey.dirty?
+      apikey.apikey = SecureRandom.hex(32)
+      apikey.enabled = true
+      apikey.save
     end
 
-    if user.authenticate(params['user']['password'])
-      # store stuff for later use
-      session[:user_id] = user.id
-      session[:group] = user.group.name
-
-      # flashmsg = 'Successfully logged in.'
-      # if settings.environment == :development
-      # flashmsg = flashmsg.dup
-      # flashmsg << '</br><pre>' + gen_session_json(session: session) + '</pre>'
-      # end
-      # flash[:success] = flashmsg
-
-      status 200
-
-      # if session[:return_to].nil?
-      # redirect '/'
-      # else
-      # original_request = session[:return_to]
-      # session[:return_to] = nil
-      # redirect original_request
-      # end
-    else
-      flash[:error] = 'Invalid Login'
-      redirect '/login'
-    end
-  end
-
-  get '/logout' do
-    authenticate!
-    flashmsg = 'Successfully logged out.'
-    if settings.environment == :development
-      flashmsg = flashmsg.dup
-      flashmsg << '</br>previus session:</br>' \
-                  '<pre>' + gen_session_json(session: session) + '</pre>'
-    end
-    session[:user_id] = nil
-    session[:group] = nil
-    if settings.environment == :development
-      flashmsg = flashmsg.dup
-      flashmsg << '</br>now:</br>' \
-                  '<pre>' + gen_session_json(session: session) + '</pre>'
-    end
-    flash[:success] = flashmsg
-    redirect '/login'
+    status 200
+    return_json_pretty({ apikey: apikey.apikey }.to_json)
   end
 end

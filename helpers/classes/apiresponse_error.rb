@@ -14,8 +14,12 @@ class ApiResponseError < ApiResponse
   end
 
   def to_json
-    { status: @status, error_id: @error_id, message: @message,
-      data: @data }.to_json
+    {
+      status: @status,
+      error_id: @error_id,
+      message: @message,
+      data: @data
+    }.to_json
   end
 
   attr_reader :error_id, :message, :data

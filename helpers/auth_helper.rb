@@ -1,18 +1,38 @@
 # frozen_string_literal: true
 def authenticate!
-  @user = valid_apikey?(request.env) if apikey_headers?(request.env)
-  @user = User.get(session[:user_id]) unless session[:user_id].nil?
-  raise Pundit::NotAuthorizedError if @user.nil?
+  auth_header = request.env['HTTP_AUTHORIZATION']
+  method, value = auth_header.try(:split, %r{\s+}) || [nil, '']
+  case method
+  when 'Basic' then @user = authenticate_password(value)
+  when 'VHOSTAPI-KEY' then @user = authenticate_apikey(value)
+  else raise AuthenticationError
+  end
+  raise AuthenticationError if @user.nil?
   @user
 end
 
-def valid_apikey?(env)
-  user = User.get(env['HTTP_X_VHOSTAPI_USER'])
-  key = env['HTTP_X_VHOSTAPI_KEY']
-  return user if user.apikeys.map(&:apikey).include?(key)
-  raise Pundit::NotAuthorizedError
+def parse_base64_secret(value)
+  Base64.decode64(value).strip.split(':')
 end
 
-def apikey_headers?(env)
-  env['HTTP_X_VHOSTAPI_USER'] && env['HTTP_X_VHOSTAPI_KEY']
+def authenticate_password(value)
+  credentials = parse_base64_secret(value)
+  login = credentials.shift
+  password = credentials.shift
+
+  user = User.first(login: login)
+  raise AuthenticationError if user.nil? || !user.enabled?
+  return user if user.authenticate(password)
+  raise AuthenticationError
+end
+
+def authenticate_apikey(value)
+  credentials = parse_base64_secret(value)
+  user_id = credentials.shift.to_i
+  apikey = credentials.shift
+
+  user = User.get(user_id)
+  raise AuthenticationError if user.nil? || !user.enabled?
+  return user if user.apikeys.map(&:apikey).include?(apikey)
+  raise AuthenticationError
 end
