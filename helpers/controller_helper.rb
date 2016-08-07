@@ -6,6 +6,7 @@ def symbolize_params_hash(params)
 end
 
 def return_json_pretty(json)
+  content_type :json, charset: 'utf-8'
   JSON.pretty_generate(JSON.load(json)) + "\n"
 end
 
