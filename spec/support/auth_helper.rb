@@ -22,11 +22,11 @@ module AuthHelpers
 
   def fetch_apikey(user_id)
     apikey = Apikey.first_or_new(user_id: user_id, comment: 'rspec')
-    if apikey.dirty?
-      apikey.enabled = true
-      apikey.apikey = SecureRandom.hex(32)
-      apikey.save
-    end
-    apikey.apikey
+    key = SecureRandom.hex(32)
+    apikey.enabled = true
+    apikey.apikey = Digest::SHA512.hexdigest(key)
+    apikey.save
+
+    key
   end
 end

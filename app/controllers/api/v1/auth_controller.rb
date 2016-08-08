@@ -14,14 +14,13 @@ namespace '/api/v1/auth' do
     # fetch desired apikey
     apikey = user.apikeys.first_or_new(comment: params['apikey'])
 
-    # if we have initialized a new apikey, generate random key and save it
-    if apikey.dirty?
-      apikey.apikey = SecureRandom.hex(32)
-      apikey.enabled = true
-      apikey.save
-    end
+    # always generate fresh apikey and only store its sha512 hash into the db
+    key = SecureRandom.hex(32)
+    apikey.apikey = Digest::SHA512.hexdigest(key)
+    apikey.enabled = true
+    apikey.save
 
     status 200
-    return_json_pretty({ user_id: user.id, apikey: apikey.apikey }.to_json)
+    return_json_pretty({ user_id: user.id, apikey: key }.to_json)
   end
 end

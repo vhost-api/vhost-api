@@ -62,9 +62,13 @@ end
 # @return [User]
 def check_apikey_for_user(user_id, req_apikey)
   user = User.get(user_id)
-  apikey = Apikey.first(apikey: req_apikey)
-  raise AuthenticationError if user.nil? || !user.enabled? ||
-                               apikey.nil? || !apikey.enabled?
-  return user if user.apikeys.include?(apikey)
+  raise AuthenticationError if user.nil? || !user.enabled?
+
+  h_apikey = Digest::SHA512.hexdigest(req_apikey)
+  raise AuthenticationError unless user.apikeys.map(&:apikey).include?(h_apikey)
+
+  apikey = Apikey.first(apikey: h_apikey)
+  return user if apikey.enabled?
+
   raise AuthenticationError
 end

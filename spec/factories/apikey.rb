@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 FactoryGirl.define do
   sequence :random_apikey do
-    SecureRandom.hex(32)
+    Digest::SHA512.hexdigest(SecureRandom.hex(32))
   end
 
   factory :apikey, class: Apikey do

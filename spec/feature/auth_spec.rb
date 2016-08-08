@@ -30,8 +30,11 @@ describe 'VHost-API Authentication' do
 
     it 'returns an apikey' do
       post '/api/v1/auth/login', auth_login_params(testuser.login, password)
+
+      expect(JSON.parse(last_response.body)['apikey'].length).to eq(64)
+
       expect(
-        JSON.parse(last_response.body)['apikey']
+        Digest::SHA512.hexdigest(JSON.parse(last_response.body)['apikey'])
       ).to eq(
         Apikey.first(user_id: testuser.id, comment: 'rspec').apikey
       )

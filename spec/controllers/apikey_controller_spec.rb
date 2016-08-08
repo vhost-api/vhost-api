@@ -518,7 +518,7 @@ describe 'VHost-API Apikey Controller' do
             end
 
             context 'with a resource conflict' do
-              let(:key) { SecureRandom.hex(32) }
+              let(:key) { Digest::SHA512.hexdigest(SecureRandom.hex(32)) }
               before(:each) do
                 create(:apikey, apikey: key)
               end
@@ -526,7 +526,8 @@ describe 'VHost-API Apikey Controller' do
                 attributes_for(:apikey, apikey: key)
               end
               let(:conflict_apikey) do
-                create(:apikey, apikey: key)
+                create(:apikey,
+                       apikey: Digest::SHA512.hexdigest(SecureRandom.hex(32)))
               end
 
               it 'does not update the apikey' do

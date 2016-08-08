@@ -102,15 +102,6 @@ GEM
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
-    haml (4.0.7)
-      tilt
-    haml-lint (0.999.999)
-      haml_lint
-    haml_lint (0.18.1)
-      haml (~> 4.0)
-      rake (>= 10, < 12)
-      rubocop (>= 0.36.0)
-      sysexits (~> 1.1)
     i18n (0.7.0)
     json (1.8.3)
     json_pure (1.8.3)
@@ -200,7 +191,6 @@ GEM
     slop (3.6.0)
     sshkey (1.8.0)
     stringex (1.5.1)
-    sysexits (1.2.0)
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.5)
@@ -229,7 +219,6 @@ DEPENDENCIES
   filesize
   guard
   guard-rspec
-  haml-lint
   logger
   pry
   puma

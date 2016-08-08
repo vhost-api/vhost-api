@@ -46,7 +46,6 @@ group :test, :development do
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
   gem 'astrolabe', require: false
-  gem 'haml-lint', require: false
   gem 'faker', require: false
 end
 
