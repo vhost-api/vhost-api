@@ -31,13 +31,21 @@ describe DomainPolicy do
     end
 
     context 'changing attributes w/o changing the owner' do
-      let(:params) { attributes_for(:domain, user_id: user.id) }
+      let(:params) { attributes_for(:domain, id: domain.id, user_id: user.id) }
       it { should permit(:update) }
       it { should permit_args(:update_with, params) }
     end
 
     it { should permit(:show) }
     it { should permit(:destroy) }
+  end
+
+  context 'changing the id as an unauthorized user' do
+    let(:user) { create(:user_with_domains) }
+    let(:domain) { user.domains.first }
+    let(:params) { attributes_for(:domain, id: 1234) }
+
+    it { should_not permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged user' do

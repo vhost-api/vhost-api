@@ -27,6 +27,7 @@ describe DkimSigningPolicy do
     context 'changing attributes w/o changing the owner' do
       let(:params) do
         attributes_for(:dkimsigning,
+                       id: dkimsigning.id,
                        dkim_id: user.domains.first.dkims.first.id)
       end
       it { should permit(:update) }
@@ -57,6 +58,14 @@ describe DkimSigningPolicy do
     it { should permit(:show) }
     it { should permit(:update) }
     it { should permit(:destroy) }
+  end
+
+  context 'changing the id as an unauthorized user' do
+    let(:user) { create(:user_with_dkimsignings) }
+    let(:dkimsigning) { user.domains.first.dkims.first.dkim_signings.first }
+    let(:params) { attributes_for(:dkimsigning, id: 1234) }
+
+    it { should_not permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged reseller' do
