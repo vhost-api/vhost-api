@@ -52,5 +52,6 @@ config/puma.rb
 config/session.secret
 
 coverage/**
+_coverage/**
 
 testdata/cookies/*

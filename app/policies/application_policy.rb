@@ -29,11 +29,11 @@ class ApplicationPolicy
     false
   end
 
-  # Checks if current user is allowed to update the record with given params
+  # Checks if current user is allowed to update the record with given params.
+  # Needs to be implemented for each model individually.
   #
   # @return [Boolean]
   def update_with?(_params)
-    return true if user.admin?
     false
   end
 
@@ -61,10 +61,10 @@ class ApplicationPolicy
   end
 
   # Checks if current user is allowed to create a record with given params
+  # Needs to be implemented for each model individually.
   #
   # @return [Boolean]
   def create_with?(_params)
-    return true if user.admin?
     false
   end
 
@@ -77,12 +77,9 @@ class ApplicationPolicy
       @scope = scope
     end
 
+    # Needs to be implemented for each model individually.
     def resolve
-      if user.admin?
-        scope.all
-      else
-        scope.all(user_id: user.id)
-      end
+      false
     end
   end
 
