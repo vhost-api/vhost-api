@@ -50,6 +50,7 @@ config/database.yml
 config/appconfig.yml
 config/puma.rb
 config/session.secret
+**/puma.pid
 
 coverage/**
 _coverage/**
