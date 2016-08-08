@@ -23,6 +23,7 @@ describe MailAccountPolicy do
           policy = Pundit.policy(user, mailaccount)
           available = mailaccount.quota + policy.storage_remaining
           attributes_for(:mailaccount,
+                         id: mailaccount.id,
                          domain_id: user.domains.first.id,
                          quota: available)
         end
@@ -70,6 +71,15 @@ describe MailAccountPolicy do
       end
       it { should_not permit_args(:update_with, params) }
       it { should_not permit_args(:create_with, params) }
+    end
+
+    context 'changing the id as an unauthorized user' do
+      let(:params) do
+        attributes_for(:mailaccount,
+                       id: 1234,
+                       domain_id: otheruser.domains.first.id)
+      end
+      it { should_not permit_args(:update_with, params) }
     end
 
     context 'changing attributes w/o changing the owner' do
