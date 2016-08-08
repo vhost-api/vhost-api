@@ -42,7 +42,12 @@ class DkimPolicy < ApplicationPolicy
   end
 
   class Permissions < ApplicationPermissions
+    # include some additional methods
     class Admin < self
+      def attributes
+        super.push(:domain,
+                   :dkim_signings)
+      end
     end
 
     class Reseller < Admin

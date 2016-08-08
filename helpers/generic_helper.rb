@@ -1,12 +1,4 @@
 # frozen_string_literal: true
-def gen_session_json(session: nil)
-  if session.nil?
-    '{}'
-  else
-    JSON.pretty_generate(JSON.load(session.to_hash.to_json))
-  end
-end
-
 def gen_doveadm_pwhash(password)
   '{SHA512-CRYPT}' + password.crypt('$6$' + SecureRandom.hex(16))
 end

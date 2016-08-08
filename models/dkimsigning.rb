@@ -25,6 +25,15 @@ class DkimSigning
 
   belongs_to :dkim
 
+  # @param options [Hash]
+  # @return [Hash]
+  def as_json(options = {})
+    defaults = { exclude: [:dkim_id],
+                 relationships: { dkim: { only: [:id] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
+  end
+
   # @return [User]
   def owner
     dkim.owner

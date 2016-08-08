@@ -53,7 +53,10 @@ class MailAccountPolicy < ApplicationPolicy
     # include some additional methods
     class Admin < self
       def attributes
-        super.push(:customer,
+        super.push(:domain,
+                   :mail_aliases,
+                   :mail_sources,
+                   :customer,
                    :quotausage,
                    :quotausage_rel,
                    :sieveusage,

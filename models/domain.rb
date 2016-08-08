@@ -35,9 +35,10 @@ class Domain
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { methods: [:customer] }
-    options = defaults.merge(options)
-    super(fix_options_override(options))
+    defaults = { exclude: [:user_id],
+                 relationships: { user: { only: [:id, :name, :login] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]
@@ -47,6 +48,6 @@ class Domain
 
   # @return [Hash]
   def customer
-    { id: user.id, name: user.name, login: user.login }
+    owner.as_json(only: [:id, :name, :login])
   end
 end

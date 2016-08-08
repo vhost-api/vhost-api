@@ -56,7 +56,7 @@ class DomainPolicy < ApplicationPolicy
     class Admin < self
       # @return [Array]
       def attributes
-        super << :customer
+        super << :user
       end
     end
 
@@ -67,7 +67,7 @@ class DomainPolicy < ApplicationPolicy
     class User < Reseller
       # @return [Array]
       def attributes
-        super - [:user_id, :customer]
+        super
       end
     end
   end

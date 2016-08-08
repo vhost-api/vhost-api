@@ -30,18 +30,11 @@ class MailAlias
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { methods: [:destinations] }
-    options = defaults.merge(options)
-    super(fix_options_override(options))
-  end
+    defaults = { exclude: [:domain_id],
+                 relationships: { domain: { only: [:id, :name] },
+                                  mail_accounts: { only: [:id, :email] } } }
 
-  # @return [Array(MailAccount)]
-  def destinations
-    dests = []
-    mail_accounts.each do |acc|
-      dests.push(acc.email.to_s)
-    end
-    dests
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]

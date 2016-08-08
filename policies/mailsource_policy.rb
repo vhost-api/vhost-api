@@ -45,7 +45,8 @@ class MailSourcePolicy < ApplicationPolicy
     # include destinations method
     class Admin < self
       def attributes
-        super << :allowed_from
+        super.push(:domain,
+                   :mail_accounts)
       end
     end
 

@@ -51,7 +51,11 @@ class ApikeyPolicy < ApplicationPolicy
   end
 
   class Permissions < ApplicationPermissions
+    # include some additional methods
     class Admin < self
+      def attributes
+        super.push(:user)
+      end
     end
 
     class Reseller < Admin

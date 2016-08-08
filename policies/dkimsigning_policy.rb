@@ -44,7 +44,11 @@ class DkimSigningPolicy < ApplicationPolicy
   end
 
   class Permissions < ApplicationPermissions
+    # include some additional methods
     class Admin < self
+      def attributes
+        super.push(:dkim)
+      end
     end
 
     class Reseller < Admin

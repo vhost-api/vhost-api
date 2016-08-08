@@ -7,10 +7,10 @@ describe 'VHost-API Application' do
   context 'by an unauthenticated user' do
     it 'returns an an API unauthorized error' do
       get '/'
-      expect(last_response.status).to eq(403)
+      expect(last_response.status).to eq(401)
       expect(last_response.body).to eq(
-        return_json_pretty(
-          api_error(ApiErrors.[](:unauthorized)).to_json
+        spec_json_pretty(
+          api_error(ApiErrors.[](:authentication_failed)).to_json
         )
       )
     end
@@ -19,20 +19,19 @@ describe 'VHost-API Application' do
   it 'returns an API Error for unexisting routes/endpoints' do
     clear_cookies
 
-    testuser = create(:admin)
+    password = 'secret'
+    testuser = create(:admin, password: password)
 
-    get(
-      '/herp/derp/fooobar',
-      nil,
-      appconfig[:session][:key] => {
-        user_id: testuser.id,
-        group: Group.get(testuser.group_id).name
-      }
-    )
+    credentials = "#{testuser.login}:#{password}"
+    auth_secret = Base64.encode64(credentials).strip
+
+    auth_hash = { 'HTTP_AUTHORIZATION' => "Basic #{auth_secret}" }
+
+    get '/herp/derp/fooobar', nil, auth_hash
 
     expect(last_response.status).to eq(404)
     expect(last_response.body).to eq(
-      return_json_pretty(
+      spec_json_pretty(
         api_error(ApiErrors.[](:not_found)).to_json
       )
     )

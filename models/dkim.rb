@@ -29,6 +29,16 @@ class Dkim
 
   has n, :dkim_signings, constraint: :destroy
 
+  # @param options [Hash]
+  # @return [Hash]
+  def as_json(options = {})
+    defaults = { exclude: [:domain_id],
+                 relationships: { domain: { only: [:id, :name] },
+                                  dkim_signings: { only: [:id, :author] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
+  end
+
   # @return [User]
   def owner
     domain.owner

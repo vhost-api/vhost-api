@@ -16,32 +16,25 @@ describe 'VHost-API DkimSigning Controller' do
 
         describe 'GET all' do
           it 'authorizes (policies) and returns an array of dkimsignings' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
+            scope = Pundit.policy_scope(testadmin, DkimSigning)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testadmin, DkimSigning).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testadmin.id
               )
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
@@ -55,55 +48,39 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'returns the dkimsigning' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             @user = testadmin
             expect(last_response.body).to eq(
-              return_authorized_resource(object: testdkimsigning)
+              spec_authorized_resource(object: testdkimsigning, user: testadmin)
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testdkimsigning.id
             testdkimsigning.destroy
 
             get(
               "/api/v#{api_version}/dkimsignings/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 api_error(ApiErrors.[](:not_found)).to_json
               )
             )
@@ -132,39 +109,29 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             it 'creates a new dkimsigning' do
-              clear_cookies
-
               count = DkimSigning.all.count
 
               post(
                 "/api/v#{api_version}/dkimsignings",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(DkimSigning.all.count).to eq(count + 1)
             end
 
             it 'returns an API Success containing the new dkimsigning' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkimsignings",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = DkimSigning.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 201,
                                          data: { object: new }).to_json
                 )
@@ -172,30 +139,20 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkimsignings",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
             it 'redirects to the new dkimsigning' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkimsignings",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = DkimSigning.last
@@ -209,57 +166,39 @@ describe 'VHost-API DkimSigning Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{, author: \'foo, enabled:true}' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{, author: \'foo, enabled:true}\''
-              end
 
               it 'does not create a new dkimsigning' do
-                clear_cookies
-
                 count = DkimSigning.all.count
 
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(DkimSigning.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -268,57 +207,39 @@ describe 'VHost-API DkimSigning Controller' do
 
             context 'invalid attributes' do
               let(:invalid_dkimsigning_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'invalid author'
-              end
 
               it 'does not create a new dkimsigning' do
-                clear_cookies
-
                 count = DkimSigning.all.count
 
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_dkimsigning_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(DkimSigning.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_dkimsigning_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_dkimsigning_author)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_dkimsigning_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -327,57 +248,39 @@ describe 'VHost-API DkimSigning Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkimsigning) }
-              let(:invalid_values_msg) do
-                'invalid author'
-              end
 
               it 'does not create a new dkimsigning' do
-                clear_cookies
-
                 count = DkimSigning.all.count
 
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(DkimSigning.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_dkimsigning_author)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkimsignings",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -395,8 +298,6 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             it 'updates an existing dkimsigning with new values' do
-              clear_cookies
-
               upd_attrs = attributes_for(
                 :dkimsigning,
                 author: testdkimsigning.dkim.domain.name
@@ -406,10 +307,7 @@ describe 'VHost-API DkimSigning Controller' do
               patch(
                 "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(
@@ -421,8 +319,6 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             it 'returns an API Success containing the updated dkimsigning' do
-              clear_cookies
-
               upd_attrs = attributes_for(
                 :dkimsigning,
                 author: "foo@#{testdkimsigning.dkim.domain.name}"
@@ -431,17 +327,14 @@ describe 'VHost-API DkimSigning Controller' do
               patch(
                 "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               upd_source = DkimSigning.get(testdkimsigning.id)
 
               expect(last_response.status).to eq(200)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 200,
                                          data: { object: upd_source }).to_json
                 )
@@ -449,17 +342,12 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               upd_attrs = attributes_for(:dkimsigning, author: 'foo@foo.org')
 
               patch(
                 "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -469,22 +357,14 @@ describe 'VHost-API DkimSigning Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{, author: \'foo, enabled:true}' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{, author: \'foo, enabled:true}\''
-              end
 
               it 'does not update the dkimsigning' do
-                clear_cookies
-
                 prev_tstamp = testdkimsigning.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -496,35 +376,25 @@ describe 'VHost-API DkimSigning Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -533,22 +403,14 @@ describe 'VHost-API DkimSigning Controller' do
 
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in DkimSigning'
-              end
 
               it 'does not update the dkimsigning' do
-                clear_cookies
-
                 prev_tstamp = testdkimsigning.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -560,35 +422,25 @@ describe 'VHost-API DkimSigning Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -597,22 +449,14 @@ describe 'VHost-API DkimSigning Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkimsigning) }
-              let(:invalid_values_msg) do
-                'invalid author'
-              end
 
               it 'does not update the dkimsigning' do
-                clear_cookies
-
                 prev_tstamp = testdkimsigning.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -624,35 +468,25 @@ describe 'VHost-API DkimSigning Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
+                  spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_dkimsigning_author)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
               end
@@ -660,7 +494,6 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           context 'operation failed' do
-            let(:patch_error_msg) { '' }
             let(:domain) { create(:domain, name: 'invincible.de') }
             let(:dkim) { create(:dkim, domain_id: domain.id) }
 
@@ -681,20 +514,15 @@ describe 'VHost-API DkimSigning Controller' do
               allow(policy).to receive(:update_with?).and_return(true)
               allow(DkimSigningPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               patch(
                 "/api/v#{api_version}/dkimsignings/#{invincible.id}",
                 attributes_for(:dkimsigning, author: 'f@invincible.de').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
@@ -710,40 +538,28 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'deletes the requested dkimsigning' do
-            clear_cookies
-
             id = testdkimsigning.id
 
             delete(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(DkimSigning.get(id)).to eq(nil)
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
           context 'operation failed' do
-            let(:delete_error_msg) { '' }
-
             it 'returns an API Error' do
               invincible = create(:dkimsigning,
                                   author: 'foo@invincible.org')
@@ -759,20 +575,15 @@ describe 'VHost-API DkimSigning Controller' do
               allow(policy).to receive(:destroy?).and_return(true)
               allow(DkimSigningPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               delete(
                 "/api/v#{api_version}/dkimsignings/#{invincible.id}",
                 nil,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
@@ -790,36 +601,28 @@ describe 'VHost-API DkimSigning Controller' do
         let!(:testdkimsigning) do
           DkimSigning.first(dkim_id: owner.domains.first.dkims.first.id)
         end
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         describe 'GET all' do
           it 'returns only its own dkimsignings' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
+            scope = Pundit.policy_scope(testuser, DkimSigning)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testuser, DkimSigning).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testuser.id
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -834,33 +637,23 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -868,8 +661,6 @@ describe 'VHost-API DkimSigning Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
-
           it 'does not authorize the request' do
             expect do
               testdkimsigning.destroy
@@ -878,22 +669,17 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testdkimsigning.id
             testdkimsigning.destroy
 
             get(
               "/api/v#{api_version}/dkimsignings/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 api_error(ApiErrors.[](:not_found)).to_json
               )
             )
@@ -919,39 +705,29 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'does create a new dkimsigning' do
-            clear_cookies
-
             count = DkimSigning.all.count
 
             post(
               "/api/v#{api_version}/dkimsignings",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(DkimSigning.all.count).to eq(count + 1)
           end
 
           it 'returns an API Success containing the new dkimsigning' do
-            clear_cookies
-
             post(
               "/api/v#{api_version}/dkimsignings",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             new = DkimSigning.last
 
             expect(last_response.status).to eq(201)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 ApiResponseSuccess.new(status_code: 201,
                                        data: { object: new }).to_json
               )
@@ -959,15 +735,10 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             post(
               "/api/v#{api_version}/dkimsignings",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -978,8 +749,6 @@ describe 'VHost-API DkimSigning Controller' do
             let(:anotheruser) { create(:user_with_dkims) }
 
             it 'does not create a new dkimsigning' do
-              clear_cookies
-
               count = DkimSigning.all.count
 
               post(
@@ -989,18 +758,13 @@ describe 'VHost-API DkimSigning Controller' do
                   author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(DkimSigning.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkimsignings",
                 attributes_for(
@@ -1008,23 +772,18 @@ describe 'VHost-API DkimSigning Controller' do
                   author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkimsignings",
                 attributes_for(
@@ -1032,10 +791,7 @@ describe 'VHost-API DkimSigning Controller' do
                   author: anotheruser.domains.first.name,
                   dkim_id: anotheruser.domains.first.dkims.first.id
                 ).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1051,57 +807,42 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'does not update the dkimsigning' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkimsigning, author: 'foo@foo.org')
             prev_tstamp = testdkimsigning.updated_at
 
             patch(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(testdkimsigning.updated_at).to eq(prev_tstamp)
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkimsigning, author: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkimsigning, author: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1116,15 +857,10 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'does not delete the dkimsigning' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(DkimSigning.get(testdkimsigning.id)).not_to eq(nil)
@@ -1132,35 +868,25 @@ describe 'VHost-API DkimSigning Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1168,9 +894,8 @@ describe 'VHost-API DkimSigning Controller' do
         end
       end
 
-      context 'by an unauthenticated (thus unauthorized) user' do
+      context 'by an unauthenticated user' do
         let!(:testdkimsigning) { create(:dkimsigning) }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         before(:each) do
           create(:user, name: 'admin')
@@ -1180,81 +905,81 @@ describe 'VHost-API DkimSigning Controller' do
         let(:testuser) { create(:user) }
 
         describe 'GET all' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/dkimsignings"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET one' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET inexistent record' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             inexistent = testdkimsigning.id
             testdkimsigning.destroy
             get "/api/v#{api_version}/dkimsignings/#{inexistent}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'POST' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             post(
               "/api/v#{api_version}/dkimsignings",
               'dkimsigning' => attributes_for(:dkimsigning)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'PATCH' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             testdkimsigning_foo = create(:dkimsigning, author: 'foo.org')
             patch(
               "/api/v#{api_version}/dkimsignings/#{testdkimsigning_foo.id}",
               'dkimsigning' => attributes_for(:dkimsigning)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'DELETE' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             delete "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                api_error(ApiErrors.[](:unauthorized)).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end

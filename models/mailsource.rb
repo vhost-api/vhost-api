@@ -30,18 +30,11 @@ class MailSource
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { methods: [:allowed_from] }
-    options = defaults.merge(options)
-    super(fix_options_override(options))
-  end
+    defaults = { exclude: [:domain_id],
+                 relationships: { domain: { only: [:id, :name] },
+                                  mail_accounts: { only: [:id, :email] } } }
 
-  # @return [Array(MailAccount)]
-  def allowed_from
-    allowed_senders = []
-    mail_accounts.each do |acc|
-      allowed_senders.push(acc.email.to_s)
-    end
-    allowed_senders
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]

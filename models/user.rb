@@ -78,12 +78,10 @@ class User
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password] }
-    options = defaults.merge(options)
-    unless options[:only].nil?
-      options[:only].delete(:password) if options[:only].include?(:password)
-    end
-    super(fix_options_override(options))
+    defaults = { exclude: [:password],
+                 relationships: { group: { only: [:id, :name] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]

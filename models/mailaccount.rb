@@ -42,16 +42,17 @@ class MailAccount
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password],
+    defaults = { exclude: [:password, :domain_id],
                  methods: [:quotausage,
                            :quotausage_rel,
                            :sieveusage,
                            :sieveusage_rel,
-                           :customer] }
-    options = defaults.merge(options)
-    options[:only].delete(:password) if !options[:only].nil? &&
-                                        options[:only].include?(:password)
-    super(fix_options_override(options))
+                           :customer],
+                 relationships: { domain: { only: [:id, :name] },
+                                  mail_aliases: { only: [:id, :address] },
+                                  mail_sources: { only: [:id, :address] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]
@@ -61,7 +62,7 @@ class MailAccount
 
   # @return [Hash]
   def customer
-    { id: domain.user.id, name: domain.user.name, login: domain.user.login }
+    owner.as_json(only: [:id, :name, :login])
   end
 
   # @return [Fixnum, nil]

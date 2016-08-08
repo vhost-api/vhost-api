@@ -45,7 +45,8 @@ class MailAliasPolicy < ApplicationPolicy
     # include destinations method
     class Admin < self
       def attributes
-        super << :destinations
+        super.push(:domain,
+                   :mail_accounts)
       end
     end
 

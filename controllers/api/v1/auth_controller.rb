@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 namespace '/api/v1/auth' do
   post '/login' do
-    p params
     return_api_error(
       ApiErrors.[](:invalid_request)
     ) unless params['user'] && params['password'] && params['apikey']

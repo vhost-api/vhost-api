@@ -27,11 +27,8 @@ gem 'dm-constraints'
 # engine
 gem 'puma'
 # style
-gem 'sinatra-flash'
 gem 'activesupport'
-gem 'haml'
 gem 'filesize'
-gem 'sass'
 
 group :development do
   gem 'shotgun', require: false

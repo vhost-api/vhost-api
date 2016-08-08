@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 def symbolize_params_hash(params)
+  return {} if params.nil?
   params.reduce({}) do |memo, (k, v)|
     memo.tap { |m| m[k.to_sym] = v }
   end
@@ -7,7 +8,7 @@ end
 
 def return_json_pretty(json)
   content_type :json, charset: 'utf-8'
-  result = JSON.pretty_generate(JSON.load(json)) + "\n"
+  result = JSON.pretty_generate(JSON.parse(json)) + "\n"
   result_digest = Digest::SHA256.hexdigest(result)
   etag result_digest
   halt 304 if request.env['HTTP_IF_NONE_MATCH'] == result_digest
@@ -15,83 +16,121 @@ def return_json_pretty(json)
 end
 
 def return_authorized_resource(object: nil)
-  return return_json_pretty(
-    api_error(ApiErrors.[](:unauthorized)).to_json
-  ) if @user.nil?
-
   return return_json_pretty({}.to_json) if object.nil?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
   return_json_pretty(object.to_json(only: permitted_attributes))
 end
 
-def return_authorized_collection(object: nil, params: nil)
-  raise Pundit::NotAuthorizedError if @user.nil?
-
+def return_authorized_collection(object: nil, params: { fields: nil })
   return return_json_pretty({}.to_json) if object.nil? || object.empty?
 
-  result = limited_collection(collection: object, params: params)
+  begin
+    result = limited_collection(collection: object, params: params)
+  rescue DataObjects::DataError, ArgumentError
+    return_api_error(ApiErrors.[](:invalid_query))
+  rescue
+    return_api_error(ApiErrors.[](:invalid_request))
+  end
 
   return_json_pretty(result.to_json)
 end
 
-def limited_collection(collection: nil, params: nil)
-  collection = filter_collection(collection: collection,
-                                 params: params) unless params.empty?
-
-  return invalid_query_params if collection.nil? || collection.empty?
+def limited_collection(collection: nil, params: { fields: nil })
+  collection = prepare_collection(
+    collection: collection, params: params
+  ) unless (params.keys - [:fields]).empty?
 
   fields = field_list(
     permitted: Pundit.policy(@user, collection).permitted_attributes,
     requested: params[:fields]
   )
 
-  prepare_collection(collection: collection, fields: fields)
+  prepare_collection_output(collection: collection, fields: fields)
 end
 
-def filter_collection(collection: nil, params: nil)
-  return collection if params.nil? || params.empty?
-  limit = params[:limit].to_i
-  offset = params[:offset].to_i
+def prepare_collection(collection: nil, params: { fields: nil })
+  collection = search_collection(collection: collection,
+                                 query: symbolize_params_hash(params[:q]))
 
-  if limit
-    collection = collection.all(limit: limit, offset: offset)
-  else
-    invalid_query_params
-  end
+  # sort the collection
+  collection = sort_collection(collection: collection,
+                               sort_params: params[:sort])
+
+  # return only requested fields
+  filter_params = { limit: params[:limit], offset: params[:offset] }
+  collection = filter_collection(collection: collection,
+                                 params: filter_params) unless params.empty?
+
+  # halt with empty response if search/filter returns nil/empty
+  halt 200, return_json_pretty({}.to_json) if collection.nil? ||
+                                              collection.empty?
 
   collection
 end
 
-def prepare_collection(collection: nil, fields: nil)
-  result = []
-  collection.sort.each do |record|
-    result.push(record.as_json(only: fields))
+def string_to_bool(str)
+  return true if str =~ %r{^(true|yes|TRUE|YES|y|1)$}
+  return false if str =~ %r{^(false|no|FALSE|NO|n|0)$}
+  raise ArgumentError
+end
+
+def search_collection(collection: nil, query: nil)
+  return collection if query.nil?
+
+  query.keys.each do |key|
+    # booleans need to be searched differently
+    search_query = if key.to_s =~ %r{enabled$}
+                     { key => string_to_bool(query[key]) }
+                   else
+                     { key.like => "%#{query[key]}%" }
+                   end
+    collection = collection.all(search_query)
+  end
+  collection
+end
+
+def filter_collection(collection: nil, params: { fields: nil })
+  return collection if params.nil? || params.empty?
+  limit = params[:limit].to_i
+  offset = params[:offset].to_i
+
+  collection = collection.all(limit: limit, offset: offset) unless limit.zero?
+
+  collection
+end
+
+def sort_collection(collection: nil, sort_params: nil)
+  return collection if sort_params.nil?
+
+  sort_columns = sort_params.split(',')
+  query = []
+  sort_columns.each do |col|
+    query.push(col[0] == '-' ? col[1..-1].to_sym.desc : col.to_sym.asc)
+  end
+
+  collection.all(order: query)
+end
+
+def prepare_collection_output(collection: nil, fields: nil)
+  # result = []
+  result = {}
+  collection.each do |record|
+    # result.push(record.as_json(only: fields))
+    result[record.id] = record.as_json(only: fields)
   end
   result
 end
 
-def invalid_query_params
-  api_error(ApiErrors.[](:invalid_query)).to_json
-end
-
 def field_list(permitted: nil, requested: nil)
   return permitted if requested.nil?
-  permitted & params[:fields].map(&:to_sym)
+  permitted & params[:fields].split(',').map(&:to_sym)
 end
 
 def return_resource(object: nil)
   clazz = object.model.to_s.downcase.pluralize
 
-  respond_to do |type|
-    type.html do
-      haml clazz.to_sym
-    end
-
-    type.json do
-      return_json_pretty({ clazz => object }.to_json)
-    end
-  end
+  return_json_pretty({ clazz => object }.to_json)
 end
 
 def return_api_error(api_errors_hash)
@@ -107,10 +146,7 @@ def api_error(api_errors_hash)
 end
 
 def return_apiresponse(response)
-  if response.is_a?(ApiResponseSuccess)
-    status response.status_code
-    return_json_pretty response.to_json
-  elsif response.is_a?(ApiResponseError)
+  if response.is_a?(ApiResponse)
     halt response.status_code, return_json_pretty(response.to_json)
   else
     halt 500

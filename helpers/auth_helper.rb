@@ -21,7 +21,7 @@ end
 # @param value [String]
 # @return [Array(String)]
 def parse_base64_secret(value)
-  Base64.decode64(value).strip.split(':')
+  Base64.decode64(value).delete("\n").split(':')
 end
 
 # Performs authentication based on the HTTP Authorization

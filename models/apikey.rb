@@ -26,6 +26,15 @@ class Apikey
     self.updated_at = Time.now.to_i
   end
 
+  # @param options [Hash]
+  # @return [Hash]
+  def as_json(options = {})
+    defaults = { exclude: [:user_id],
+                 relationships: { user: { only: [:id, :name, :login] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
+  end
+
   # @return [User]
   def owner
     user
@@ -33,6 +42,6 @@ class Apikey
 
   # @return [Hash]
   def customer
-    { id: user.id, name: user.name, login: user.login }
+    owner.as_json(only: [:id, :name, :login])
   end
 end
