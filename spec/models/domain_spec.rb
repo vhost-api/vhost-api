@@ -27,4 +27,9 @@ describe 'VHost-API Domain Model' do
     test = create(:domain)
     expect(test.owner).to be_an_instance_of(User)
   end
+
+  it 'returns a serializable hash from the customer method' do
+    testdomain = build(:domain)
+    expect { JSON.parse(testdomain.customer.to_json) }.not_to raise_exception
+  end
 end
