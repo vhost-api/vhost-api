@@ -13,7 +13,7 @@ class User
   property :login, String, required: true, unique: true, length: 3..255
   property :password, BCryptHash, required: true, length: 255
   property :contact_email, String, required: false, length: 255
-  property :quota_apikeys, Integer, required: true, min: 0, default: 2
+  property :quota_apikeys, Integer, required: true, min: 0, default: 3
   property :quota_sshpubkeys, Integer, required: true, min: 0, default: 10
   property :quota_customers, Integer, required: true, min: 0, default: 5
   property :quota_vhosts, Integer, required: true, min: 0, default: 1

@@ -33,6 +33,9 @@ module ApiErrors
     invalid_query:
       ['1009', 400, 'invalid query parameters'],
 
+    quota_apikey:
+      ['1010', 403, 'apikey quota exhausted'],
+
     # group controller specific 11xx
     invalid_group:
       ['1100', 422, 'invalid group name'],

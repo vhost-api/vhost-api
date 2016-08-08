@@ -122,7 +122,7 @@ before { env['rack.errors'] = error_logger }
 
 # tell pundit how to find the user
 current_user do
-  authenticate!
+  user? ? @user : authenticate!
 end
 
 # @return [Boolean]

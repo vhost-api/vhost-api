@@ -8,7 +8,7 @@ class Apikey
   include DataMapper::Resource
 
   property :id, Serial, key: true
-  property :apikey, String, required: true, unique: true, length: 128
+  property :apikey, String, required: true, unique: true, length: 255
   property :comment, String, required: false, length: 255
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
                                  required: false
