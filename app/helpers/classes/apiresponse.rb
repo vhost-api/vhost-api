@@ -6,9 +6,9 @@ class ApiResponse
     @status_code = status_code
   end
 
-  def empty?
-    false
-  end
+  # def empty?
+  # false
+  # end
 
   attr_reader :status, :status_code
 end

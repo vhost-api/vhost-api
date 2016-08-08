@@ -5,10 +5,10 @@ SimpleCov.profiles.define 'vhost-api' do
 
   add_group 'RSpec', './spec'
   add_group 'App', './(vhost_api_app.rb|init.rb)'
-  add_group 'Controllers', './controllers/'
-  add_group 'Models', './models/'
-  add_group 'Helpers', './helpers/'
-  add_group 'Policies', './policies/'
+  add_group 'Controllers', './app/controllers/'
+  add_group 'Models', './app/models/'
+  add_group 'Helpers', './app/helpers/'
+  add_group 'Policies', './app/policies/'
 end
 SimpleCov.start 'vhost-api'
 

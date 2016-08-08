@@ -48,6 +48,7 @@ coverage.vim
 # project-specific files
 config/database.yml
 config/appconfig.yml
+config/puma.rb
 config/session.secret
 
 coverage/**

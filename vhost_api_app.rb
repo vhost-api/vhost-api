@@ -14,7 +14,6 @@ require 'English'
 
 # load models and stuff
 require_relative './init'
-Dir.glob('./controllers/*.rb').each { |file| require file }
 
 # setup stuff
 ::Logger.class_eval { alias_method :write, :'<<' }
@@ -39,7 +38,7 @@ end
 # -- load only activated modules/controllers --
 # core modules
 %w(group user apikey auth).each do |f|
-  require './controllers/api/v1/' + f.to_s + '_controller.rb'
+  require './app/controllers/api/v1/' + f.to_s + '_controller.rb'
 end
 
 # optional modules
@@ -70,7 +69,7 @@ settings.api_modules.map(&:upcase).each do |apimod|
   end
 
   optional_modules.flatten.uniq.each do |f|
-    require './controllers/api/v1/' + f.to_s + '_controller.rb'
+    require './app/controllers/api/v1/' + f.to_s + '_controller.rb'
   end
 end
 

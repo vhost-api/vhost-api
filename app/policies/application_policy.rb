@@ -1,12 +1,10 @@
 # frozen_string_literal: true
-require File.expand_path '../application_policy.rb', __FILE__
-
 # default application policy
 class ApplicationPolicy
   attr_reader :user, :record
 
   def initialize(user, record)
-    raise Pundit::NotAuthorizedError, 'You need to be logged in!' unless user
+    raise AuthenticationError unless user
     @user = user
     @record = record
   end

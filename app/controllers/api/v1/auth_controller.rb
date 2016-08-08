@@ -22,6 +22,6 @@ namespace '/api/v1/auth' do
     end
 
     status 200
-    return_json_pretty({ apikey: apikey.apikey }.to_json)
+    return_json_pretty({ user_id: user.id, apikey: apikey.apikey }.to_json)
   end
 end
