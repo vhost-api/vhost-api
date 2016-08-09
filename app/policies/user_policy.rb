@@ -53,7 +53,7 @@ class UserPolicy < ApplicationPolicy
     if params.key?(:group_id)
       return false unless check_group_id(params[:group_id])
     end
-    true
+    check_update_params(params)
   end
 
   # Checks if current user is allowed to delete the record
@@ -123,6 +123,17 @@ class UserPolicy < ApplicationPolicy
       if k.to_s =~ %r{^quota_}
         remaining = check_quota_prop(k)
         return false unless remaining >= v
+      end
+    end
+    true
+  end
+
+  # @return [Boolean]
+  def check_update_params(params)
+    params.each_pair do |k, v|
+      if k.to_s =~ %r{^quota_}
+        remaining = check_quota_prop(k)
+        return false unless remaining >= (record.send(k) - v)
       end
     end
     true

@@ -84,17 +84,6 @@ configure :development, :test do
   BetterErrors.use_pry!
 end
 
-# configure :test do
-# require 'pry'
-# require 'better_errors'
-# require 'binding_of_caller'
-# set :show_exceptions, :after_handler
-# set :raise_errors, false
-# use BetterErrors::Middleware
-# BetterErrors.application_root = __dir__
-# BetterErrors.use_pry!
-# end
-
 configure :production do
   set :show_exceptions, false
   set :raise_errors, false
