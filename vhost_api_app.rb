@@ -73,7 +73,7 @@ settings.api_modules.map(&:upcase).each do |apimod|
   end
 end
 
-configure :development do
+configure :development, :test do
   require 'pry'
   require 'better_errors'
   require 'binding_of_caller'
@@ -84,16 +84,16 @@ configure :development do
   BetterErrors.use_pry!
 end
 
-configure :test do
-  require 'pry'
-  require 'better_errors'
-  require 'binding_of_caller'
-  set :show_exceptions, :after_handler
-  set :raise_errors, false
-  use BetterErrors::Middleware
-  BetterErrors.application_root = __dir__
-  BetterErrors.use_pry!
-end
+# configure :test do
+# require 'pry'
+# require 'better_errors'
+# require 'binding_of_caller'
+# set :show_exceptions, :after_handler
+# set :raise_errors, false
+# use BetterErrors::Middleware
+# BetterErrors.application_root = __dir__
+# BetterErrors.use_pry!
+# end
 
 configure :production do
   set :show_exceptions, false
@@ -150,19 +150,6 @@ end
 
 get '/' do
   "Welcome #{@user.name} to VHost-API!"
-end
-
-get '/api_modules' do
-  result = ''
-  settings.api_modules.each do |apimod|
-    result += 'Module: ' + apimod.to_s + "\n"
-  end
-  result
-end
-
-get '/env' do
-  authenticate!
-  return_json_pretty({ environment: settings.environment.to_s }.to_json)
 end
 
 not_found do
