@@ -36,11 +36,10 @@ class UserPolicy < ApplicationPolicy
   # @return [Boolean]
   def create_with?(params)
     return true if user.admin?
-    if params.key?(:user_id)
-      result_uid = check_user_id(params[:user_id])
-      return false unless result_uid
+    if params.key?(:group_id)
+      return false unless check_group_id(params[:group_id])
     end
-    true
+    check_create_params(params)
   end
 
   # Checks if current user is allowed to update the record with given params
@@ -49,12 +48,10 @@ class UserPolicy < ApplicationPolicy
   def update_with?(params)
     return true if user.admin?
     if params.key?(:id)
-      result_id = check_id(params[:id])
-      return false unless result_id
+      return false unless check_id(params[:id])
     end
-    if params.key?(:user_id)
-      result_uid = check_user_id(params[:user_id])
-      return false unless result_uid
+    if params.key?(:group_id)
+      return false unless check_group_id(params[:group_id])
     end
     true
   end
@@ -68,6 +65,15 @@ class UserPolicy < ApplicationPolicy
     end
     return true if record == user
     super
+  end
+
+  # Calculates remaining quota for <key>.
+  #
+  # @param key [Symbol]
+  # @return [Fixnum]
+  def remaining_quota(key)
+    raise ArgumentError unless key.to_s =~ %r{^quota_}
+    check_quota_prop(key)
   end
 
   # Scope for User
@@ -112,6 +118,25 @@ class UserPolicy < ApplicationPolicy
   end
 
   # @return [Boolean]
+  def check_create_params(params)
+    params.each_pair do |k, v|
+      if k.to_s =~ %r{^quota_}
+        remaining = check_quota_prop(k)
+        return false unless remaining >= v
+      end
+    end
+    true
+  end
+
+  # @return [Fixnum]
+  def check_quota_prop(key)
+    prop = key.to_s[6..-1]
+    # call helper methods from quota_helper.rb
+    count = send("allocated_#{prop}", user)
+    user.send(key) - count
+  end
+
+  # @return [Boolean]
   def check_id(id)
     return true if id == user.id
     false
@@ -119,7 +144,7 @@ class UserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def check_group_id(group_id)
-    return true if group_id == user.group_id
+    return true if group_id == Group.first(name: 'user').id
     false
   end
 end

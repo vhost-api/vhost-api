@@ -17,6 +17,14 @@ describe UserPolicy do
     it { should permit(:destroy) }
   end
 
+  context 'changing the id as an unauthorized user' do
+    let(:user) { create(:reseller_with_customers) }
+    let(:testuser) { user.customers.first }
+    let(:params) { attributes_for(:user, id: 1234) }
+
+    it { should_not permit_args(:update_with, params) }
+  end
+
   context 'for another unprivileged user' do
     let(:owner) { create(:user_with_domains) }
     let(:user) { create(:user_with_domains) }
@@ -31,9 +39,14 @@ describe UserPolicy do
   context 'for the reseller of the user' do
     let(:user) { create(:reseller_with_customers) }
     let(:testuser) { user.customers.first }
+    let(:group) { testuser.group }
+    let(:params) do
+      attributes_for(:user, reseller_id: user.id, group_id: group.id)
+    end
 
     context 'with available quota' do
       it { should permit(:create) }
+      it { should permit_args(:create_with, params) }
     end
 
     context 'with exhausted quota' do
