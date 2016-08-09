@@ -28,6 +28,6 @@ class Ipv4Address
 
   # @return [User]
   def owner
-    User.first(name: 'admin')
+    User.first(login: 'admin')
   end
 end

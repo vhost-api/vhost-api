@@ -29,6 +29,15 @@ class Database
 
   has n, :database_users, constraint: :protect
 
+  # @param options [Hash]
+  # @return [Hash]
+  def as_json(options = {})
+    defaults = { relationships: { user: { only: [:id, :name, :login] },
+                                  database_user: { only: [:id, :username] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
+  end
+
   # @return [User]
   def owner
     user
