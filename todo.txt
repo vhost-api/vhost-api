@@ -1,0 +1,3 @@
+/var/vmail 2750 + recursive, chmod g+s, add vhost-api user to vmail group for reading dovecot quota/sieve files
+
+

@@ -16,32 +16,25 @@ describe 'VHost-API Dkim Controller' do
 
         describe 'GET all' do
           it 'authorizes (policies) and returns an array of dkims' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
+            scope = Pundit.policy_scope(testadmin, Dkim)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testadmin, Dkim).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testadmin.id
               )
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
@@ -55,58 +48,40 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns the dkim' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             @user = testadmin
             expect(last_response.body).to eq(
-              return_authorized_resource(object: testdkim)
+              spec_authorized_resource(object: testdkim, user: testadmin)
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testdkim.id
             testdkim.destroy
 
             get(
               "/api/v#{api_version}/dkims/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -131,39 +106,29 @@ describe 'VHost-API Dkim Controller' do
             end
 
             it 'creates a new dkim' do
-              clear_cookies
-
               count = Dkim.all.count
 
               post(
                 "/api/v#{api_version}/dkims",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(Dkim.all.count).to eq(count + 1)
             end
 
             it 'returns an API Success containing the new dkim' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkims",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = Dkim.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 201,
                                          data: { object: new }).to_json
                 )
@@ -171,30 +136,20 @@ describe 'VHost-API Dkim Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkims",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
             it 'redirects to the new dkim' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkims",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = Dkim.last
@@ -208,62 +163,39 @@ describe 'VHost-API Dkim Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{, selector: \'foo, enabled:true}\''
-              end
 
               it 'does not create a new dkim' do
-                clear_cookies
-
                 count = Dkim.all.count
 
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(Dkim.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -272,62 +204,39 @@ describe 'VHost-API Dkim Controller' do
 
             context 'invalid attributes' do
               let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'invalid selector'
-              end
 
               it 'does not create a new dkim' do
-                clear_cookies
-
                 count = Dkim.all.count
 
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(Dkim.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_dkim_selector)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -336,62 +245,39 @@ describe 'VHost-API Dkim Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkim) }
-              let(:invalid_values_msg) do
-                'invalid selector'
-              end
 
               it 'does not create a new dkim' do
-                clear_cookies
-
                 count = Dkim.all.count
 
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(Dkim.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_dkim_selector)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/dkims",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -409,8 +295,6 @@ describe 'VHost-API Dkim Controller' do
             end
 
             it 'updates an existing dkim with new values' do
-              clear_cookies
-
               upd_attrs = attributes_for(
                 :dkim,
                 selector: "foo@#{testdkim.domain.name}"
@@ -420,10 +304,7 @@ describe 'VHost-API Dkim Controller' do
               patch(
                 "/api/v#{api_version}/dkims/#{testdkim.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(
@@ -435,8 +316,6 @@ describe 'VHost-API Dkim Controller' do
             end
 
             it 'returns an API Success containing the updated dkim' do
-              clear_cookies
-
               upd_attrs = attributes_for(
                 :dkim,
                 selector: "foo@#{testdkim.domain.name}"
@@ -445,17 +324,14 @@ describe 'VHost-API Dkim Controller' do
               patch(
                 "/api/v#{api_version}/dkims/#{testdkim.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               upd_source = Dkim.get(testdkim.id)
 
               expect(last_response.status).to eq(200)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 200,
                                          data: { object: upd_source }).to_json
                 )
@@ -463,17 +339,12 @@ describe 'VHost-API Dkim Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               upd_attrs = attributes_for(:dkim, selector: 'foo@foo.org')
 
               patch(
                 "/api/v#{api_version}/dkims/#{testdkim.id}",
                 upd_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -483,22 +354,14 @@ describe 'VHost-API Dkim Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{, selector: \'foo, enabled:true}\''
-              end
 
               it 'does not update the dkim' do
-                clear_cookies
-
                 prev_tstamp = testdkim.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -510,40 +373,25 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -552,22 +400,14 @@ describe 'VHost-API Dkim Controller' do
 
             context 'invalid attributes' do
               let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in Dkim'
-              end
 
               it 'does not update the dkim' do
-                clear_cookies
-
                 prev_tstamp = testdkim.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -579,40 +419,25 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_dkim_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -621,22 +446,14 @@ describe 'VHost-API Dkim Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkim) }
-              let(:invalid_values_msg) do
-                'invalid selector'
-              end
 
               it 'does not update the dkim' do
-                clear_cookies
-
                 prev_tstamp = testdkim.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -648,40 +465,25 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_dkim_selector)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -690,7 +492,6 @@ describe 'VHost-API Dkim Controller' do
           end
 
           context 'operation failed' do
-            let(:patch_error_msg) { '' }
             let(:domain) { create(:domain, name: 'invincible.de') }
 
             it 'returns an API Error' do
@@ -710,26 +511,16 @@ describe 'VHost-API Dkim Controller' do
               allow(policy).to receive(:update_with?).and_return(true)
               allow(DkimPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               patch(
                 "/api/v#{api_version}/dkims/#{invincible.id}",
                 attributes_for(:dkim, selector: 'f@invincible.de').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not update',
-                    message: patch_error_msg,
-                    data: nil
-                  ).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
             end
@@ -744,40 +535,28 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'deletes the requested dkim' do
-            clear_cookies
-
             id = testdkim.id
 
             delete(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(Dkim.get(id)).to eq(nil)
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
           context 'operation failed' do
-            let(:delete_error_msg) { '' }
-
             it 'returns an API Error' do
               invincible = create(:dkim,
                                   selector: 'foo@invincible.org')
@@ -793,26 +572,16 @@ describe 'VHost-API Dkim Controller' do
               allow(policy).to receive(:destroy?).and_return(true)
               allow(DkimPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               delete(
                 "/api/v#{api_version}/dkims/#{invincible.id}",
                 nil,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not delete',
-                    message: delete_error_msg,
-                    data: nil
-                  ).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
             end
@@ -829,36 +598,28 @@ describe 'VHost-API Dkim Controller' do
         let!(:testdkim) do
           Dkim.first(domain_id: owner.domains.first.id)
         end
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         describe 'GET all' do
           it 'returns only its own dkims' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
+            scope = Pundit.policy_scope(testuser, Dkim)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testuser, Dkim).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testuser.id
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -873,35 +634,23 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -909,8 +658,6 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
-
           it 'does not authorize the request' do
             expect do
               testdkim.destroy
@@ -919,25 +666,18 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testdkim.id
             testdkim.destroy
 
             get(
               "/api/v#{api_version}/dkims/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -962,39 +702,29 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'does create a new dkim' do
-            clear_cookies
-
             count = Dkim.all.count
 
             post(
               "/api/v#{api_version}/dkims",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(Dkim.all.count).to eq(count + 1)
           end
 
           it 'returns an API Success containing the new dkim' do
-            clear_cookies
-
             post(
               "/api/v#{api_version}/dkims",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             new = Dkim.last
 
             expect(last_response.status).to eq(201)
             expect(last_response.body).to eq(
-              return_json_pretty(
+              spec_json_pretty(
                 ApiResponseSuccess.new(status_code: 201,
                                        data: { object: new }).to_json
               )
@@ -1002,15 +732,10 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             post(
               "/api/v#{api_version}/dkims",
               new.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1021,8 +746,6 @@ describe 'VHost-API Dkim Controller' do
             let(:anotheruser) { create(:user_with_domains) }
 
             it 'does not create a new dkim' do
-              clear_cookies
-
               count = Dkim.all.count
 
               post(
@@ -1030,51 +753,36 @@ describe 'VHost-API Dkim Controller' do
                 attributes_for(:dkim,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(Dkim.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkims",
                 attributes_for(:dkim,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/dkims",
                 attributes_for(:dkim,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1090,59 +798,42 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'does not update the dkim' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkim, selector: 'foo@foo.org')
             prev_tstamp = testdkim.updated_at
 
             patch(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(testdkim.updated_at).to eq(prev_tstamp)
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkim, selector: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             upd_attrs = attributes_for(:dkim, selector: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               upd_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1157,15 +848,10 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'does not delete the dkim' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(Dkim.get(testdkim.id)).not_to eq(nil)
@@ -1173,37 +859,25 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/dkims/#{testdkim.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1211,9 +885,8 @@ describe 'VHost-API Dkim Controller' do
         end
       end
 
-      context 'by an unauthenticated (thus unauthorized) user' do
+      context 'by an unauthenticated user' do
         let!(:testdkim) { create(:dkim) }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         before(:each) do
           create(:user, name: 'admin')
@@ -1223,93 +896,81 @@ describe 'VHost-API Dkim Controller' do
         let(:testuser) { create(:user) }
 
         describe 'GET all' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/dkims"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET one' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/dkims/#{testdkim.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET inexistent record' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             inexistent = testdkim.id
             testdkim.destroy
             get "/api/v#{api_version}/dkims/#{inexistent}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'POST' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             post(
               "/api/v#{api_version}/dkims",
               'dkim' => attributes_for(:dkim)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'PATCH' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             testdkim_foo = create(:dkim, selector: 'foo@foo.org')
             patch(
               "/api/v#{api_version}/dkims/#{testdkim_foo.id}",
               'dkim' => attributes_for(:dkim)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'DELETE' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             delete "/api/v#{api_version}/dkims/#{testdkim.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end

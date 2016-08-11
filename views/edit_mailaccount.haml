@@ -1,6 +1,0 @@
-%h1 Edit MailAccount
-%form{ id: 'edit_mailaccount',
-  method: 'PATCH',
-  action: "/api/v1/mailaccounts/#{@mailaccount.id}" }<
-    %input{ type: 'hidden', name: '_method', value: 'PATCH' }
-    = haml :form_mailaccount

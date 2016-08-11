@@ -4,6 +4,5 @@ guard :rspec, cmd: 'bundle exec rspec' do
   watch('spec/spec_helper.rb') { 'spec' }
   watch(%r{^spec/.+_spec\.rb$})
   watch(%r{^spec/factories/.*\.rb$})
-  watch(%r{^(controllers|helpers|models|policies)/.*\.rb$})
-  watch(%r{^views/.*\.haml$})
+  watch(%r{^app/(controllers|helpers|models|policies)/.*\.rb$})
 end

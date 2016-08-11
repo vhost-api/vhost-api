@@ -16,32 +16,25 @@ describe 'VHost-API MailAccount Controller' do
 
         describe 'GET all' do
           it 'authorizes (policies) and returns an array of mailaccounts' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
+            scope = Pundit.policy_scope(testadmin, MailAccount)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testadmin, MailAccount).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testadmin.id
               )
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
@@ -55,58 +48,40 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'returns the mailaccount' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             @user = testadmin
             expect(last_response.body).to eq(
-              return_authorized_resource(object: testmailaccount)
+              spec_authorized_resource(object: testmailaccount, user: testadmin)
             )
           end
 
           it 'returns valid JSON' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testmailaccount.id
             testmailaccount.destroy
 
             get(
               "/api/v#{api_version}/mailaccounts/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -131,39 +106,29 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'creates a new mailaccount' do
-              clear_cookies
-
               count = MailAccount.all.count
 
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(MailAccount.all.count).to eq(count + 1)
             end
 
             it 'returns an API Success containing the new mailaccount' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = MailAccount.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 201,
                                          data: { object: new }).to_json
                 )
@@ -171,30 +136,20 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
             it 'redirects to the new mailaccount' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new_attributes.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               new = MailAccount.last
@@ -208,62 +163,39 @@ describe 'VHost-API MailAccount Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{ , email: \'foo, enabled: true }' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{ , email: \'foo, enabled: true }\''
-              end
 
               it 'does not create a new mailaccount' do
-                clear_cookies
-
                 count = MailAccount.all.count
 
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(MailAccount.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -272,62 +204,39 @@ describe 'VHost-API MailAccount Controller' do
 
             context 'invalid attributes' do
               let(:invalid_mailaccount_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'invalid email address'
-              end
 
               it 'does not create a new mailaccount' do
-                clear_cookies
-
                 count = MailAccount.all.count
 
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_mailaccount_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(MailAccount.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_mailaccount_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_mailaccount_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -336,62 +245,39 @@ describe 'VHost-API MailAccount Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_mailaccount) }
-              let(:invalid_values_msg) do
-                'invalid email address'
-              end
 
               it 'does not create a new mailaccount' do
-                clear_cookies
-
                 count = MailAccount.all.count
 
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(MailAccount.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -399,10 +285,6 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             context 'with a resource conflict' do
-              let(:resource_conflict_msg) do
-                'MailAccount#save returned false, MailAccount was not saved'
-              end
-
               let(:domain) { create(:domain, name: 'mailaccount.org') }
 
               before(:each) do
@@ -411,67 +293,46 @@ describe 'VHost-API MailAccount Controller' do
                        domain_id: domain.id)
               end
               let(:resource_conflict) do
-                conflict = build(:mailaccount,
-                                 email: 'existing@mailaccount.org',
-                                 password: 'foobar',
-                                 domain_id: domain.id)
-                data = conflict.as_json(methods: nil)
-                data['password'] = conflict.password
-                data
+                attributes_for(
+                  :mailaccount,
+                  email: 'existing@mailaccount.org',
+                  password: 'foobar',
+                  domain_id: domain.id
+                )
               end
 
               it 'does not create a new mailaccount' do
-                clear_cookies
-
                 count = MailAccount.all.count
 
                 post(
                   "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  resource_conflict.to_json,
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(MailAccount.all.count).to eq(count)
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  resource_conflict.to_json,
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 post(
                   "/api/v#{api_version}/mailaccounts",
-                  resource_conflict.to_json(methods: nil),
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  resource_conflict.to_json,
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -489,8 +350,6 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'updates an existing mailaccount with new values' do
-              clear_cookies
-
               updated_attrs = attributes_for(
                 :mailaccount,
                 email: "foo@#{testmailaccount.domain.name}"
@@ -500,10 +359,7 @@ describe 'VHost-API MailAccount Controller' do
               patch(
                 "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                 updated_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(
@@ -515,8 +371,6 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'returns an API Success containing the updated mailaccount' do
-              clear_cookies
-
               updated_attrs = attributes_for(
                 :mailaccount,
                 email: "foo@#{testmailaccount.domain.name}"
@@ -525,17 +379,14 @@ describe 'VHost-API MailAccount Controller' do
               patch(
                 "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                 updated_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               upd_acc = MailAccount.get(testmailaccount.id)
 
               expect(last_response.status).to eq(200)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 200,
                                          data: { object: upd_acc }).to_json
                 )
@@ -543,17 +394,12 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
 
               patch(
                 "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                 updated_attrs.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -563,22 +409,14 @@ describe 'VHost-API MailAccount Controller' do
           context 'with malformed request data' do
             context 'invalid json' do
               let(:invalid_json) { '{ , email: \'foo, enabled: true }' }
-              let(:invalid_json_msg) do
-                '784: unexpected token at \'{ , email: \'foo, enabled: true }\''
-              end
 
               it 'does not update the mailaccount' do
-                clear_cookies
-
                 prev_tstamp = testmailaccount.updated_at
 
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -590,40 +428,25 @@ describe 'VHost-API MailAccount Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(400)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 400,
-                      error_id: 'malformed request data',
-                      message: invalid_json_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:malformed_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -632,22 +455,14 @@ describe 'VHost-API MailAccount Controller' do
 
             context 'invalid attributes' do
               let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
-              let(:invalid_attrs_msg) do
-                'The attribute \'foo\' is not accessible in MailAccount'
-              end
 
               it 'does not update the mailaccount' do
-                clear_cookies
-
                 prev_tstamp = testmailaccount.updated_at
 
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -659,40 +474,25 @@ describe 'VHost-API MailAccount Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_attrs_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_user_attrs.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -701,22 +501,14 @@ describe 'VHost-API MailAccount Controller' do
 
             context 'with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_mailaccount) }
-              let(:invalid_values_msg) do
-                'invalid email address'
-              end
 
               it 'does not update the mailaccount' do
-                clear_cookies
-
                 prev_tstamp = testmailaccount.updated_at
 
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(
@@ -728,40 +520,25 @@ describe 'VHost-API MailAccount Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 422,
-                      error_id: 'invalid request data',
-                      message: invalid_values_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:invalid_email)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
                   invalid_values.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -775,9 +552,6 @@ describe 'VHost-API MailAccount Controller' do
                                email: 'existing@mailaccount.org',
                                domain_id: domain.id)
               end
-              let(:resource_conflict_msg) do
-                'MailAccount#save returned false, MailAccount was not saved'
-              end
               before(:each) do
                 create(:mailaccount,
                        email: 'existing@mailaccount.org',
@@ -790,17 +564,12 @@ describe 'VHost-API MailAccount Controller' do
               end
 
               it 'does not update the mailaccount' do
-                clear_cookies
-
                 prev_tstamp = conflict.updated_at
 
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{conflict.id}",
                   resource_conflict.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(MailAccount.get(conflict.id).email).to eq(
@@ -812,40 +581,25 @@ describe 'VHost-API MailAccount Controller' do
               end
 
               it 'returns an API Error' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{conflict.id}",
                   resource_conflict.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect(last_response.status).to eq(409)
                 expect(last_response.body).to eq(
-                  return_json_pretty(
-                    ApiResponseError.new(
-                      status_code: 409,
-                      error_id: 'resource conflict',
-                      message: resource_conflict_msg,
-                      data: nil
-                    ).to_json
+                  spec_json_pretty(
+                    api_error(ApiErrors.[](:resource_conflict)).to_json
                   )
                 )
               end
 
               it 'returns a valid JSON object' do
-                clear_cookies
-
                 patch(
                   "/api/v#{api_version}/mailaccounts/#{conflict.id}",
                   resource_conflict.to_json,
-                  appconfig[:session][:key] => {
-                    user_id: testadmin.id,
-                    group: Group.get(testadmin.group_id).name
-                  }
+                  auth_headers_apikey(testadmin.id)
                 )
 
                 expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -854,7 +608,6 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           context 'operation failed' do
-            let(:patch_error_msg) { '' }
             let(:domain) { create(:domain, name: 'invincible.de') }
 
             it 'returns an API Error' do
@@ -874,26 +627,16 @@ describe 'VHost-API MailAccount Controller' do
               allow(policy).to receive(:update_with?).and_return(true)
               allow(MailAccountPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               patch(
                 "/api/v#{api_version}/mailaccounts/#{invincible.id}",
                 attributes_for(:mailaccount, email: 'f2@invincible.de').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not update',
-                    message: patch_error_msg,
-                    data: nil
-                  ).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:failed_update)).to_json
                 )
               )
             end
@@ -908,40 +651,28 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'deletes the requested mailaccount' do
-            clear_cookies
-
             id = testmailaccount.id
 
             delete(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect(MailAccount.get(id)).to eq(nil)
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testadmin.id,
-                group: Group.get(testadmin.group_id).name
-              }
+              auth_headers_apikey(testadmin.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
           context 'operation failed' do
-            let(:delete_error_msg) { '' }
-
             it 'returns an API Error' do
               invincible = create(:mailaccount,
                                   email: 'foo@invincible.org')
@@ -957,26 +688,16 @@ describe 'VHost-API MailAccount Controller' do
               allow(policy).to receive(:destroy?).and_return(true)
               allow(MailAccountPolicy).to receive(:new).and_return(policy)
 
-              clear_cookies
-
               delete(
                 "/api/v#{api_version}/mailaccounts/#{invincible.id}",
                 nil,
-                appconfig[:session][:key] => {
-                  user_id: testadmin.id,
-                  group: Group.get(testadmin.group_id).name
-                }
+                auth_headers_apikey(testadmin.id)
               )
 
               expect(last_response.status).to eq(500)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(
-                    status_code: 500,
-                    error_id: 'could not delete',
-                    message: delete_error_msg,
-                    data: nil
-                  ).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:failed_delete)).to_json
                 )
               )
             end
@@ -993,36 +714,28 @@ describe 'VHost-API MailAccount Controller' do
         let!(:testmailaccount) do
           MailAccount.first(domain_id: owner.domains.first.id)
         end
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         describe 'GET all' do
           it 'returns only its own mailaccounts' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
+            scope = Pundit.policy_scope(testuser, MailAccount)
+
             expect(last_response.body).to eq(
-              return_json_pretty(
-                Pundit.policy_scope(testuser, MailAccount).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testuser.id
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1037,35 +750,23 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             get(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1073,8 +774,6 @@ describe 'VHost-API MailAccount Controller' do
         end
 
         describe 'GET inexistent record' do
-          let(:error_msg) { 'requested resource does not exist' }
-
           it 'does not authorize the request' do
             expect do
               testmailaccount.destroy
@@ -1083,25 +782,18 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             inexistent = testmailaccount.id
             testmailaccount.destroy
 
             get(
               "/api/v#{api_version}/mailaccounts/#{inexistent}", nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(404)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 404,
-                                     error_id: 'not found',
-                                     message: error_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:not_found)).to_json
               )
             )
           end
@@ -1117,54 +809,37 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'does not create a new mailaccount' do
-              clear_cookies
-
               count = MailAccount.all.count
 
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount, mail: 'new@new.org').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(MailAccount.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount, email: 'new@new.org').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount, email: 'new@new.org').to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1190,39 +865,29 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'does create a new mailaccount' do
-              clear_cookies
-
               count = MailAccount.all.count
 
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(MailAccount.all.count).to eq(count + 1)
             end
 
             it 'returns an API Success containing the new mailaccount' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               new = MailAccount.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
-                return_json_pretty(
+                spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 201,
                                          data: { object: new }).to_json
                 )
@@ -1230,15 +895,10 @@ describe 'VHost-API MailAccount Controller' do
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 new.to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1250,8 +910,6 @@ describe 'VHost-API MailAccount Controller' do
             let(:anotheruser) { create(:user_with_domains) }
 
             it 'does not create a new mailaccount' do
-              clear_cookies
-
               count = MailAccount.all.count
 
               post(
@@ -1259,51 +917,36 @@ describe 'VHost-API MailAccount Controller' do
                 attributes_for(:mailaccount,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(MailAccount.all.count).to eq(count)
             end
 
             it 'returns an API Error' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect(last_response.status).to eq(403)
               expect(last_response.body).to eq(
-                return_json_pretty(
-                  ApiResponseError.new(status_code: 403,
-                                       error_id: 'unauthorized',
-                                       message: unauthorized_msg).to_json
+                spec_json_pretty(
+                  api_error(ApiErrors.[](:unauthorized)).to_json
                 )
               )
             end
 
             it 'returns a valid JSON object' do
-              clear_cookies
-
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount,
                                name: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
-                appconfig[:session][:key] => {
-                  user_id: testuser.id,
-                  group: Group.get(testuser.group_id).name
-                }
+                auth_headers_apikey(testuser.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1319,59 +962,42 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'does not update the mailaccount' do
-            clear_cookies
-
             updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
             prev_tstamp = testmailaccount.updated_at
 
             patch(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               updated_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(testmailaccount.updated_at).to eq(prev_tstamp)
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               updated_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             updated_attrs = attributes_for(:mailaccount, email: 'foo@foo.org')
 
             patch(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               updated_attrs.to_json,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1386,15 +1012,10 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'does not delete the mailaccount' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(MailAccount.get(testmailaccount.id)).not_to eq(nil)
@@ -1402,37 +1023,25 @@ describe 'VHost-API MailAccount Controller' do
           end
 
           it 'returns an API Error' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect(last_response.status).to eq(403)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
               )
             )
           end
 
           it 'returns a valid JSON object' do
-            clear_cookies
-
             delete(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}",
               nil,
-              appconfig[:session][:key] => {
-                user_id: testuser.id,
-                group: Group.get(testuser.group_id).name
-              }
+              auth_headers_apikey(testuser.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1440,9 +1049,8 @@ describe 'VHost-API MailAccount Controller' do
         end
       end
 
-      context 'by an unauthenticated (thus unauthorized) user' do
+      context 'by an unauthenticated user' do
         let!(:testmailaccount) { create(:mailaccount) }
-        let(:unauthorized_msg) { 'insufficient permissions or quota exhausted' }
 
         before(:each) do
           create(:user, name: 'admin')
@@ -1452,93 +1060,81 @@ describe 'VHost-API MailAccount Controller' do
         let(:testuser) { create(:user) }
 
         describe 'GET all' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/mailaccounts"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET one' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             get "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'GET inexistent record' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             inexistent = testmailaccount.id
             testmailaccount.destroy
             get "/api/v#{api_version}/mailaccounts/#{inexistent}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'POST' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             post(
               "/api/v#{api_version}/mailaccounts",
               'mailaccount' => attributes_for(:mailaccount)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'PATCH' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             testmailaccount_foo = create(:mailaccount, email: 'foo@foo.org')
             patch(
               "/api/v#{api_version}/mailaccounts/#{testmailaccount_foo.id}",
               'mailaccount' => attributes_for(:mailaccount)
             )
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end
         end
 
         describe 'DELETE' do
-          it 'returns an an API unauthorized error' do
+          it 'returns an an API authentication error' do
             delete "/api/v#{api_version}/mailaccounts/#{testmailaccount.id}"
-            expect(last_response.status).to eq(403)
+            expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
-              return_json_pretty(
-                ApiResponseError.new(status_code: 403,
-                                     error_id: 'unauthorized',
-                                     message: unauthorized_msg).to_json
+              spec_json_pretty(
+                api_error(ApiErrors.[](:authentication_failed)).to_json
               )
             )
           end

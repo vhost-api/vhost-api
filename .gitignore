@@ -48,11 +48,11 @@ coverage.vim
 # project-specific files
 config/database.yml
 config/appconfig.yml
-config/session.secret
 config/puma.rb
 **/puma.pid
 resources/doc/*.json
 
 coverage/**
+_coverage/**
 
 testdata/cookies/*

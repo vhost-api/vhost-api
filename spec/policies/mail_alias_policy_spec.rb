@@ -36,7 +36,9 @@ describe MailAliasPolicy do
 
     context 'changing attributes w/o changing the owner' do
       let(:params) do
-        attributes_for(:mailalias, domain_id: user.domains.first.id)
+        attributes_for(:mailalias,
+                       id: mailalias.id,
+                       domain_id: user.domains.first.id)
       end
       it { should permit(:update) }
       it { should permit_args(:update_with, params) }
@@ -44,6 +46,14 @@ describe MailAliasPolicy do
 
     it { should permit(:show) }
     it { should permit(:destroy) }
+  end
+
+  context 'changing the id as an unauthorized user' do
+    let(:user) { create(:user_with_mailaliases) }
+    let(:mailalias) { user.domains.first.mail_aliases.first }
+    let(:params) { attributes_for(:mailalias, id: 1234) }
+
+    it { should_not permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged user' do
@@ -74,6 +84,14 @@ describe MailAliasPolicy do
     let(:user) { create(:reseller_with_customers_and_mailaliases) }
     let(:owner) { user.customers.first }
     let(:mailalias) { owner.domains.mail_aliases.first }
+    let(:mailaccount) { owner.domains.mail_accounts.first }
+    let(:params) do
+      attributes_for(:mailalias,
+                     domain_id: owner.domains.first.id,
+                     dest: [mailaccount.id])
+    end
+
+    it { should permit_args(:create_with, params) }
 
     context 'with available quota' do
       it { should permit(:create) }

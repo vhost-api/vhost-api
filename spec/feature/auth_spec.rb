@@ -12,56 +12,47 @@ describe 'VHost-API Authentication' do
            password: password)
   end
 
-  it 'allows accessing the login page' do
-    get '/login'
-    expect(last_response).to be_ok
-    expect(last_response.body).to include('Username')
-  end
-
   context 'with valid credentials' do
+    it 'allows accessing the homepage with valid apikey' do
+      get '/', nil, auth_headers_apikey(testuser.id)
+      expect(last_response.status).to eq(200)
+    end
+
     it 'allows logging in' do
-      clear_cookies
-      post '/api/v1/auth/login', 'user' => { 'login' => testuser.login,
-                                             'password' => password }
-      expect(last_response.redirect?).to be_truthy
-      follow_redirect!
-      expect(last_request.path).to eq('/')
+      post '/api/v1/auth/login', auth_login_params(testuser.login, password)
+      expect(last_response.status).to eq(200)
+    end
+
+    it 'returns valid JSON' do
+      post '/api/v1/auth/login', auth_login_params(testuser.login, password)
+      expect { JSON.parse(last_response.body) }.not_to raise_exception
+    end
+
+    it 'returns an apikey' do
+      post '/api/v1/auth/login', auth_login_params(testuser.login, password)
+
+      expect(JSON.parse(last_response.body)['apikey'].length).to eq(64)
+
+      expect(
+        Digest::SHA512.hexdigest(JSON.parse(last_response.body)['apikey'])
+      ).to eq(
+        Apikey.first(user_id: testuser.id, comment: 'rspec').apikey
+      )
     end
   end
 
   context 'with invalid credentials' do
-    it 'does not allow login and redirects to /login' do
-      clear_cookies
-      post '/api/v1/auth/login', 'user' => { 'login' => testuser.login,
-                                             'password' => 'wrong_password' }
-      expect(last_response.redirect?).to be_truthy
-      follow_redirect!
-      expect(last_request.path).to eq('/login')
+    it 'does not allow login' do
+      post '/api/v1/auth/login',
+           'user' => testuser.login,
+           'password' => 'wrong_password',
+           'apikey' => 'rspec'
+
+      expect(last_response.body).to eq(
+        spec_json_pretty(
+          api_error(ApiErrors.[](:authentication_failed)).to_json
+        )
+      )
     end
-  end
-
-  it 'allows logging out from an active session' do
-    clear_cookies
-    get '/api/v1/auth/logout',
-        {},
-        appconfig[:session][:key] => { user_id: testuser.id,
-                                       group: Group.get(
-                                         testuser.group_id
-                                       ).name }
-    expect(last_response.redirect?).to be_truthy
-    follow_redirect!
-    expect(last_request.path).to eq('/login')
-  end
-
-  it 'shows users name in topnav when logged in' do
-    clear_cookies
-    get '/',
-        {},
-        appconfig[:session][:key] => { user_id: testuser.id,
-                                       group: Group.get(
-                                         testuser.group_id
-                                       ).name }
-    expect(last_response).to be_ok
-    expect(last_response.body.include?(testuser.name)).to be_truthy
   end
 end

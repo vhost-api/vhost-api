@@ -25,7 +25,7 @@ describe DkimPolicy do
 
     context 'changing attributes w/o changing the owner' do
       let(:params) do
-        attributes_for(:dkim, domain_id: user.domains.first.id)
+        attributes_for(:dkim, id: dkim.id, domain_id: user.domains.first.id)
       end
       it { should permit(:update) }
       it { should permit_args(:update_with, params) }
@@ -55,6 +55,14 @@ describe DkimPolicy do
     it { should permit(:show) }
     it { should permit(:update) }
     it { should permit(:destroy) }
+  end
+
+  context 'changing the id as an unauthorized user' do
+    let(:user) { create(:user_with_dkims) }
+    let(:dkim) { user.domains.first.dkims.first }
+    let(:params) { attributes_for(:dkim, id: 1234) }
+
+    it { should_not permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged reseller' do
