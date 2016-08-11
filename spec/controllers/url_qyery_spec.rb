@@ -159,6 +159,31 @@ describe 'VHost-API URL Query' do
           expect(last_response.body).to eq(result)
         end
 
+        it 'Get the same field multiple times' do
+          get("/api/v#{api_version}/domains?fields=id,id,name", nil,
+              auth_headers_apikey(testadmin.id))
+
+          collection = {
+            testdomain1.id => testdomain1,
+            testdomain2.id => testdomain2,
+            testdomain3.id => testdomain3,
+            testdomain4.id => testdomain4
+          }
+
+          result = {}
+
+          collection.values.each do |record|
+            result[record.id] = {
+              'id' => record.id,
+              'name' => record.name
+            }
+          end
+
+          result = spec_json_pretty(result.to_json)
+
+          expect(last_response.body).to eq(result)
+        end
+
         it 'Get non-existing field' do
           get("/api/v#{api_version}/domains?fields=id,non_existing_field", nil,
               auth_headers_apikey(testadmin.id))
