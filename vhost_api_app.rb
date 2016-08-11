@@ -25,6 +25,7 @@ error_logger.sync = true
 
 configure do
   use ::Rack::CommonLogger, access_logger
+  use Rack::TempfileReaper
   set :root, File.expand_path('../', __FILE__)
   set :start_time, Time.now
   @appconfig = YAML.load(
@@ -45,26 +46,15 @@ end
 settings.api_modules.map(&:upcase).each do |apimod|
   optional_modules = []
   case apimod
-  when 'EMAIL' then optional_modules.push(%w(
-                                            domain
-                                            dkim
-                                            dkimsigning
-                                            mailaccount
-                                            mailalias
-                                            mailsource
-                                          ))
-  # TODO: FIXME: no dns controllers exist yet
+  when 'EMAIL' then optional_modules.push(
+    %w(domain dkim dkimsigning mailaccount mailalias mailsource)
+  )
+  when 'VHOST' then optional_modules.push(
+    %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
+  )
+  # TODO: no dns controllers exist yet
   when 'DNS' then optional_modules.push(%w(domain))
-  when 'VHOST' then optional_modules.push(%w(
-                                            domain
-                                            ipv4address
-                                            ipv6address
-                                            phpruntime
-                                            sftpuser
-                                            shelluser
-                                            vhost
-                                          ))
-  # TODO: FIXME: no database/databaseuser controllers exist yet
+  # TODO: no database/databaseuser controllers exist yet
   when 'DATABASE' then nil
   end
 
@@ -73,18 +63,7 @@ settings.api_modules.map(&:upcase).each do |apimod|
   end
 end
 
-configure :development do
-  require 'pry'
-  require 'better_errors'
-  require 'binding_of_caller'
-  set :show_exceptions, :after_handler
-  set :raise_errors, false
-  use BetterErrors::Middleware
-  BetterErrors.application_root = __dir__
-  BetterErrors.use_pry!
-end
-
-configure :test do
+configure :development, :test do
   require 'pry'
   require 'better_errors'
   require 'binding_of_caller'
@@ -120,51 +99,14 @@ DataMapper.setup(:default,
 
 before { env['rack.errors'] = error_logger }
 
-# tell pundit how to find the user
-current_user do
-  authenticate!
-end
-
-# @return [Boolean]
-def user?
-  @user != nil
-end
-
-error AuthenticationError do
-  headers['WWW-Authenticate'] = 'Basic realm="Vhost-API"'
-  return_api_error(ApiErrors.[](:authentication_failed))
-end
-
-error Pundit::NotAuthorizedError do
-  return_api_error(ApiErrors.[](:unauthorized))
-end
-
 before do
+  # enforce authentication everywhere except for login endpoints
   authenticate! unless request.path_info.include?('/login')
 
   content_type :json, charset: 'utf-8'
-  # last_modified settings.start_time
-  # etag settings.start_time.to_s
   cache_control :public, :must_revalidate
 end
 
 get '/' do
   "Welcome #{@user.name} to VHost-API!"
-end
-
-get '/api_modules' do
-  result = ''
-  settings.api_modules.each do |apimod|
-    result += 'Module: ' + apimod.to_s + "\n"
-  end
-  result
-end
-
-get '/env' do
-  authenticate!
-  return_json_pretty({ environment: settings.environment.to_s }.to_json)
-end
-
-not_found do
-  return_api_error(ApiErrors.[](:not_found))
 end

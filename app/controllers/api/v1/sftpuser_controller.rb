@@ -1,15 +1,7 @@
 # frozen_string_literal: true
 namespace '/api/v1/sftpusers' do
-  helpers do
-    def fetch_scoped_sftpusers
-      @sftpusers = policy_scope(SftpUser)
-    end
-  end
-
   get do
-    authenticate!
-    @sftpusers = SftpUser.all(id: 0)
-    fetch_scoped_sftpusers
+    @sftpusers = policy_scope(SftpUser)
     return_authorized_resource(object: @sftpusers)
   end
 
@@ -19,7 +11,11 @@ namespace '/api/v1/sftpusers' do
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
+    authenticate! if @user.nil?
     @sftpuser = SftpUser.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @sftpuser.nil?
   end
 
   namespace '/:id' do

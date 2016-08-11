@@ -13,15 +13,15 @@ class User
   property :login, String, required: true, unique: true, length: 3..255
   property :password, BCryptHash, required: true, length: 255
   property :contact_email, String, required: false, length: 255
-  property :quota_apikeys, Integer, required: true, min: 0, default: 2
-  property :quota_sshpubkeys, Integer, required: true, min: 0, default: 10
-  property :quota_customers, Integer, required: true, min: 0, default: 5
+  property :quota_apikeys, Integer, required: true, min: 0, default: 3
+  property :quota_ssh_pubkeys, Integer, required: true, min: 0, default: 10
+  property :quota_customers, Integer, required: true, min: 0, default: 0
   property :quota_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_vhost_storage, Integer, required: true, min: 0,
                                           max: (2**63 - 1),
                                           default: 104_857_600 # 100MiB default
   property :quota_databases, Integer, required: true, min: 0, default: 0
-  property :quota_db_users, Integer, required: true, min: 0, default: 0
+  property :quota_database_users, Integer, required: true, min: 0, default: 0
   property :quota_dns_zones, Integer, required: true, min: 0, default: 1
   property :quota_dns_records, Integer, required: true, min: 0,
                                         default: 10

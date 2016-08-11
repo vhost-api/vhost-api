@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+# @return [Boolean]
+def user?
+  @user != nil
+end
+
+# tell pundit how to find the user
+current_user do
+  user? ? @user : authenticate!
+end
+
 # Performs authentication and returns user if successful.
 #
 # @return [User]

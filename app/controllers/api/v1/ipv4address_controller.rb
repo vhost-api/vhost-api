@@ -1,15 +1,7 @@
 # frozen_string_literal: true
 namespace '/api/v1/ipv4addresses' do
-  helpers do
-    def fetch_scoped_ipv4addresses
-      @ipv4addresses = policy_scope(Ipv4Address)
-    end
-  end
-
   get do
-    authenticate!
-    @ipv4addresses = Ipv4Address.all(id: 0)
-    fetch_scoped_ipv4addresses
+    @ipv4addresses = policy_scope(Ipv4Address)
     return_authorized_resource(object: @ipv4addresses)
   end
 
@@ -19,7 +11,11 @@ namespace '/api/v1/ipv4addresses' do
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
+    authenticate! if @user.nil?
     @ipv4address = Ipv4Address.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @ipv4address.nil?
   end
 
   namespace '/:id' do

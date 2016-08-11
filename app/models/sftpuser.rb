@@ -30,12 +30,10 @@ class SftpUser
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password] }
-    options = defaults.merge(options)
-    unless options[:only].nil?
-      options[:only].delete(:password) if options[:only].include?(:password)
-    end
-    super(fix_options_override(options))
+    defaults = { exclude: [:password],
+                 relationships: { vhost: { only: [:id, :fqdn] } } }
+
+    super(model_serialization_opts(defaults: defaults, options: options))
   end
 
   # @return [User]

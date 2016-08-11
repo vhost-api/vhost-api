@@ -42,7 +42,7 @@ class SshPubkeyPolicy < ApplicationPolicy
   def quotacheck
     sshpubkey_quota = user.ssh_pubkeys.size
     sshpubkey_quota += user.customers.ssh_pubkeys.size if user.reseller?
-    return true if sshpubkey_quota < user.quota_sshpubkeys
+    return true if sshpubkey_quota < user.quota_ssh_pubkeys
     false
   end
 end

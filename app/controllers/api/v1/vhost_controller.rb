@@ -1,15 +1,7 @@
 # frozen_string_literal: true
 namespace '/api/v1/vhosts' do
-  helpers do
-    def fetch_scoped_vhosts
-      @vhosts = policy_scope(Vhost)
-    end
-  end
-
   get do
-    authenticate!
-    @vhosts = Vhost.all(id: 0)
-    fetch_scoped_vhosts
+    @vhosts = policy_scope(Vhost)
     return_authorized_resource(object: @vhosts)
   end
 
@@ -19,7 +11,11 @@ namespace '/api/v1/vhosts' do
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
+    authenticate! if @user.nil?
     @vhost = Vhost.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @vhost.nil?
   end
 
   namespace '/:id' do
