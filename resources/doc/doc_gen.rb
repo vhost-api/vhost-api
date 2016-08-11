@@ -1,0 +1,285 @@
+# frozen_string_literal: true
+require 'bundler/setup'
+require 'data_mapper'
+require 'dm-migrations'
+require 'dm-constraints'
+require 'dm-timestamps'
+require 'dm-serializer'
+require 'yaml'
+require 'json'
+require 'bcrypt'
+require 'active_support/inflector'
+
+lp = '../../'
+
+require_relative "#{lp}app/models/group"
+require_relative "#{lp}app/models/user"
+require_relative "#{lp}app/models/apikey"
+require_relative "#{lp}app/models/domain"
+require_relative "#{lp}app/models/dkim"
+require_relative "#{lp}app/models/dkimsigning"
+require_relative "#{lp}app/models/mailaccount"
+require_relative "#{lp}app/models/mailsource"
+require_relative "#{lp}app/models/mailalias"
+require_relative "#{lp}app/models/ipv4address"
+require_relative "#{lp}app/models/ipv6address"
+require_relative "#{lp}app/models/phpruntime"
+require_relative "#{lp}app/models/vhost"
+require_relative "#{lp}app/models/shell"
+require_relative "#{lp}app/models/sftpuser"
+require_relative "#{lp}app/models/shelluser"
+require_relative "#{lp}app/models/sshpubkey"
+require_relative "#{lp}app/models/databaseuser"
+require_relative "#{lp}app/models/database"
+
+appconfig = YAML.load(File.read("#{lp}config/appconfig.yml"))['production']
+
+api_modules = appconfig[:api_modules]
+enabled_modules = []
+
+# core modules
+%w(group user apikey).each do |f|
+  enabled_modules.push(f)
+end
+
+# optional modules
+optional_modules = []
+api_modules.map(&:upcase).each do |apimod|
+  case apimod
+  when 'EMAIL' then optional_modules.push(
+    %w(domain dkim dkimsigning mailaccount mailalias mailsource)
+  )
+  when 'VHOST' then optional_modules.push(
+    %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
+  )
+  # TODO: no dns controllers exist yet
+  when 'DNS' then optional_modules.push(%w(domain))
+  # TODO: no database/databaseuser controllers exist yet
+  when 'DATABASE' then nil
+  end
+end
+
+enabled_modules.push(optional_modules)
+enabled_modules = enabled_modules.flatten.uniq
+
+controller_files = []
+enabled_modules.each do |endpoint|
+  controller_files.push("#{lp}app/controllers/api/v1/#{endpoint}_controller.rb")
+end
+
+namespaces = []
+controller_files.each do |f|
+  File.open(f) do |file|
+    match = file.read.match(%r{namespace '/api/v1/(.*)' do})
+    namespaces.push(match.captures[0].to_s) if match
+  end
+end
+
+# TODO: FIXME: auth_controller needs special handling!
+
+result = {}
+result[:swagger] = '2.0'
+result[:info] = { title: 'vhost-api',
+                  description: 'vhost-api',
+                  version: '0.0.1' }
+result[:schemes] = ['https']
+result[:basePath] = '/api/v1'
+result[:produces] = ['application/json']
+
+paths = {}
+definitions = {}
+
+namespaces.each do |ns|
+  class_name = ''
+  filename = if ns == 'mailaliases'
+               'mailalias.rb'
+             else
+               "#{ns[0..-2]}.rb"
+             end
+  File.open("#{lp}app/models/#{filename}") do |file|
+    match = file.read.match(%r{^class (.*)$})
+    class_name = match.captures[0].to_s if match
+  end
+  clazz = Object.const_get(class_name)
+
+  paths["/#{ns}"] = {
+    get: {
+      summary: "Collection of #{class_name.pluralize}",
+      description: "Get the full collection of created #{class_name.pluralize}",
+      tags: [class_name],
+      parameters: [
+        { in: 'query',
+          name: 'limit',
+          description: 'Limits the output',
+          required: false,
+          type: 'integer' },
+        { in: 'query',
+          name: 'offset',
+          description: 'Offsets the output (needs limit)',
+          required: false,
+          type: 'integer' },
+        { in: 'query',
+          name: 'q[fieldName]',
+          description: 'Seach for the field',
+          required: false,
+          type: 'string' },
+        { in: 'query',
+          name: 'sort',
+          description: 'Sort by given field name (descending by - prefix)',
+          required: false,
+          type: 'string' },
+        { in: 'query',
+          name: 'fields',
+          description: 'Give only the requested fields (comma separated list)',
+          required: false,
+          type: 'string' }
+      ],
+      responses: {
+        '200' => {
+          description: "An array of #{class_name.pluralize}",
+          schema: {
+            type: 'array',
+            items: {
+              '$ref' => "\#/definitions/#{class_name}"
+            }
+          }
+        },
+        default: {
+          description: 'Unexpected error',
+          schema: {
+            '$ref' => '#/definitions/Error'
+          }
+        }
+      }
+    },
+    post: {
+      summary: "Creates a new #{class_name}",
+      description: "Create a new #{class_name} with the request body",
+      tags: [class_name],
+      consumes: ['application/json'],
+      parameters: [
+        { in: 'body',
+          name: 'body',
+          description: "The #{class_name} object without id",
+          required: true,
+          schema: {
+            '$ref' => "\#/definitions/#{class_name}"
+          } }
+      ],
+      responses: {
+        '201' => {
+          description: 'Success'
+        },
+        '400' => {
+          description: 'Malformed request data'
+        },
+        '409' => {
+          description: 'Resource conflict'
+        }
+      }
+    }
+  }
+  paths["/#{ns}/{#{class_name.downcase}Id}"] = {
+    delete: {
+      summary: "Delete #{class_name}",
+      description: "Deletes the #{class_name} by the given id",
+      parameters: [
+        { in: 'path',
+          name: "#{class_name.downcase}Id",
+          description: "#{class_name} id",
+          required: true,
+          type: 'integer',
+          format: 'int64' }
+      ],
+      responses: {
+        '200' => {
+          description: 'Success'
+        },
+        '500' => {
+          description: 'Could not delete'
+        }
+      }
+    },
+    patch: {
+      summary: "Update #{class_name}",
+      description: "Updates the given fields in the #{class_name} by id",
+      consumes: ['application/json'],
+      parameters: [
+        { in: 'path',
+          name: "#{class_name.downcase}Id",
+          description: "#{class_name} id",
+          required: true,
+          type: 'integer',
+          format: 'int64' },
+        { in: 'body',
+          name: 'body',
+          description: "The update fields of the #{class_name} object",
+          required: true,
+          schema: {
+            '$ref' => "\#/definitions/#{class_name}"
+          } }
+      ],
+      responses: {
+        '200' => {
+          description: 'Success'
+        },
+        '400' => {
+          description: 'Malformed request'
+        },
+        '409' => {
+          description: 'Resource conflict'
+        },
+        '422' => {
+          description: 'Invalid request data'
+        },
+        '500' => {
+          description: 'Could not update'
+        }
+      }
+    }
+  }
+
+  definitions[class_name] = {
+    type: 'object',
+    properties: {}
+  }
+
+  clazz.properties.each do |prop|
+    type = nil
+    case prop.primitive.to_s
+    when 'Integer'
+      type = 'integer'
+    when 'String'
+      type = 'string'
+    when 'TrueClass', 'FalseClass'
+      type = 'boolean'
+    end
+    definitions[class_name][:properties][prop.name] = {
+      type: type,
+      description: "#{prop.name} of #{class_name}"
+    }
+  end
+end
+
+definitions['Error'] = {
+  type: 'object',
+  properties: {
+    code: {
+      type: 'integer',
+      format: 'int32'
+    },
+    message: {
+      type: 'string'
+    },
+    fields: {
+      type: 'string'
+    }
+  }
+}
+
+result[:paths] = paths
+result[:definitions] = definitions
+
+output = JSON.pretty_generate(JSON.parse(result.to_json)) + "\n"
+
+puts output
