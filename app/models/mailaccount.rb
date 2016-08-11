@@ -16,8 +16,8 @@ class MailAccount
                             default: 10_485_760 # 10MiB default
   property :quota_sieve_script, Integer, required: true, min: 0,
                                          max: (2**63 - 1),
-                                         default: 1_048_576 # 1MiB default
-  property :quota_sieve_actions, Integer, required: true, min: 0, default: 32
+                                         default: 10_240 # 10KiB default
+  property :quota_sieve_actions, Integer, required: true, min: 0, default: 64
   property :quota_sieve_redirects, Integer, required: true, min: 0, default: 4
   property :receiving_enabled, Boolean, required: true, default: false
   property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,

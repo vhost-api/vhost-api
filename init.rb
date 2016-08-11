@@ -5,6 +5,7 @@
 
 require 'bundler/setup'
 
+require 'tempfile'
 require 'data_mapper'
 require 'dm-migrations'
 require 'dm-constraints'

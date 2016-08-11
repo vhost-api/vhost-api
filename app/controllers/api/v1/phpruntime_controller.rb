@@ -1,15 +1,7 @@
 # frozen_string_literal: true
 namespace '/api/v1/phpruntimes' do
-  helpers do
-    def fetch_scoped_phpruntimes
-      @phpruntimes = policy_scope(PhpRuntime)
-    end
-  end
-
   get do
-    authenticate!
-    @phpruntimes = PhpRuntime.all(id: 0)
-    fetch_scoped_phpruntimes
+    @phpruntimes = policy_scope(PhpRuntime)
     return_authorized_resource(object: @phpruntimes)
   end
 
@@ -19,7 +11,11 @@ namespace '/api/v1/phpruntimes' do
   end
 
   before %r{\A/(?<id>\d+)/?.*} do
+    # namespace local before blocks are evaluate before global before blocks
+    # thus we need to enforce authentication here
+    authenticate! if @user.nil?
     @phpruntime = PhpRuntime.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @phpruntime.nil?
   end
 
   namespace '/:id' do

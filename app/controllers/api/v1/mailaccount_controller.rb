@@ -1,5 +1,16 @@
 # frozen_string_literal: true
 namespace '/api/v1/mailaccounts' do
+  helpers do
+    # @return [String]
+    def sieve_filename
+      email_parts = @mailaccount.email.to_s.split('@')
+      settings = Sinatra::Application.settings
+      File.join(
+        settings.mail_home,
+        [email_parts[1], email_parts[0], settings.sieve_file].join('/')
+      )
+    end
+  end
   get do
     @mailaccounts = policy_scope(MailAccount)
     return_authorized_collection(object: @mailaccounts, params: params)
@@ -160,6 +171,73 @@ namespace '/api/v1/mailaccounts' do
         @mailaccount,
         :show?
       )
+    end
+
+    # sieve script upload / download
+    get '/sievescript' do
+      file = sieve_filename
+      content_type 'application/octet-stream'
+      send_file(file,
+                disposition: 'attachment'.dup,
+                filename: File.basename(file))
+    end
+
+    post '/sievescript' do
+      input_file = params[:data][:tempfile]
+      type = params[:data][:type]
+
+      f_type = request.env['HTTP_CONTENT_TYPE'] ||= type
+      f_length = request.env['HTTP_CONTENT_LENGTH'] ||= input_file.length
+
+      # global limit for sieve filesize
+      return_api_error(
+        ApiErrors.[](:sieve_script_size)
+      ) if f_length > settings.sieve_max_size
+
+      # curl uploads seem to be always of type application/octet-stream?
+      return_api_error(
+        ApiErrors.[](:sieve_script_type)
+      ) unless %w(application/octet-stream text/plain).include?(f_type)
+
+      begin
+        file = Tempfile.new('vhost-api_svscript')
+        file.write(input_file.read)
+
+        # filesize quota check
+        return_api_error(
+          ApiErrors.[](:sieve_script_size_quota)
+        ) if file.size.to_i > @mailaccount.quota_sieve_script
+
+        # compile + parse svbin
+        svbin = compile_sieve_script(file.path) if check_sieve_script(file.path)
+        sieve_actions = count_sieve_actions(svbin)
+        sieve_redirects = count_sieve_redirects(svbin)
+
+        # check quota settings
+        return_api_error(
+          ApiErrors.[](:sieve_actions_quota)
+        ) if sieve_actions > @mailaccount.quota_sieve_actions
+
+        return_api_error(
+          ApiErrors.[](:sieve_redirects_quota)
+        ) if sieve_redirects > @mailaccount.quota_sieve_redirects
+
+        # write to target destination
+        File.open(sieve_filename, 'w') do |f|
+          file.rewind
+          f.write(file.read)
+        end
+
+        # cleanup tempfile
+        file.unlink
+        file.close!
+
+        return_apiresponse(ApiResponseSuccess.new)
+      ensure
+        # cleanup tempfile
+        file.unlink
+        file.close!
+      end
     end
   end
 end
