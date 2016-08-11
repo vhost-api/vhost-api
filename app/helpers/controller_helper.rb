@@ -124,7 +124,13 @@ end
 
 def field_list(permitted: nil, requested: nil)
   return permitted if requested.nil?
-  permitted & params[:fields].split(',').map(&:to_sym)
+
+  requested_fields = params[:fields].split(',').map(&:to_sym)
+
+  return_api_error(ApiErrors.[](:invalid_query)) unless
+    (requested_fields - permitted).empty?
+
+  permitted & requested_fields
 end
 
 def return_resource(object: nil)
