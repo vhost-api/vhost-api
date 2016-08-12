@@ -15,6 +15,9 @@ require 'English'
 # load models and stuff
 require_relative './init'
 
+# load additional helpers
+Dir.glob('./app/helpers/*.rb').each { |file| require file }
+
 # setup stuff
 ::Logger.class_eval { alias_method :write, :'<<' }
 access_log = 'log/' + settings.environment.to_s + '_access.log'

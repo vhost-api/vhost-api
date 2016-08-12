@@ -48,7 +48,7 @@ require_relative 'app/helpers/classes/apiresponse_error'
 require_relative 'app/helpers/classes/apiresponse_success'
 
 Dir.glob('./app/policies/*.rb').each { |file| require file }
-Dir.glob('./app/helpers/*.rb').each { |file| require file }
+require './app/helpers/generic_helper.rb'
 
 # finalize db layout when all models have been loaded
 DataMapper.finalize
