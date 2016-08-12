@@ -78,7 +78,7 @@ class User
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password],
+    defaults = { exclude: [:password, :group_id],
                  relationships: { group: { only: [:id, :name] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))

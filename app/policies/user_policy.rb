@@ -93,7 +93,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   class Permissions < ApplicationPermissions
+    # include :group relation
     class Admin < self
+      def attributes
+        super.push(:group)
+      end
     end
 
     class Reseller < Admin
@@ -101,9 +105,6 @@ class UserPolicy < ApplicationPolicy
 
     # Override for user
     class User < Reseller
-      def attributes
-        super - [:group_id, :reseller_id]
-      end
     end
   end
 
