@@ -134,10 +134,20 @@ namespace '/api/v1/mailaccounts' do
           @_params[:email].downcase!
 
           # perform sanity checks
-          check_email_address_for_domain(
-            email: @_params[:email],
-            domain_id: @mailaccount.domain_id
-          )
+          if @_params.key?(:domain_id)
+            p @_params
+            if @_params[:email] == @mailaccount.email
+              check_domain_for_email_address(
+                domain_id: @_params[:domain_id],
+                email: @_params[:email]
+              )
+            else
+              check_email_address_for_domain(
+                email: @_params[:email],
+                domain_id: @_params[:domain_id]
+              )
+            end
+          end
         end
 
         # check permissions for parameters

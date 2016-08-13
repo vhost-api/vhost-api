@@ -90,23 +90,26 @@ module ApiErrors
     email_mismatch:
       ['1602', 422, 'email address does not belong to requested domain'],
 
+    domain_mismatch:
+      ['1603', 422, 'requested domain is invalid for email adress'],
+
     invalid_sieve_script:
-      ['1603', 422, 'invalid sieve script, verify correct syntax'],
+      ['1604', 422, 'invalid sieve script, verify correct syntax'],
 
     sieve_script_size:
-      ['1604', 422, 'sieve script size exceeds allowed limit'],
+      ['1605', 422, 'sieve script size exceeds allowed limit'],
 
     sieve_script_type:
-      ['1605', 422, 'uploaded file has wrong type'],
+      ['1606', 422, 'uploaded file has wrong type'],
 
     sieve_script_size_quota:
-      ['1606', 422, 'sieve script size exceeds quota for this mailaccount'],
+      ['1607', 422, 'sieve script size exceeds quota for this mailaccount'],
 
     sieve_actions_quota:
-      ['1607', 422, 'sieve actions exceed quota for this mailaccount'],
+      ['1608', 422, 'sieve actions exceed quota for this mailaccount'],
 
     sieve_redirects_quota:
-      ['1608', 422, 'sieve redirects exceed quota for this mailaccount'],
+      ['1609', 422, 'sieve redirects exceed quota for this mailaccount'],
 
     # mailalias controller specific 17xx
     invalid_alias_destinations:
