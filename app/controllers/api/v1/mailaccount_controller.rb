@@ -135,7 +135,6 @@ namespace '/api/v1/mailaccounts' do
 
           # perform sanity checks
           if @_params.key?(:domain_id)
-            p @_params
             if @_params[:email] == @mailaccount.email
               check_domain_for_email_address(
                 domain_id: @_params[:domain_id],
