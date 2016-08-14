@@ -36,8 +36,8 @@ class MailAccount
 
   belongs_to :domain
 
-  has n, :mail_sources, through: Resource, constraint: :destroy
-  has n, :mail_aliases, through: Resource, constraint: :destroy
+  has n, :mail_sources, through: Resource, constraint: :skip
+  has n, :mail_aliases, through: Resource, constraint: :skip
 
   # @param options [Hash]
   # @return [Hash]

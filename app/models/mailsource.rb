@@ -25,7 +25,7 @@ class MailSource
 
   belongs_to :domain
 
-  has n, :mail_accounts, through: Resource, constraint: :destroy
+  has n, :mail_accounts, through: Resource, constraint: :skip
 
   # @param options [Hash]
   # @return [Hash]
