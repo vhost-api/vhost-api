@@ -96,7 +96,7 @@ class UserPolicy < ApplicationPolicy
     # include :group relation
     class Admin < self
       def attributes
-        super.push(:group)
+        super.push(:group, :reseller)
       end
     end
 

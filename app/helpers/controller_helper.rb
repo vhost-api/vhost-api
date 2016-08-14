@@ -29,7 +29,9 @@ def return_authorized_collection(object: nil, params: { fields: nil })
     result = limited_collection(collection: object, params: params)
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
-  rescue
+  rescue => e
+    # TODO: LOG ERROR
+    p e.inspect
     return_api_error(ApiErrors.[](:invalid_request))
   end
 

@@ -110,5 +110,9 @@ namespace '/api/v1/users' do
     get do
       return_authorized_resource(object: @_user) if authorize(@_user, :show?)
     end
+
+    get '/enabled_modules' do
+      return_json_pretty(settings.api_modules.to_json)
+    end
   end
 end

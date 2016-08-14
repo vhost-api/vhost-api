@@ -78,8 +78,14 @@ class User
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password, :group_id],
-                 relationships: { group: { only: [:id, :name] } } }
+    defaults = if reseller.is_a?(User)
+                 { exclude: [:password, :group_id, :reseller_id],
+                   relationships: { group: { only: [:id, :name] },
+                                    reseller: { only: [:id, :name, :login] } } }
+               else
+                 { exclude: [:password, :group_id, :reseller_id],
+                   relationships: { group: { only: [:id, :name] } } }
+               end
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
