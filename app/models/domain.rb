@@ -27,10 +27,10 @@ class Domain
 
   belongs_to :user
 
-  has n, :mail_accounts, constraint: :protect
-  has n, :mail_aliases, constraint: :protect
-  has n, :mail_sources, constraint: :protect
-  has n, :dkims, constraint: :protect
+  has n, :mail_accounts, constraint: :destroy
+  has n, :mail_aliases, constraint: :destroy
+  has n, :mail_sources, constraint: :destroy
+  has n, :dkims, constraint: :destroy
 
   # @param options [Hash]
   # @return [Hash]

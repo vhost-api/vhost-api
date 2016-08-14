@@ -65,6 +65,7 @@ namespace '/api/v1/users' do
         @result = if @_user.destroy
                     ApiResponseSuccess.new
                   else
+                    p @_user.errors.map(&:full_messages)
                     api_error(ApiErrors.[](:failed_delete))
                   end
       end
@@ -93,11 +94,14 @@ namespace '/api/v1/users' do
                   else
                     api_error(ApiErrors.[](:failed_update))
                   end
-      rescue ArgumentError
+      rescue ArgumentError => err
+        p err.inspect
         @result = api_error(ApiErrors.[](:invalid_request))
-      rescue JSON::ParserError
+      rescue JSON::ParserError => err
+        p err.inspect
         @result = api_error(ApiErrors.[](:malformed_request))
-      rescue DataMapper::SaveFailureError
+      rescue DataMapper::SaveFailureError => err
+        p err.inspect
         @result = if User.first(login: @_params[:login]).nil?
                     api_error(ApiErrors.[](:failed_update))
                   else

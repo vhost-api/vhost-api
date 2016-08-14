@@ -40,7 +40,7 @@ class Vhost
   belongs_to :user
 
   # alias vhosts
-  has n, :aliases, self, child_key: :parent_id
+  has n, :aliases, self, child_key: :parent_id, constraint: :destroy
   belongs_to :parent, self, required: false
 
   has n, :sftp_users, constraint: :destroy

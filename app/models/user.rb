@@ -50,13 +50,13 @@ class User
 
   belongs_to :group
 
-  has n, :ipv4_addresses, through: Resource, constraint: :protect
-  has n, :ipv6_addresses, through: Resource, constraint: :protect
+  has n, :ipv4_addresses, through: Resource, constraint: :skip
+  has n, :ipv6_addresses, through: Resource, constraint: :skip
 
-  has n, :vhosts, constraint: :protect
-  has n, :domains, constraint: :protect
-  has n, :databases, constraint: :protect
-  has n, :database_users, constraint: :protect
+  has n, :vhosts, constraint: :destroy
+  has n, :domains, constraint: :destroy
+  has n, :databases, constraint: :destroy
+  has n, :database_users, constraint: :destroy
   has n, :apikeys, constraint: :destroy
   has n, :ssh_pubkeys, constraint: :destroy
 
