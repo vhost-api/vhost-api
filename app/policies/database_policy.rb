@@ -42,7 +42,7 @@ class DatabasePolicy < ApplicationPolicy
   def quotacheck
     db_num = user.databases.size
     db_num += user.customers.databases.size if user.reseller?
-    return true if db_num < user.quota_databases
+    return true if db_num < user.package.quota_databases
     false
   end
 end

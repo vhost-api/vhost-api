@@ -24,6 +24,7 @@ require 'sshkey'
 
 # load models and stuff
 require_relative 'app/models/group'
+require_relative 'app/models/package'
 require_relative 'app/models/user'
 require_relative 'app/models/apikey'
 require_relative 'app/models/domain'

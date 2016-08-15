@@ -61,7 +61,7 @@ class MailSourcePolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_source_num < user.quota_mail_sources
+    return true if check_source_num < user.package.quota_mail_sources
     false
   end
 

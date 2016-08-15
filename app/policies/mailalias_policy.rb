@@ -61,7 +61,7 @@ class MailAliasPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_alias_num < user.quota_mail_aliases
+    return true if check_alias_num < user.package.quota_mail_aliases
     false
   end
 

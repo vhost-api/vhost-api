@@ -40,7 +40,7 @@ class DatabaseUserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_dbuser_num < user.quota_db_users
+    return true if check_dbuser_num < user.package.quota_db_users
     false
   end
 

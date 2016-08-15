@@ -30,7 +30,7 @@ class MailAccountPolicy < ApplicationPolicy
   #
   # @return [Fixnum]
   def storage_remaining
-    user.quota_mail_storage - check_account_storage
+    user.package.quota_mail_storage - check_account_storage
   end
 
   # Scope for MailAccount
@@ -82,8 +82,8 @@ class MailAccountPolicy < ApplicationPolicy
     unless requested_quota.blank?
       return false if storage_remaining < requested_quota[0]
     end
-    return true if check_account_num < user.quota_mail_accounts &&
-                   check_account_storage < user.quota_mail_storage
+    return true if check_account_num < user.package.quota_mail_accounts &&
+                   check_account_storage < user.package.quota_mail_storage
     false
   end
 

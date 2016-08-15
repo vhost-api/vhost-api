@@ -2,7 +2,7 @@
 
 # @return [Fixnum]
 def allocated_customers(user)
-  result = user.quota_customers unless user.reseller?
+  result = user.package.quota_customers unless user.reseller?
   result = user.customers.size if user.reseller?
   result
 end
@@ -101,8 +101,8 @@ end
 
 # @return [Fixnum]
 def allocated_dns_zones(user)
-  result = user.quota_dns_zones
-  result = user.customers.map(&:quota_dns_zones)
+  result = user.package.quota_dns_zones
+  result = user.customers.map(&:package).map(&:quota_dns_zones)
                .reduce(0, :+) if user.reseller?
   result
 end
@@ -110,7 +110,7 @@ end
 # @return [Fixnum]
 def allocated_dns_records(user)
   result = user.quota_dns_records
-  result = user.customers.map(&:quota_dns_records)
+  result = user.customers.map(&:package).map(&:quota_dns_records)
                .reduce(0, :+) if user.reseller?
   result
 end

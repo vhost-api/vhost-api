@@ -140,7 +140,8 @@ namespace '/api/v1/mailaccounts' do
                 domain_id: @_params[:domain_id],
                 email: @_params[:email]
               )
-            else
+            end
+            if @_params[:domain_id] == @mailaccount.domain_id
               check_email_address_for_domain(
                 email: @_params[:email],
                 domain_id: @_params[:domain_id]

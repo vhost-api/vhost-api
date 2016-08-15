@@ -32,11 +32,14 @@ namespace '/api/v1/users' do
         loc = [request.base_url, 'api', 'v1', 'users', @_user.id].join('/')
         response.headers['Location'] = loc
       end
-    rescue ArgumentError
+    rescue ArgumentError => err
+      p err.inspect
       @result = api_error(ApiErrors.[](:invalid_request))
-    rescue JSON::ParserError
+    rescue JSON::ParserError => err
+      p err.inspect
       @result = api_error(ApiErrors.[](:malformed_request))
-    rescue DataMapper::SaveFailureError
+    rescue DataMapper::SaveFailureError => err
+      p err.inspect
       @result = if User.first(login: @_params[:login]).nil?
                   api_error(ApiErrors.[](:failed_create))
                 else

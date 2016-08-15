@@ -78,7 +78,7 @@ class DomainPolicy < ApplicationPolicy
   def quotacheck
     used_quota = user.domains.size
     used_quota += user.customers.domains.size if user.reseller?
-    return true if used_quota < user.quota_domains
+    return true if used_quota < user.package.quota_domains
     false
   end
 

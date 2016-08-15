@@ -96,7 +96,7 @@ class UserPolicy < ApplicationPolicy
     # include :group relation
     class Admin < self
       def attributes
-        super.push(:group, :reseller)
+        super.push(:group, :reseller, :package)
       end
     end
 
@@ -114,7 +114,7 @@ class UserPolicy < ApplicationPolicy
   def quotacheck
     return false unless user.reseller?
     customer_quota = user.customers.size
-    return true if customer_quota < user.quota_customers
+    return true if customer_quota < user.package.quota_customers
     false
   end
 

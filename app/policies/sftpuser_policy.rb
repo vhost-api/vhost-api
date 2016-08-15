@@ -41,7 +41,7 @@ class SftpUserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_sftpuser_num < user.quota_sftp_users
+    return true if check_sftpuser_num < user.package.quota_sftp_users
     false
   end
 

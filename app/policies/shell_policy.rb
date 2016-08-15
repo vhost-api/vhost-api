@@ -26,4 +26,19 @@ class ShellPolicy < ApplicationPolicy
     class User < Reseller
     end
   end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    return true if check_shelluser_num < user.package.quota_shell_users
+    false
+  end
+
+  # @return [Fixnum]
+  def check_shelluser_num
+    shelluser_usage = user.vhosts.shell_users.size
+    shelluser_usage += user.customers.vhosts.shell_users.size if user.reseller?
+    shelluser_usage
+  end
 end
