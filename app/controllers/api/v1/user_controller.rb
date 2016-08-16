@@ -17,15 +17,24 @@ namespace '/api/v1/users' do
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # login must not be nil
-      return_api_error(ApiErrors.[](:invalid_login)) if @_params[:login].nil?
+      # perform validations
+      @_user = User.new(@_params)
+      unless @_user.valid?
+        errors = extract_object_errors(object: @_user)
+        log_user('debug', "validation_errors: #{errors}")
+        if settings.return_validation_errors
+          return_api_error(ApiErrors.[](:invalid_request),
+                           errors: { validation: errors })
+        else
+          return_api_error(ApiErrors.[](:invalid_request))
+        end
+      end
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(User).create_with?(
         @_params
       )
 
-      @_user = User.new(@_params)
       if @_user.save
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @_user })
@@ -33,18 +42,29 @@ namespace '/api/v1/users' do
         response.headers['Location'] = loc
       end
     rescue ArgumentError => err
-      p err.inspect
+      log_user('debug', err.message)
       @result = api_error(ApiErrors.[](:invalid_request))
     rescue JSON::ParserError => err
-      p err.inspect
+      log_user('debug', err.message)
       @result = api_error(ApiErrors.[](:malformed_request))
     rescue DataMapper::SaveFailureError => err
-      p err.inspect
+      log_user('debug', err.message)
       @result = if User.first(login: @_params[:login]).nil?
                   api_error(ApiErrors.[](:failed_create))
                 else
                   api_error(ApiErrors.[](:resource_conflict))
                 end
+    rescue => err
+      # unhandled error, always log backtrace
+      log_user('error', err.message)
+      log_user('error', err.backtrace.join("\n"))
+      # print backtrace in api response only if we're in development env
+      errors = if settings.environment == :development
+                 { errors: [err.message, err.backtrace] }
+               else
+                 { errors: err.message }
+               end
+      @result = api_error(ApiErrors.[](:internal_error), errors)
     end
     return_apiresponse @result
   end
@@ -67,8 +87,12 @@ namespace '/api/v1/users' do
       begin
         @result = if @_user.destroy
                     ApiResponseSuccess.new
+                  elsif settings.return_validation_errors
+                    api_error(
+                      ApiErrors.[](:failed_delete),
+                      errors: { details: @_user.errors.full_messages }
+                    )
                   else
-                    p @_user.errors.map(&:full_messages)
                     api_error(ApiErrors.[](:failed_delete))
                   end
       end
@@ -87,6 +111,25 @@ namespace '/api/v1/users' do
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
+        # perform validations on a dummy object, check only supplied attributes
+        dummy = User.new(@_params)
+        unless dummy.valid?
+          error_attributes = @_params.keys & dummy.errors.keys
+          unless error_attributes.empty?
+            # extract only relevant errors for @_params
+            errors = extract_selected_errors(object: dummy,
+                                             selected: error_attributes)
+
+            log_user('debug', "validation_errors: #{errors}")
+            if settings.return_validation_errors
+              return_api_error(ApiErrors.[](:invalid_request),
+                               errors: { validation: errors })
+            else
+              return_api_error(ApiErrors.[](:invalid_request))
+            end
+          end
+        end
+
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(@_user).update_with?(
           @_params
@@ -95,21 +138,39 @@ namespace '/api/v1/users' do
         @result = if @_user.update(@_params)
                     ApiResponseSuccess.new(data: { object: @_user })
                   else
-                    api_error(ApiErrors.[](:failed_update))
+                    errors = extract_object_errors(object: @_user)
+                    log_user('debug', "validation_errors: #{errors}")
+                    if settings.return_validation_errors
+                      return_api_error(ApiErrors.[](:failed_update),
+                                       errors: { validation: errors })
+                    else
+                      return_api_error(ApiErrors.[](:failed_update))
+                    end
                   end
       rescue ArgumentError => err
-        p err.inspect
+        log_user('debug', err.message)
         @result = api_error(ApiErrors.[](:invalid_request))
       rescue JSON::ParserError => err
-        p err.inspect
+        log_user('debug', err.message)
         @result = api_error(ApiErrors.[](:malformed_request))
       rescue DataMapper::SaveFailureError => err
-        p err.inspect
+        log_user('debug', err.message)
         @result = if User.first(login: @_params[:login]).nil?
-                    api_error(ApiErrors.[](:failed_update))
+                    api_error(ApiErrors.[](:failed_create))
                   else
                     api_error(ApiErrors.[](:resource_conflict))
                   end
+      rescue => err
+        # unhandled error, always log backtrace
+        log_user('error', err.message)
+        log_user('error', err.backtrace.join("\n"))
+        # print backtrace in api response only if we're in development env
+        errors = if settings.environment == :development
+                   { errors: [err.message, err.backtrace] }
+                 else
+                   { errors: err.message }
+                 end
+        @result = api_error(ApiErrors.[](:internal_error), errors)
       end
       return_apiresponse @result
     end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rubocop:disable Metrics/LineLength
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -7,15 +8,18 @@ require 'dm-constraints'
 class Vhost
   include DataMapper::Resource
 
+  VHOST_TYPES = %w(vhost alias).freeze
+  REDIRECT_TYPES = %w(none temporary permanent).freeze
+  SUBDOMAIN_TYPES = %w(none www wildcard).freeze
+
   property :id, Serial, key: true
   property :fqdn, String, required: true, unique: true, length: 3..255
-  property :type, Enum[:vhost, :alias], default: :vhost
+  property :type, String, length: 10, default: 'vhost'
   property :document_root, String, length: 0..255
-  property :redirect_type, Enum[:none, :temporary, :permanent], default: :none
-  property :redirect_target, Text, lazy: false
-  property :quota, Integer, required: true, min: 0, max: (2**63 - 1),
-                            default: 104_857_600 # 100MiB default
-  property :auto_subdomain, Enum[:none, :www, :wildcard], default: :none
+  property :redirect_type, String, length: 15, default: 'none'
+  property :redirect_target, String, length: 3..255
+  property :quota, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default
+  property :auto_subdomain, String, length: 15, default: 'none'
   property :php_enabled, Boolean, default: false
   property :ssl_enabled, Boolean, default: false
   property :ssl_letsencrypt, Boolean, default: false
@@ -29,15 +33,16 @@ class Vhost
   property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0
   property :enabled, Boolean, default: false
 
-  before :create do
-    self.created_at = Time.now.to_i
-  end
+  FQDN = %r{(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)}
+  validates_format_of :fqdn, with: FQDN
+  validates_format_of :redirect_target, with: FQDN, unless: ->(t) { t.redirect_type == 'none' }
 
-  before :save do
-    self.updated_at = Time.now.to_i
-  end
+  validates_within :type, set: VHOST_TYPES
+  validates_within :redirect_type, set: REDIRECT_TYPES
+  validates_within :auto_subdomain, set: SUBDOMAIN_TYPES
 
   belongs_to :user
+  validates_presence_of :user, message: 'user_id must not be blank'
 
   # alias vhosts
   has n, :aliases, self, child_key: :parent_id, constraint: :destroy
@@ -49,6 +54,14 @@ class Vhost
   belongs_to :ipv4_address
   belongs_to :ipv6_address
   belongs_to :php_runtime, required: false
+
+  before :create do
+    self.created_at = Time.now.to_i
+  end
+
+  before :save do
+    self.updated_at = Time.now.to_i
+  end
 
   # @return [User]
   def owner

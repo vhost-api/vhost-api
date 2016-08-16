@@ -69,9 +69,10 @@ class ApikeyPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    apikey_quota = user.apikeys.size
-    apikey_quota += user.customers.apikeys.size if user.reseller?
-    return true if apikey_quota < user.package.quota_apikeys
+    used = user.apikeys.size
+    used += user.customers.apikeys.size if user.reseller?
+    available = user.packages.map(&:quota_apikeys).reduce(0, :+)
+    return true if used < available
     false
   end
 

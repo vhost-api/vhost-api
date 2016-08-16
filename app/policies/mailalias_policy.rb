@@ -61,7 +61,8 @@ class MailAliasPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_alias_num < user.package.quota_mail_aliases
+    available = user.packages.map(&:quota_mail_aliases).reduce(0, :+)
+    return true if check_alias_num < available
     false
   end
 

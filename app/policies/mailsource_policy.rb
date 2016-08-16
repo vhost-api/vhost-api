@@ -61,7 +61,8 @@ class MailSourcePolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_source_num < user.package.quota_mail_sources
+    available = user.packages.map(&:quota_mail_sources).reduce(0, :+)
+    return true if check_source_num < available
     false
   end
 

@@ -19,6 +19,19 @@ def return_authorized_resource(object: nil)
   return return_json_pretty({}.to_json) if object.nil?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
+  # if object.is_a?(User)
+  # p('')
+  # p('--- controller_helper #return_authorized_resource ---')
+  # p('object: ', object)
+  # p('')
+  # p('object.packages: ', object.packages)
+  # p('')
+  # p('object.as_json: ', object.as_json)
+  # p('')
+  # p('object.as_json(only: permitted_attributes): ', object.as_json(only: permitted_attributes))
+  # p('------')
+  # p('')
+  # end
   return_json_pretty(object.to_json(only: permitted_attributes))
 end
 
@@ -141,15 +154,16 @@ def return_resource(object: nil)
   return_json_pretty({ clazz => object }.to_json)
 end
 
-def return_api_error(api_errors_hash)
-  return_apiresponse(api_error(api_errors_hash))
+def return_api_error(api_errors_hash, errors = nil)
+  return_apiresponse(api_error(api_errors_hash, errors))
 end
 
-def api_error(api_errors_hash)
+def api_error(api_errors_hash, errors = nil)
   ApiResponseError.new(
     status_code: api_errors_hash[:status],
     error_id: api_errors_hash[:code],
-    message: api_errors_hash[:message]
+    message: api_errors_hash[:message],
+    data: errors
   )
 end
 

@@ -31,12 +31,28 @@ configure do
   use Rack::TempfileReaper
   set :root, File.expand_path('../', __FILE__)
   set :start_time, Time.now
+  set :logging, false
   @appconfig = YAML.load(
     File.read('config/appconfig.yml')
   )[settings.environment.to_s]
   @appconfig.keys.each do |key|
     set key, @appconfig[key]
   end
+end
+
+# setup logging
+case settings.log_method
+when 'internal' then
+  vhost_api_logfile = ::File.new('log/vhost_api.log', 'a+')
+  vhost_api_logfile.sync = true
+  vhost_api_logger = Logger.new(vhost_api_logfile)
+  vhost_api_logger.level = Logger::WARN
+when 'syslog' then
+  require 'syslog/logger'
+  vhost_api_logger = Syslog::Logger.new('vhost-api')
+  vhost_api_logger.level = Logger::WARN
+else
+  abort('ERROR: error parsing appconfig.yml: invalid log_method')
 end
 
 # -- load only activated modules/controllers --
@@ -72,14 +88,20 @@ configure :development, :test do
   require 'binding_of_caller'
   set :show_exceptions, :after_handler
   set :raise_errors, false
+  set :dump_errors, true
   use BetterErrors::Middleware
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
+  vhost_api_logger.level = Logger::DEBUG
+  set :app_logger, vhost_api_logger
 end
 
 configure :production do
   set :show_exceptions, false
   set :raise_errors, false
+  set :dump_errors, false
+  vhost_api_logger.level = Logger::WARN
+  set :app_logger, vhost_api_logger
 end
 
 # setup database connection

@@ -63,6 +63,7 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'GET inexistent record' do
+          let(:testgroup) { create(:group, name: 'test') }
           it 'returns an API Error' do
             inexistent = testgroup.id
             testgroup.destroy
@@ -570,11 +571,14 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'DELETE' do
+          let(:testgroup) { create(:group, name: 'test') }
           it 'authorizes the request by using the policies' do
-            expect(Pundit.authorize(testadmin, Group, :destroy?)).to be_truthy
+            expect(
+              Pundit.authorize(testadmin, testgroup, :destroy?)
+            ).to be_truthy
           end
 
-          it 'deletes the requested group' do
+          it 'deletes the requested group if it has no members' do
             id = testgroup.id
 
             delete(

@@ -28,7 +28,8 @@ describe 'VHost-API User Model' do
     _testuser1 = create(:user)
     _testuser2 = create(:user)
     _testuser3 = create(:user)
-    expect(User.count).to eq(6)
+    # 6 + 1 user for the packages (auto created)
+    expect(User.count).to eq(7)
   end
 
   it 'allows authentication with a given password' do

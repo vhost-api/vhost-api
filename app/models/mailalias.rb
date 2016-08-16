@@ -9,11 +9,16 @@ class MailAlias
 
   property :id, Serial, key: true
   property :address, String, required: true, unique: true, length: 3..255
-  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
-                                 required: false
-  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
-                                 required: false
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0
   property :enabled, Boolean, default: false
+
+  validates_format_of :address, as: :email_address
+
+  belongs_to :domain
+  validates_presence_of :domain, message: 'domain_id must not be blank'
+
+  has n, :mail_accounts, through: Resource, constraint: :skip
 
   before :create do
     self.created_at = Time.now.to_i
@@ -22,10 +27,6 @@ class MailAlias
   before :save do
     self.updated_at = Time.now.to_i
   end
-
-  belongs_to :domain
-
-  has n, :mail_accounts, through: Resource, constraint: :skip
 
   # @param options [Hash]
   # @return [Hash]

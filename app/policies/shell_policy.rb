@@ -31,7 +31,9 @@ class ShellPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_shelluser_num < user.package.quota_shell_users
+    used = check_shelluser_num
+    available = user.packages.map(&:quota_shell_users).reduce(0, :+)
+    return true if used < available
     false
   end
 

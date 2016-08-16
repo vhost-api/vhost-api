@@ -25,9 +25,22 @@ FactoryGirl.define do
     quota_shell_users 0
     enabled true
 
+    transient do
+      user_login 'user'
+    end
+
+    user_id do
+      if User.first(login: user_login).nil?
+        create(:user, login: user_login).id
+      else
+        User.first(login: user_login).id
+      end
+    end
+
     factory :invalid_package do
       name nil
       price nil
+      user nil
     end
 
     factory :reseller_package do

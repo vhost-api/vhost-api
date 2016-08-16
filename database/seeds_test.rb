@@ -10,6 +10,30 @@ group_list.each do |group|
             enabled: group[1]).save
 end
 
+user_list = [
+  ['Admin', 'admin', 'secret', true, 'admin', nil, 'default'],
+  ['Thore Bödecker', 'fox', 'geheim', true, 'admin', nil, 'Webhosting L'],
+  ['Max Mustermann', 'max', 'muster', true, 'user', nil, 'Webhosting S'],
+  ['Reseller 1', 'reseller1', 'reseller1', true, 'reseller', nil, 'Reseller M'],
+  ['Customer 1', 'customer1', 'customer1', true, 'user', 'reseller1', 'Webhosting S'],
+  ['Customer 2', 'customer2', 'customer2', true, 'user', 'reseller1', 'Webhosting S'],
+  ['Customer 3', 'customer3', 'customer3', true, 'user', 'reseller1', 'Webhosting S'],
+  ['Reseller 2', 'reseller2', 'reseller2', true, 'reseller', nil, 'Reseller S'],
+  ['Customer 4', 'customer4', 'customer4', true, 'user', 'reseller2', 'Webhosting S'],
+  ['Customer 5', 'customer5', 'customer5', true, 'user', 'reseller2', 'Webhosting S']
+]
+user_list.each do |user|
+  g = Group.first(name: user[4])
+  u = User.create(name: user[0],
+                  login: user[1],
+                  password: user[2],
+                  enabled: user[3],
+                  group: g)
+  next if user[5].nil?
+  u.reseller_id = User.first(login: user[5]).id
+  u.save
+end
+
 package_list = [
   ['default', 0, true],
   ['Webspace S', 3_99, true],
@@ -26,33 +50,10 @@ package_list = [
   ['Reseller L', 19_99, true]
 ]
 package_list.each do |package|
-  Package.new(name: package[0], price_unit: package[1], enabled: package[2]).save
-end
-
-user_list = [
-  ['Admin', 'admin', 'secret', true, 'admin', nil, 'default'],
-  ['Thore Bödecker', 'fox', 'geheim', true, 'admin', nil, 'Webhosting L'],
-  ['Max Mustermann', 'max', 'muster', true, 'user', nil, 'Webhosting S'],
-  ['Reseller 1', 'reseller1', 'reseller1', true, 'reseller', nil, 'Reseller M'],
-  ['Customer 1', 'customer1', 'customer1', true, 'user', 'reseller1', 'Webhosting S'],
-  ['Customer 2', 'customer2', 'customer2', true, 'user', 'reseller1', 'Webhosting S'],
-  ['Customer 3', 'customer3', 'customer3', true, 'user', 'reseller1', 'Webhosting S'],
-  ['Reseller 2', 'reseller2', 'reseller2', true, 'reseller', nil, 'Reseller S'],
-  ['Customer 4', 'customer4', 'customer4', true, 'user', 'reseller2', 'Webhosting S'],
-  ['Customer 5', 'customer5', 'customer5', true, 'user', 'reseller2', 'Webhosting S']
-]
-user_list.each do |user|
-  g = Group.first(name: user[4])
-  p = Package.first(name: user[6])
-  u = User.create(name: user[0],
-                  login: user[1],
-                  password: user[2],
-                  enabled: user[3],
-                  group: g,
-                  package: p)
-  next if user[5].nil?
-  u.reseller_id = User.first(login: user[5]).id
-  u.save
+  Package.new(name: package[0],
+              price_unit: package[1],
+              enabled: package[2],
+              user: User.first(group: Group.first(name: 'admin'))).save
 end
 
 domain_list = [

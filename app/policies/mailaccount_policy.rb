@@ -30,7 +30,9 @@ class MailAccountPolicy < ApplicationPolicy
   #
   # @return [Fixnum]
   def storage_remaining
-    user.package.quota_mail_storage - check_account_storage
+    used = check_account_storage
+    available = user.packages.map(&:quota_mail_storage).reduce(0, :+)
+    available - used
   end
 
   # Scope for MailAccount
@@ -77,13 +79,16 @@ class MailAccountPolicy < ApplicationPolicy
 
   private
 
+  # rubocop:disable Metrics/AbcSize
   # @return [Boolean]
   def quotacheck(*requested_quota)
     unless requested_quota.blank?
       return false if storage_remaining < requested_quota[0]
     end
-    return true if check_account_num < user.package.quota_mail_accounts &&
-                   check_account_storage < user.package.quota_mail_storage
+    available_accounts = user.packages.map(&:quota_mail_accounts).reduce(0, :+)
+    available_storage = user.packages.map(&:quota_mail_storage).reduce(0, :+)
+    return true if check_account_num < available_accounts &&
+                   check_account_storage < available_storage
     false
   end
 

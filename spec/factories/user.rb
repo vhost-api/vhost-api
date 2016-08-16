@@ -16,7 +16,7 @@ FactoryGirl.define do
 
     transient do
       group_name 'user'
-      package_name 'default'
+      package_count 1
     end
 
     group_id do
@@ -27,12 +27,9 @@ FactoryGirl.define do
       end
     end
 
-    package_id do
-      if Package.first(name: package_name).nil?
-        create(:package, name: package_name).id
-      else
-        Package.first(name: package_name).id
-      end
+    after(:create) do |user, evaluator|
+      user.packages = create_list(:package, evaluator.package_count)
+      user.save
     end
 
     factory :invalid_user do
@@ -55,7 +52,11 @@ FactoryGirl.define do
       login { generate(:reseller_login) }
       password 'reseller'
 
-      package { create(:reseller_package) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count)
+        user.save
+      end
 
       transient do
         group_name 'reseller'
@@ -63,31 +64,66 @@ FactoryGirl.define do
     end
 
     factory :reseller_with_exhausted_customer_quota, parent: :reseller do
-      package { create(:reseller_package, quota_customers: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_customers: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_apikey_quota, parent: :reseller do
-      package { create(:reseller_package, quota_apikeys: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_apikeys: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_domain_quota, parent: :reseller do
-      package { create(:reseller_package, quota_domains: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_domains: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_mailaccount_quota, parent: :reseller do
-      package { create(:reseller_package, quota_mail_accounts: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_accounts: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_mailalias_quota, parent: :reseller do
-      package { create(:reseller_package, quota_mail_aliases: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_aliases: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_mailsource_quota, parent: :reseller do
-      package { create(:reseller_package, quota_mail_sources: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_sources: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_exhausted_mailstorage_quota, parent: :reseller do
-      package { create(:reseller_package, quota_mail_storage: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_storage: 0)
+        user.save
+      end
     end
 
     factory :reseller_with_customers, parent: :reseller do
@@ -95,12 +131,18 @@ FactoryGirl.define do
         customer_count 3
       end
 
-      package { create(:reseller_package, quota_customers: 5) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_customers: 5)
+        user.save
+      end
 
       after(:create) do |reseller, evaluator|
-        create_list(:user,
-                    evaluator.customer_count,
-                    reseller_id: reseller.id)
+        reseller.customers = create_list(:user,
+                                         evaluator.customer_count,
+                                         reseller_id: reseller.id)
+        reseller.save
       end
     end
 
@@ -110,11 +152,13 @@ FactoryGirl.define do
         apikey_count 1
       end
 
-      package do
-        create(:reseller_package, quota_customers: 5, quota_apikeys: 5)
-      end
-
       after(:create) do |reseller, evaluator|
+        reseller.packages = create_list(:reseller_package,
+                                        evaluator.package_count,
+                                        quota_customers: 5,
+                                        quota_apikeys: 5)
+        reseller.save
+
         create_list(:user, evaluator.customer_count, reseller_id: reseller.id)
         create(:apikey, user_id: reseller.id)
 
@@ -130,11 +174,13 @@ FactoryGirl.define do
         domain_count 3
       end
 
-      package do
-        create(:reseller_package, quota_customers: 5, quota_domains: 15)
-      end
-
       after(:create) do |reseller, evaluator|
+        reseller.packages = create_list(:reseller_package,
+                                        evaluator.package_count,
+                                        quota_customers: 5,
+                                        quota_domains: 15)
+        reseller.save
+
         create_list(:user,
                     evaluator.customer_count,
                     reseller_id: reseller.id)
@@ -155,15 +201,17 @@ FactoryGirl.define do
         mailaccount_count 3
       end
 
-      package do
-        create(:reseller_package,
-               quota_customers: 5,
-               quota_domains: 15,
-               quota_mail_accounts: 45,
-               quota_mail_storage: 471_859_200) # 45 * 10 MiB
-      end
-
       after(:create) do |reseller, evaluator|
+        reseller.packages = create_list(
+          :reseller_package,
+          evaluator.package_count,
+          quota_customers: 5,
+          quota_domains: 15,
+          quota_mail_accounts: 45,
+          quota_mail_storage: 471_859_200 # 45*10 MiB
+        )
+        reseller.save
+
         reseller.domains.each do |domain|
           create_list(:mailaccount,
                       evaluator.mailaccount_count,
@@ -183,16 +231,18 @@ FactoryGirl.define do
         mailalias_count 3
       end
 
-      package do
-        create(:reseller_package,
-               quota_customers: 5,
-               quota_domains: 15,
-               quota_mail_accounts: 45,
-               quota_mail_aliases: 120,
-               quota_mail_storage: 471_859_200) # 45 * 10 MiB
-      end
-
       after(:create) do |reseller, evaluator|
+        reseller.packages = create_list(
+          :reseller_package,
+          evaluator.package_count,
+          quota_customers: 5,
+          quota_domains: 15,
+          quota_mail_accounts: 45,
+          quota_mail_aliases: 120,
+          quota_mail_storage: 471_859_200 # 45*10 MiB
+        )
+        reseller.save
+
         reseller.domains.mail_accounts.each do |mailaccount|
           aliases = create_list(:mailalias,
                                 evaluator.mailalias_count,
@@ -214,16 +264,18 @@ FactoryGirl.define do
         mailsource_count 3
       end
 
-      package do
-        create(:reseller_package,
-               quota_customers: 5,
-               quota_domains: 15,
-               quota_mail_accounts: 45,
-               quota_mail_sources: 120,
-               quota_mail_storage: 471_859_200) # 45 * 10 MiB
-      end
-
       after(:create) do |reseller, evaluator|
+        reseller.packages = create_list(
+          :reseller_package,
+          evaluator.package_count,
+          quota_customers: 5,
+          quota_domains: 15,
+          quota_mail_accounts: 45,
+          quota_mail_sources: 120,
+          quota_mail_storage: 471_859_200 # 45*10 MiB
+        )
+        reseller.save
+
         reseller.domains.mail_accounts.each do |mailaccount|
           sources = create_list(:mailsource,
                                 evaluator.mailsource_count,
@@ -269,63 +321,125 @@ FactoryGirl.define do
 
     factory :reseller_with_customers_and_apikeys_and_exhausted_apikey_quota,
             parent: :reseller_with_customers_and_apikeys do
-      package { create(:reseller_package, quota_apikeys: 4) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_apikeys: 4)
+        user.save
+      end
     end
 
     factory :reseller_with_customers_and_domains_and_exhausted_domain_quota,
             parent: :reseller_with_customers_and_domains do
-      package { create(:reseller_package, quota_domains: 12) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_domains: 12)
+        user.save
+      end
     end
 
     factory :reseller_with_customers_and_mailaccounts_and_exhausted_quota,
             parent: :reseller_with_customers_and_mailaccounts do
-      package do
-        create(:reseller_package,
-               quota_domains: 12,
-               quota_mail_accounts: 36)
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_domains: 12,
+                                    quota_mail_accounts: 36)
+        user.save
       end
     end
 
     factory :reseller_with_customers_and_mailaliases_and_exhausted_quota,
             parent: :reseller_with_customers_and_mailaliases do
-      package { create(:reseller_package, quota_mail_aliases: 108) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_aliases: 108)
+        user.save
+      end
     end
 
     factory :reseller_with_customers_and_mailsources_and_exhausted_quota,
             parent: :reseller_with_customers_and_mailsources do
-      package { create(:reseller_package, quota_mail_sources: 108) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_sources: 108)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_apikey_quota do
-      package { create(:package, quota_apikeys: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_apikeys: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_domain_quota do
-      package { create(:package, quota_domains: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_domains: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_mailaccount_quota do
-      package { create(:package, quota_mail_accounts: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_accounts: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_mailalias_quota do
-      package { create(:package, quota_mail_aliases: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_aliases: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_mailsource_quota do
-      package { create(:package, quota_mail_sources: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_sources: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_mailstoragee_quota do
-      package { create(:package, quota_mail_storage: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_storage: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_dnszone_quota do
-      package { create(:package, quota_dns_zones: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_dns_zones: 0)
+        user.save
+      end
     end
 
     factory :user_with_exhausted_dnsrecords_quota do
-      package { create(:package, quota_dns_records: 0) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_dns_records: 0)
+        user.save
+      end
     end
 
     factory :user_with_apikeys, parent: :user do
@@ -333,7 +447,12 @@ FactoryGirl.define do
         apikey_count 1
       end
 
-      package { create(:package, quota_apikeys: 3) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_apikeys: 3)
+        user.save
+      end
 
       after(:create) do |user, _evaluator|
         create(:apikey, user_id: user.id)
@@ -345,7 +464,12 @@ FactoryGirl.define do
         domain_count 3
       end
 
-      package { create(:package, quota_domains: 5) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_domains: 5)
+        user.save
+      end
 
       after(:create) do |user, evaluator|
         create_list(:domain,
@@ -356,31 +480,53 @@ FactoryGirl.define do
 
     factory :user_with_apikeys_and_exhausted_apikey_quota,
             parent: :user_with_apikeys do
-      package { create(:package, quota_apikeys: 1) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_apikeys: 1)
+        user.save
+      end
     end
 
     factory :user_with_domains_and_exhausted_domain_quota,
             parent: :user_with_domains do
-      package { create(:package, quota_domains: 3) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_domains: 3)
+        user.save
+      end
     end
 
     factory :user_with_mailaccounts_and_exhausted_mailaccount_quota,
             parent: :user_with_mailaccounts do
-      package do
-        create(:package,
-               quota_domains: 3,
-               quota_mail_accounts: 9)
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_domains: 3,
+                                    quota_mail_accounts: 9)
+        user.save
       end
     end
 
     factory :user_with_mailaliases_and_exhausted_mailalias_quota,
             parent: :user_with_mailaliases do
-      package { create(:package, quota_mail_aliases: 27) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_aliases: 27)
+        user.save
+      end
     end
 
     factory :user_with_mailsources_and_exhausted_mailsource_quota,
             parent: :user_with_mailsources do
-      package { create(:package, quota_mail_sources: 27) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_sources: 27)
+        user.save
+      end
     end
 
     factory :user_with_mailaccounts, parent: :user_with_domains do
@@ -388,7 +534,12 @@ FactoryGirl.define do
         mailaccount_count 3
       end
 
-      package { create(:package, quota_mail_accounts: 15) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_accounts: 15)
+        user.save
+      end
 
       after(:create) do |user, evaluator|
         user.domains.each do |domain|
@@ -404,7 +555,12 @@ FactoryGirl.define do
         mailalias_count 3
       end
 
-      package { create(:package, quota_mail_aliases: 30) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_aliases: 30)
+        user.save
+      end
 
       after(:create) do |user, evaluator|
         user.domains.mail_accounts.each do |mailaccount|
@@ -421,7 +577,12 @@ FactoryGirl.define do
         mailsource_count 3
       end
 
-      package { create(:package, quota_mail_sources: 30) }
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_sources: 30)
+        user.save
+      end
 
       after(:create) do |user, evaluator|
         user.domains.mail_accounts.each do |mailaccount|

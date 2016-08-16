@@ -3,41 +3,44 @@
 module ApiErrors
   LOOKUP_TABLE = {
     # general errors 10xx
+    internal_error:
+      ['1000', 500, 'internal server error, please contact an administrator'],
+
     malformed_request:
-      ['1000', 400, 'malformed request data'],
+      ['1001', 400, 'malformed request data'],
 
     authentication_failed:
-      ['1001', 401, 'authentication failed'],
+      ['1002', 401, 'authentication failed'],
 
     unauthorized:
-      ['1002', 403, 'insufficient permission or quota exhausted'],
+      ['1003', 403, 'insufficient permission or quota exhausted'],
 
     not_found:
-      ['1003', 404, 'requested resource does not exist'],
+      ['1004', 404, 'requested resource does not exist'],
 
     resource_conflict:
-      ['1004', 409, 'resource conflict, cannot apply request data'],
+      ['1005', 409, 'resource conflict, cannot apply request data'],
 
     invalid_request:
-      ['1005', 422, 'invalid request, check request data for endpoint'],
+      ['1006', 422, 'invalid request, check request data for endpoint'],
 
     failed_create:
-      ['1006', 500, 'could not create'],
+      ['1007', 500, 'could not create'],
 
     failed_update:
-      ['1007', 500, 'could not update'],
+      ['1008', 500, 'could not update'],
 
     failed_delete:
-      ['1008', 500, 'could not delete'],
+      ['1009', 500, 'could not delete'],
 
     invalid_query:
-      ['1009', 400, 'invalid query parameters'],
+      ['1010', 400, 'invalid query parameters'],
 
     quota_apikey:
-      ['1010', 403, 'apikey quota exhausted'],
+      ['1011', 403, 'apikey quota exhausted'],
 
     db_connection_failed:
-      ['1011', 500, 'database connection failed'],
+      ['1012', 500, 'database connection failed'],
 
     # group controller specific 11xx
     invalid_group:

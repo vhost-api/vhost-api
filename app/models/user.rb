@@ -12,12 +12,13 @@ class User
   property :name, String, required: true, length: 3..255
   property :login, String, required: true, unique: true, length: 3..255
   property :password, BCryptHash, required: true, length: 255
-  property :contact_email, String, required: false, length: 255
-  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0,
-                                 required: false
-  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0,
-                                 required: false
+  property :contact_email, String, length: 255
+  property :created_at, Integer, min: 0, max: (2**63 - 1), default: 0
+  property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0
   property :enabled, Boolean, default: false
+
+  validates_format_of :login, with: %r{^[a-zA-Z][a-zA-Z0-9\.\_\-]{2,253}$}
+  validates_format_of :contact_email, as: :email_address
 
   before :create do
     self.created_at = Time.now.to_i
@@ -29,7 +30,7 @@ class User
 
   belongs_to :group
 
-  belongs_to :package
+  has n, :packages, through: Resource, constraint: :skip
 
   has n, :ipv4_addresses, through: Resource, constraint: :skip
   has n, :ipv6_addresses, through: Resource, constraint: :skip
@@ -59,14 +60,12 @@ class User
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = if reseller.is_a?(User)
-                 { exclude: [:password, :group_id, :reseller_id],
-                   relationships: { group: { only: [:id, :name] },
-                                    reseller: { only: [:id, :name, :login] } } }
-               else
-                 { exclude: [:password, :group_id, :reseller_id],
-                   relationships: { group: { only: [:id, :name] } } }
-               end
+    defaults = { exclude: [:password, :group_id, :reseller_id],
+                 relationships: { group: { only: [:id, :name] },
+                                  packages: { only: [:id, :name] } } }
+    defaults[:relationships][:reseller] = {
+      only: [:id, :name, :login]
+    } if reseller.is_a?(User)
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
@@ -76,7 +75,7 @@ class User
     if group.name == 'user' && !reseller.nil?
       reseller
     else
-      User.first(login: 'admin')
+      User.first(group: Group.first(name: 'admin'))
     end
   end
 
@@ -87,11 +86,11 @@ class User
 
   # @return [Boolean]
   def admin?
-    group.name == 'admin'
+    group == Group.first(name: 'admin')
   end
 
   # @return [Boolean]
   def reseller?
-    group.name == 'reseller'
+    group == Group.first(name: 'reseller')
   end
 end
