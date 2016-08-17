@@ -19,20 +19,8 @@ def return_authorized_resource(object: nil)
   return return_json_pretty({}.to_json) if object.nil?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
-  # if object.is_a?(User)
-  # p('')
-  # p('--- controller_helper #return_authorized_resource ---')
-  # p('object: ', object)
-  # p('')
-  # p('object.packages: ', object.packages)
-  # p('')
-  # p('object.as_json: ', object.as_json)
-  # p('')
-  # p('object.as_json(only: permitted_attributes): ', object.as_json(only: permitted_attributes))
-  # p('------')
-  # p('')
-  # end
-  return_json_pretty(object.to_json(only: permitted_attributes))
+  object = object.as_json(only: permitted_attributes)
+  return_apiresponse(ApiResponseSuccess.new(data: { object: object }))
 end
 
 def return_authorized_collection(object: nil, params: { fields: nil })
@@ -42,13 +30,12 @@ def return_authorized_collection(object: nil, params: { fields: nil })
     result = limited_collection(collection: object, params: params)
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
-  rescue => e
-    # TODO: LOG ERROR
-    p e.inspect
+  rescue => err
+    log_app('error', "#{err.message}\n#{err.backtrace}")
     return_api_error(ApiErrors.[](:invalid_request))
   end
 
-  return_json_pretty(result.to_json)
+  return_apiresponse(ApiResponseSuccess.new(data: { objects: result }))
 end
 
 def limited_collection(collection: nil, params: { fields: nil })

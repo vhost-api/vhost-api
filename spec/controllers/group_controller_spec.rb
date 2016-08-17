@@ -209,7 +209,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_group)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -250,7 +250,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_group)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -288,10 +288,10 @@ describe 'VHost-API Group Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -473,7 +473,7 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_group)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -511,10 +511,10 @@ describe 'VHost-API Group Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -552,6 +552,7 @@ describe 'VHost-API Group Controller' do
 
               policy = instance_double('GroupPolicy', update?: true)
               allow(policy).to receive(:update?).and_return(true)
+              allow(policy).to receive(:update_with?).and_return(true)
               allow(GroupPolicy).to receive(:new).and_return(policy)
 
               patch(

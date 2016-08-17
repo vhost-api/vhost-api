@@ -12,6 +12,10 @@ namespace '/api/v1/users' do
     authorize(User, :create?)
 
     begin
+      # check for show errors request
+      show_validation_errors = params.key?('validate')
+      show_errors = params.key?('verbose')
+
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
@@ -22,7 +26,7 @@ namespace '/api/v1/users' do
       unless @_user.valid?
         errors = extract_object_errors(object: @_user)
         log_user('debug', "validation_errors: #{errors}")
-        if settings.return_validation_errors
+        if show_validation_errors || show_errors
           return_api_error(ApiErrors.[](:invalid_request),
                            errors: { validation: errors })
         else
@@ -36,17 +40,32 @@ namespace '/api/v1/users' do
       )
 
       if @_user.save
+        log_user('info', "created User #{@_user.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @_user })
-        loc = [request.base_url, 'api', 'v1', 'users', @_user.id].join('/')
+        loc = "#{request.base_url}/api/v1/users/#{@_user.id}"
         response.headers['Location'] = loc
       end
+    # re-raise authentication/authorization errors so that they don't end up
+    # in the last catchall
+    rescue Pundit::NotAuthorizedError, AuthenticationError
+      raise
     rescue ArgumentError => err
       log_user('debug', err.message)
-      @result = api_error(ApiErrors.[](:invalid_request))
+      @result = if show_errors
+                  api_error(ApiErrors.[](:invalid_request),
+                            errors: { argument: err.message })
+                else
+                  api_error(ApiErrors.[](:invalid_request))
+                end
     rescue JSON::ParserError => err
       log_user('debug', err.message)
-      @result = api_error(ApiErrors.[](:malformed_request))
+      @result = if show_errors
+                  api_error(ApiErrors.[](:malformed_request),
+                            errors: { format: err.message })
+                else
+                  api_error(ApiErrors.[](:malformed_request))
+                end
     rescue DataMapper::SaveFailureError => err
       log_user('debug', err.message)
       @result = if User.first(login: @_params[:login]).nil?
@@ -85,12 +104,17 @@ namespace '/api/v1/users' do
       authorize(@_user, :destroy?)
 
       begin
+        # check for show errors request
+        show_errors = params.key?('verbose')
+
         @result = if @_user.destroy
+                    log_user('info', "deleted User #{@_user.as_json}")
                     ApiResponseSuccess.new
-                  elsif settings.return_validation_errors
+                  elsif show_errors
+                    errors = extract_destroy_errors(object: @_user)
                     api_error(
                       ApiErrors.[](:failed_delete),
-                      errors: { details: @_user.errors.full_messages }
+                      errors: { relationships: errors }
                     )
                   else
                     api_error(ApiErrors.[](:failed_delete))
@@ -106,6 +130,13 @@ namespace '/api/v1/users' do
       authorize(@_user, :update?)
 
       begin
+        # check for show errors request
+        show_validation_errors = params.key?('validate')
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @_user.destroyed?
+
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
@@ -121,7 +152,7 @@ namespace '/api/v1/users' do
                                              selected: error_attributes)
 
             log_user('debug', "validation_errors: #{errors}")
-            if settings.return_validation_errors
+            if show_validation_errors || show_errors
               return_api_error(ApiErrors.[](:invalid_request),
                                errors: { validation: errors })
             else
@@ -135,24 +166,45 @@ namespace '/api/v1/users' do
           @_params
         )
 
+        # remember old values for log message
+        old_attributes = @_user.as_json
+
         @result = if @_user.update(@_params)
+                    log_user(
+                      'info',
+                      "updated User #{old_attributes} with #{@_params}"
+                    )
                     ApiResponseSuccess.new(data: { object: @_user })
                   else
                     errors = extract_object_errors(object: @_user)
                     log_user('debug', "validation_errors: #{errors}")
-                    if settings.return_validation_errors
+                    if show_validation_errors || show_errors
                       return_api_error(ApiErrors.[](:failed_update),
                                        errors: { validation: errors })
                     else
                       return_api_error(ApiErrors.[](:failed_update))
                     end
                   end
+      # re-raise authentication/authorization errors so that they don't end up
+      # in the last catchall
+      rescue Pundit::NotAuthorizedError, AuthenticationError
+        raise
       rescue ArgumentError => err
         log_user('debug', err.message)
-        @result = api_error(ApiErrors.[](:invalid_request))
+        @result = if show_errors
+                    api_error(ApiErrors.[](:invalid_request),
+                              errors: { argument: err.message })
+                  else
+                    api_error(ApiErrors.[](:invalid_request))
+                  end
       rescue JSON::ParserError => err
         log_user('debug', err.message)
-        @result = api_error(ApiErrors.[](:malformed_request))
+        @result = if show_errors
+                    api_error(ApiErrors.[](:malformed_request),
+                              errors: { format: err.message })
+                  else
+                    api_error(ApiErrors.[](:malformed_request))
+                  end
       rescue DataMapper::SaveFailureError => err
         log_user('debug', err.message)
         @result = if User.first(login: @_params[:login]).nil?

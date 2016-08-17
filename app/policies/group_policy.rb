@@ -39,6 +39,22 @@ class GroupPolicy < ApplicationPolicy
     super
   end
 
+  # Checks if current user is allowed to create a record with given params
+  #
+  # @return [Boolean]
+  def create_with?(_params)
+    return true if user.admin?
+    false
+  end
+
+  # Checks if current user is allowed to update the record with given params
+  #
+  # @return [Boolean]
+  def update_with?(_params)
+    return true if user.admin?
+    false
+  end
+
   # Scope for Group
   class Scope < Scope
     def resolve

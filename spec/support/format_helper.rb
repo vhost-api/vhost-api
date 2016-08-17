@@ -8,7 +8,8 @@ module FormatHelpers
     return spec_json_pretty({}.to_json) if object.nil?
 
     permitted_attributes = Pundit.policy(user, object).permitted_attributes
-    spec_json_pretty(object.to_json(only: permitted_attributes))
+    object = object.as_json(only: permitted_attributes)
+    spec_apiresponse(ApiResponseSuccess.new(data: { object: object }))
   end
 
   def spec_authorized_collection(object: nil, params: { fields: nil }, uid: nil)
@@ -24,7 +25,7 @@ module FormatHelpers
       spec_api_error(ApiErrors.[](:invalid_request))
     end
 
-    spec_json_pretty(result.to_json)
+    spec_apiresponse(ApiResponseSuccess.new(data: { objects: result }))
   end
 
   def spec_limited_collection(collection: nil, params: { fiels: nil })
@@ -66,9 +67,9 @@ module FormatHelpers
 
   def spec_apiresponse(response)
     if response.is_a?(ApiResponse)
-      [response.status_code, spec_json_pretty(response.to_json)]
+      spec_json_pretty(response.to_json)
     else
-      [500, 'internal server error']
+      'internal server error'
     end
   end
 end

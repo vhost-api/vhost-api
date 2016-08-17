@@ -675,15 +675,11 @@ describe 'VHost-API User Controller' do
             )
 
             scope = Pundit.policy_scope(testuser, User)
-            policy = Pundit.policy(testuser, scope)
-            permitted = policy.permitted_attributes
 
             expect(last_response.body).to eq(
-              spec_json_pretty(
-                prepare_collection_output(
-                  collection: User.all(id: testuser.id),
-                  fields: permitted
-                ).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testuser.id
               )
             )
           end

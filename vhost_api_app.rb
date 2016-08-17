@@ -43,17 +43,17 @@ end
 # setup logging
 case settings.log_method
 when 'internal' then
-  vhost_api_logfile = ::File.new('log/vhost_api.log', 'a+')
+  vhost_api_logfile_name = "log/vhost-api_#{settings.environment}.log"
+  vhost_api_logfile = ::File.new(vhost_api_logfile_name, 'a+')
   vhost_api_logfile.sync = true
   vhost_api_logger = Logger.new(vhost_api_logfile)
-  vhost_api_logger.level = Logger::WARN
 when 'syslog' then
   require 'syslog/logger'
-  vhost_api_logger = Syslog::Logger.new('vhost-api')
-  vhost_api_logger.level = Logger::WARN
+  vhost_api_logger = Syslog::Logger.new("vhost-api_#{settings.environment}")
 else
   abort('ERROR: error parsing appconfig.yml: invalid log_method')
 end
+vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 
 # -- load only activated modules/controllers --
 # core modules
@@ -92,7 +92,6 @@ configure :development, :test do
   use BetterErrors::Middleware
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
-  vhost_api_logger.level = Logger::DEBUG
   set :app_logger, vhost_api_logger
 end
 
@@ -100,7 +99,6 @@ configure :production do
   set :show_exceptions, false
   set :raise_errors, false
   set :dump_errors, false
-  vhost_api_logger.level = Logger::WARN
   set :app_logger, vhost_api_logger
 end
 

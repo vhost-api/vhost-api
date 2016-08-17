@@ -7,6 +7,18 @@ def gen_mysql_pwhash(password)
   '*' + Digest::SHA1.hexdigest(Digest::SHA1.digest(password)).upcase
 end
 
+def extract_destroy_errors(object: nil)
+  return [] if object.nil?
+  preventing = []
+  object.send(:relationships).each do |relationship|
+    next unless relationship.respond_to?(:enforce_destroy_constraint)
+    preventing.push(
+      relationship.name
+    ) unless relationship.enforce_destroy_constraint(object)
+  end
+  preventing
+end
+
 def extract_object_errors(object: nil)
   return {} if object.nil?
   object.errors.map do |v|
