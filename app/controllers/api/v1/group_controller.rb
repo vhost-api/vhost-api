@@ -145,6 +145,12 @@ namespace '/api/v1/groups' do
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @group.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @group.send(key)
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = Group.new(@_params)
         unless dummy.valid?

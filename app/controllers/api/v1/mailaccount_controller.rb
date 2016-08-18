@@ -180,6 +180,12 @@ namespace '/api/v1/mailaccounts' do
           @_params[:password].to_s
         ) unless @_params[:password].nil?
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @mailaccount.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @mailaccount.send(key)
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = MailAccount.new(@_params)
         unless dummy.valid?

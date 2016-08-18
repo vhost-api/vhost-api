@@ -153,6 +153,12 @@ namespace '/api/v1/apikeys' do
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @apikey.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @apikey.send(key)
+        end
+
         # if apikey was provided it has to be 64 characters long
         if @_params.key?(:apikey)
           return_api_error(

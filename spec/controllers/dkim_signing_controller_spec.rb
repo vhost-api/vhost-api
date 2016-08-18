@@ -300,7 +300,7 @@ describe 'VHost-API DkimSigning Controller' do
             it 'updates an existing dkimsigning with new values' do
               upd_attrs = attributes_for(
                 :dkimsigning,
-                author: testdkimsigning.dkim.domain.name
+                author: "foo@#{testdkimsigning.dkim.domain.name}"
               )
               prev_tstamp = testdkimsigning.updated_at
 

@@ -197,6 +197,12 @@ namespace '/api/v1/mailsources' do
           @_params[:mail_accounts] = @sources
         end
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @mailsource.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @mailsource.send(key)
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = MailSource.new(@_params)
         unless dummy.valid?

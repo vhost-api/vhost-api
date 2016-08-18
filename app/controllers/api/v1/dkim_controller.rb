@@ -173,13 +173,19 @@ namespace '/api/v1/dkims' do
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
+        # force lowercase on selector
+        @_params[:selector].downcase! unless @_params[:selector].nil?
+
         # require both or none of the keys (XOR)
         if @_params[:private_key].nil? ^ @_params[:public_key].nil?
           return_api_error(ApiErrors.[](:invalid_dkim_keypair_update))
         end
 
-        # force lowercase on selector
-        @_params[:selector].downcase! unless @_params[:selector].nil?
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @dkim.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @dkim.send(key)
+        end
 
         # perform validations on a dummy object, check only supplied attributes
         dummy = Dkim.new(@_params)

@@ -154,6 +154,12 @@ namespace '/api/v1/dkimsignings' do
         # force lowercase on author
         @_params[:author].downcase! unless @_params[:author].nil?
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @dkimsigning.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @dkimsigning.send(key)
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = DkimSigning.new(@_params)
         unless dummy.valid?

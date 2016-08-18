@@ -196,6 +196,12 @@ namespace '/api/v1/mailaliases' do
           @_params[:mail_accounts] = @destinations
         end
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @mailalias.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @mailalias.send(key)
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = MailAlias.new(@_params)
         unless dummy.valid?

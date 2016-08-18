@@ -148,6 +148,12 @@ namespace '/api/v1/domains' do
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @domain.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @domain.send(key)
+        end
+
         # force lowercase on domain name
         @_params[:name].downcase! unless @_params[:name].nil?
 
