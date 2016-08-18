@@ -31,7 +31,7 @@ class Dkim
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:domain_id],
+    defaults = { exclude: [:private_key, :domain_id],
                  relationships: { domain: { only: [:id, :name] },
                                   dkim_signings: { only: [:id, :author] } } }
 

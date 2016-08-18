@@ -1,5 +1,17 @@
 # frozen_string_literal: true
 namespace '/api/v1/dkims' do
+  helpers do
+    # @return [String, String]
+    def generate_dkim_keypair
+      keypair = SSHKey.generate(
+        type: 'RSA',
+        bits: settings.dkim_keysize_default,
+        comment: nil,
+        passphrase: nil
+      )
+      [keypair.private_key, keypair.public_key]
+    end
+  end
   get do
     @dkims = policy_scope(Dkim)
     return_authorized_collection(object: @dkims, params: params)
@@ -31,15 +43,7 @@ namespace '/api/v1/dkims' do
 
       # generate new keypar if nothing provided in request
       if @_params[:private_key].nil? && @_params[:public_key].nil?
-        keypair = SSHKey.generate(
-          type: 'RSA',
-          bits: settings.dkim_keysize_default,
-          comment: nil,
-          passphrase: nil
-        )
-
-        @_params[:private_key] = keypair.private_key
-        @_params[:public_key] = keypair.public_key
+        @_params[:private_key], @_params[:public_key] = generate_dkim_keypair
       end
 
       # perform validations
@@ -255,6 +259,19 @@ namespace '/api/v1/dkims' do
 
     get do
       return_authorized_resource(object: @dkim) if authorize(@dkim, :show?)
+    end
+
+    post '/regenerate' do
+      privkey, pubkey = generate_dkim_keypair
+      key_params = { private_key: privkey, public_key: pubkey }
+      status, headers, body = call(
+        env.merge('REQUEST_METHOD' => 'PATCH',
+                  'PATH_INFO' => "/api/v1/dkims/#{@dkim.id}",
+                  'rack.input' => StringIO.new(key_params.to_json),
+                  'rack.request.form_hash' => nil,
+                  'rack.request.form_vars' => nil)
+      )
+      [status, headers, body]
     end
   end
 end
