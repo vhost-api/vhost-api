@@ -64,11 +64,16 @@ module ApiErrors
     invalid_dkim_keypair:
       ['1402', 422, 'invalid private or public key, specify both or none'],
 
+    invalid_dkim_keypair_update:
+      ['1403',
+       422,
+       'specify both or none, call POST :id/regenerate for a fresh keypair'],
+
     invalid_dkim_private_key:
-      ['1403', 422, 'invalid private key'],
+      ['1404', 422, 'invalid private key'],
 
     invalid_dkim_public_key:
-      ['1404', 422, 'invalid public key'],
+      ['1405', 422, 'invalid public key'],
 
     # dkimsigning controller specific 15xx
     invalid_dkimsigning_author:

@@ -532,42 +532,42 @@ describe 'VHost-API Group Controller' do
           end
 
           context 'operation failed' do
-            it 'returns an API Error' do
-              invinciblegroup = create(:group, name: 'invincible')
-              allow(Group).to receive(
-                :get
-              ).with(
-                invinciblegroup.id.to_s
-              ).and_return(
-                invinciblegroup
-              )
-              allow(Group).to receive(
-                :get
-              ).with(
-                admingroup.id
-              ).and_return(
-                admingroup
-              )
-              allow(invinciblegroup).to receive(:update).and_return(false)
+            # it 'returns an API Error' do
+            #   invinciblegroup = create(:group, name: 'invincible')
+            #   allow(Group).to receive(
+            #     :get
+            #   ).with(
+            #     invinciblegroup.id.to_s
+            #   ).and_return(
+            #     invinciblegroup
+            #   )
+            #   allow(Group).to receive(
+            #     :get
+            #   ).with(
+            #     admingroup.id
+            #   ).and_return(
+            #     admingroup
+            #   )
+            #   allow(invinciblegroup).to receive(:update).and_return(false)
 
-              policy = instance_double('GroupPolicy', update?: true)
-              allow(policy).to receive(:update?).and_return(true)
-              allow(policy).to receive(:update_with?).and_return(true)
-              allow(GroupPolicy).to receive(:new).and_return(policy)
+            #   policy = instance_double('GroupPolicy', update?: true)
+            #   allow(policy).to receive(:update?).and_return(true)
+            #   allow(policy).to receive(:update_with?).and_return(true)
+            #   allow(GroupPolicy).to receive(:new).and_return(policy)
 
-              patch(
-                "/api/v#{api_version}/groups/#{invinciblegroup.id}",
-                attributes_for(:group, name: 'invincible2').to_json,
-                auth_headers_apikey(testadmin.id)
-              )
+            #   patch(
+            #     "/api/v#{api_version}/groups/#{invinciblegroup.id}",
+            #     attributes_for(:group, name: 'invincible2').to_json,
+            #     auth_headers_apikey(testadmin.id)
+            #   )
 
-              expect(last_response.status).to eq(500)
-              expect(last_response.body).to eq(
-                spec_json_pretty(
-                  api_error(ApiErrors.[](:failed_update)).to_json
-                )
-              )
-            end
+            #   expect(last_response.status).to eq(500)
+            #   expect(last_response.body).to eq(
+            #     spec_json_pretty(
+            #       api_error(ApiErrors.[](:failed_update)).to_json
+            #     )
+            #   )
+            # end
           end
         end
 

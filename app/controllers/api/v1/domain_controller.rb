@@ -43,6 +43,7 @@ namespace '/api/v1/domains' do
       )
 
       if @domain.save
+        log_user('info', "created Domain #{@domain.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @domain })
         loc = "#{request.base_url}/api/v1/domains/#{@domain.id}"
@@ -177,22 +178,10 @@ namespace '/api/v1/domains' do
         # remember old values for log message
         old_attributes = @domain.as_json
 
-        @result = if @domain.update(@_params)
-                    log_user(
-                      'info',
-                      "updated Domain #{old_attributes} with #{@_params}"
-                    )
-                    ApiResponseSuccess.new(data: { object: @domain })
-                  else
-                    errors = extract_object_errors(object: @domain)
-                    log_user('debug', "validation_errors: #{errors}")
-                    if show_validation_errors || show_errors
-                      return_api_error(ApiErrors.[](:failed_update),
-                                       errors: { validation: errors })
-                    else
-                      return_api_error(ApiErrors.[](:failed_update))
-                    end
-                  end
+        if @domain.update(@_params)
+          log_user('info', "updated Domain #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @domain })
+        end
       # re-raise authentication/authorization errors so that they don't end up
       # in the last catchall
       rescue Pundit::NotAuthorizedError, AuthenticationError
@@ -216,7 +205,7 @@ namespace '/api/v1/domains' do
       rescue DataMapper::SaveFailureError => err
         log_user('debug', err.message)
         @result = if Domain.first(name: @_params[:name]).nil?
-                    api_error(ApiErrors.[](:failed_create))
+                    api_error(ApiErrors.[](:failed_update))
                   else
                     api_error(ApiErrors.[](:resource_conflict))
                   end

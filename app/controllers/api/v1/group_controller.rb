@@ -172,22 +172,10 @@ namespace '/api/v1/groups' do
         # remember old values for log message
         old_attributes = @group.as_json
 
-        @result = if @group.update(@_params)
-                    log_user(
-                      'info',
-                      "updated Group #{old_attributes} with #{@_params}"
-                    )
-                    ApiResponseSuccess.new(data: { object: @group })
-                  else
-                    errors = extract_object_errors(object: @group)
-                    log_user('debug', "validation_errors: #{errors}")
-                    if show_validation_errors || show_errors
-                      return_api_error(ApiErrors.[](:failed_update),
-                                       errors: { validation: errors })
-                    else
-                      return_api_error(ApiErrors.[](:failed_update))
-                    end
-                  end
+        if @group.update(@_params)
+          log_user('info', "updated Group #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @group })
+        end
       # re-raise authentication/authorization errors so that they don't end up
       # in the last catchall
       rescue Pundit::NotAuthorizedError, AuthenticationError

@@ -169,22 +169,10 @@ namespace '/api/v1/users' do
         # remember old values for log message
         old_attributes = @_user.as_json
 
-        @result = if @_user.update(@_params)
-                    log_user(
-                      'info',
-                      "updated User #{old_attributes} with #{@_params}"
-                    )
-                    ApiResponseSuccess.new(data: { object: @_user })
-                  else
-                    errors = extract_object_errors(object: @_user)
-                    log_user('debug', "validation_errors: #{errors}")
-                    if show_validation_errors || show_errors
-                      return_api_error(ApiErrors.[](:failed_update),
-                                       errors: { validation: errors })
-                    else
-                      return_api_error(ApiErrors.[](:failed_update))
-                    end
-                  end
+        if @_user.update(@_params)
+          log_user('info', "update User #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @_user })
+        end
       # re-raise authentication/authorization errors so that they don't end up
       # in the last catchall
       rescue Pundit::NotAuthorizedError, AuthenticationError
