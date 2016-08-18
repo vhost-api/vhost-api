@@ -220,7 +220,9 @@ namespace '/api/v1/users' do
     end
 
     get '/enabled_modules' do
-      return_json_pretty(settings.api_modules.to_json)
+      return_apiresponse(
+        ApiResponseSuccess.new(data: { object: settings.api_modules })
+      )
     end
   end
 end
