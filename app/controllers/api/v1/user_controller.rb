@@ -196,7 +196,7 @@ namespace '/api/v1/users' do
       rescue DataMapper::SaveFailureError => err
         log_user('debug', err.message)
         @result = if User.first(login: @_params[:login]).nil?
-                    api_error(ApiErrors.[](:failed_create))
+                    api_error(ApiErrors.[](:failed_update))
                   else
                     api_error(ApiErrors.[](:resource_conflict))
                   end

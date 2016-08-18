@@ -12,23 +12,30 @@ namespace '/api/v1/dkimsignings' do
     authorize(DkimSigning, :create?)
 
     begin
+      # check for show errors request
+      show_validation_errors = params.key?('validate')
+      show_errors = params.key?('verbose')
+
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # author must not be nil
-      return_api_error(
-        ApiErrors.[](:invalid_dkimsigning_author)
-      ) if @_params[:author].nil?
-
-      # dkim_id must not be nil
-      return_api_error(
-        ApiErrors.[](:invalid_dkimsigning_dkim_id)
-      ) if @_params[:dkim_id].nil?
-
       # force lowercase on author
-      @_params[:author].downcase!
+      @_params[:author].downcase! unless @_params[:author].nil?
+
+      # perform validations
+      @dkimsigning = DkimSigning.new(@_params)
+      unless @dkimsigning.valid?
+        errors = extract_object_errors(object: @dkimsigning)
+        log_user('debug', "validation_errors: #{errors}")
+        if show_validation_errors || show_errors
+          return_api_error(ApiErrors.[](:invalid_request),
+                           errors: { validation: errors })
+        else
+          return_api_error(ApiErrors.[](:invalid_request))
+        end
+      end
 
       # perform sanity checks
       check_dkim_author_for_dkim(
@@ -41,19 +48,47 @@ namespace '/api/v1/dkimsignings' do
         @_params
       )
 
-      @dkimsigning = DkimSigning.new(@_params)
       if @dkimsigning.save
+        log_user('info', "created DkimSigning #{@dkimsigning.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @dkimsigning })
         loc = "#{request.base_url}/api/v1/dkimsignings/#{@dkimsigning.id}"
         response.headers['Location'] = loc
       end
-    rescue ArgumentError
-      @result = api_error(ApiErrors.[](:invalid_request))
-    rescue JSON::ParserError
-      @result = api_error(ApiErrors.[](:malformed_request))
-    rescue DataMapper::SaveFailureError
+    # re-raise authentication/authorization errors so that they don't end up
+    # in the last catchall
+    rescue Pundit::NotAuthorizedError, AuthenticationError
+      raise
+    rescue ArgumentError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:invalid_request),
+                            errors: { argument: err.message })
+                else
+                  api_error(ApiErrors.[](:invalid_request))
+                end
+    rescue JSON::ParserError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:malformed_request),
+                            errors: { format: err.message })
+                else
+                  api_error(ApiErrors.[](:malformed_request))
+                end
+    rescue DataMapper::SaveFailureError => err
+      log_user('debug', err.message)
       @result = api_error(ApiErrors.[](:failed_create))
+    rescue => err
+      # unhandled error, always log backtrace
+      log_user('error', err.message)
+      log_user('error', err.backtrace.join("\n"))
+      # print backtrace in api response only if we're in development env
+      errors = if settings.environment == :development
+                 { errors: [err.message, err.backtrace] }
+               else
+                 { errors: err.message }
+               end
+      @result = api_error(ApiErrors.[](:internal_error), errors)
     end
     return_apiresponse @result
   end
@@ -70,15 +105,26 @@ namespace '/api/v1/dkimsignings' do
     delete do
       @result = nil
 
-      # prevent any action being performed on a detroyed resource
-      return_api_error(ApiErrors.[](:failed_delete)) if @dkimsigning.destroyed?
-
       # check creation permissions. i.e. admin/quotacheck
       authorize(@dkimsigning, :destroy?)
 
       begin
+        # check for show errors request
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @dkimsigning.destroyed?
+
         @result = if @dkimsigning.destroy
+                    log_user('info',
+                             "deleted DkimSigning #{@dkimsigning.as_json}")
                     ApiResponseSuccess.new
+                  elsif show_errors
+                    errors = extract_destroy_errors(object: @dkimsigning)
+                    api_error(
+                      ApiErrors.[](:failed_delete),
+                      errors: { relationships: errors }
+                    )
                   else
                     api_error(ApiErrors.[](:failed_delete))
                   end
@@ -93,50 +139,93 @@ namespace '/api/v1/dkimsignings' do
       authorize(@dkimsigning, :update?)
 
       begin
+        # check for show errors request
+        show_validation_errors = params.key?('validate')
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @dkimsigning.destroyed?
+
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
-        # prevent any action being performed on a detroyed resource
-        return_api_error(
-          ApiErrors.[](:failed_update)
-        ) if @dkimsigning.destroyed?
+        # force lowercase on author
+        @_params[:author].downcase! unless @_params[:author].nil?
 
-        if @_params.key?(:author)
-          # author must not be nil if provided
-          return_api_error(
-            ApiErrors.[](:invalid_dkimsigning_author)
-          ) if @_params[:author].nil?
+        # perform validations on a dummy object, check only supplied attributes
+        dummy = DkimSigning.new(@_params)
+        unless dummy.valid?
+          error_attributes = @_params.keys & dummy.errors.keys
+          unless error_attributes.empty?
+            # extract only relevant errors for @_params
+            errors = extract_selected_errors(object: dummy,
+                                             selected: error_attributes)
 
-          # force lowercase on author
-          @_params[:author].downcase!
-
-          # perform sanity checks
-          check_dkim_author_for_dkim(
-            author: @_params[:author],
-            dkim_id: @dkimsigning.dkim_id
-          )
+            log_user('debug', "validation_errors: #{errors}")
+            if show_validation_errors || show_errors
+              return_api_error(ApiErrors.[](:invalid_request),
+                               errors: { validation: errors })
+            else
+              return_api_error(ApiErrors.[](:invalid_request))
+            end
+          end
         end
+
+        # perform sanity checks
+        check_dkim_author_for_dkim(
+          author: @_params[:author],
+          dkim_id: @dkimsigning.dkim_id
+        )
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
           @dkimsigning
-        ).update_with?(
-          @_params
-        )
+        ).update_with?(@_params)
 
-        @result = if @dkimsigning.update(@_params)
-                    ApiResponseSuccess.new(data: { object: @dkimsigning })
+        # remember old values for log message
+        old_attributes = @dkimsigning.as_json
+
+        if @dkimsigning.update(@_params)
+          log_user('info',
+                   "updated DkimSigning #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @dkimsigning })
+        end
+      # re-raise authentication/authorization errors so that they don't end up
+      # in the last catchall
+      rescue Pundit::NotAuthorizedError, AuthenticationError
+        raise
+      rescue ArgumentError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:invalid_request),
+                              errors: { argument: err.message })
                   else
-                    api_error(ApiErrors.[](:failed_update))
+                    api_error(ApiErrors.[](:invalid_request))
                   end
-      rescue ArgumentError
-        @result = api_error(ApiErrors.[](:invalid_request))
-      rescue JSON::ParserError
-        @result = api_error(ApiErrors.[](:malformed_request))
-      rescue DataMapper::SaveFailureError
+      rescue JSON::ParserError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:malformed_request),
+                              errors: { format: err.message })
+                  else
+                    api_error(ApiErrors.[](:malformed_request))
+                  end
+      rescue DataMapper::SaveFailureError => err
+        log_user('debug', err.message)
         @result = api_error(ApiErrors.[](:failed_update))
+      rescue => err
+        # unhandled error, always log backtrace
+        log_user('error', err.message)
+        log_user('error', err.backtrace.join("\n"))
+        # print backtrace in api response only if we're in development env
+        errors = if settings.environment == :development
+                   { errors: [err.message, err.backtrace] }
+                 else
+                   { errors: err.message }
+                 end
+        @result = api_error(ApiErrors.[](:internal_error), errors)
       end
       return_apiresponse @result
     end

@@ -162,7 +162,7 @@ namespace '/api/v1/dkims' do
         show_errors = params.key?('verbose')
 
         # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:failed_update)) if @dkim.destroyed?
+        return_api_error(ApiErrors.[](:not_found)) if @dkim.destroyed?
 
         # get json data from request body and symbolize all keys
         request.body.rewind

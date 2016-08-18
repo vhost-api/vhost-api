@@ -199,7 +199,7 @@ namespace '/api/v1/groups' do
       rescue DataMapper::SaveFailureError => err
         log_user('debug', err.message)
         @result = if Group.first(name: @_params[:name]).nil?
-                    api_error(ApiErrors.[](:failed_create))
+                    api_error(ApiErrors.[](:failed_update))
                   else
                     api_error(ApiErrors.[](:resource_conflict))
                   end
