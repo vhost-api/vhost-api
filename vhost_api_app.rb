@@ -29,6 +29,7 @@ error_logger.sync = true
 configure do
   use ::Rack::CommonLogger, access_logger
   use Rack::TempfileReaper
+  use Rack::Deflater
   set :root, File.expand_path('../', __FILE__)
   set :start_time, Time.now
   set :logging, false
