@@ -233,7 +233,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -274,7 +274,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -329,10 +329,10 @@ describe 'VHost-API MailAlias Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -547,7 +547,7 @@ describe 'VHost-API MailAlias Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -605,10 +605,10 @@ describe 'VHost-API MailAlias Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
