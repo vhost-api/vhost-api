@@ -66,6 +66,7 @@ namespace '/api/v1/mailaliases' do
       )
 
       if @mailalias.save
+        log_user('info', "created MailAlias #{@mailalias.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailalias })
         loc = "#{request.base_url}/api/v1/mailaliases/#{@mailalias.id}"
