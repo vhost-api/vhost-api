@@ -131,7 +131,7 @@ module ApiErrors
     invalid_apikey:
       ['1900', 422, 'invalid apikey'],
 
-    apikey_too_short:
+    apikey_length:
       ['1901', 422, 'invalid apikey, has to be 64 characters']
 
     # dns zone controller specific 20xx

@@ -27,9 +27,4 @@ describe 'VHost-API Apikey Model' do
     test = create(:apikey)
     expect(test.owner).to be_an_instance_of(User)
   end
-
-  it 'returns a serializable hash from the customer method' do
-    testapikey = build(:apikey)
-    expect { JSON.parse(testapikey.customer.to_json) }.not_to raise_exception
-  end
 end

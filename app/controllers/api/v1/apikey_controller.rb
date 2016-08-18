@@ -12,41 +12,86 @@ namespace '/api/v1/apikeys' do
     authorize(Apikey, :create?)
 
     begin
+      # check for show errors request
+      show_validation_errors = params.key?('validate')
+      show_errors = params.key?('verbose')
+
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # generate fresh apikey if nil
-      @_params[:apikey] = SecureRandom.hex(32) if @_params[:apikey].nil?
+      # generate fresh apikey if nil, otherwise hash provided key
+      if @_params[:apikey].nil?
+        @plain = SecureRandom.hex(32)
+      else
+        @plain = @_params[:apikey]
+        # if apikey was provided it has to be 64 characters long
+        return_api_error(ApiErrors.[](:apikey_length)) if @plain.length != 64
+      end
+      @_params[:apikey] = Digest::SHA512.hexdigest(@plain)
 
-      # if apikey was provided it has to be 64 characters long
-      return_api_error(
-        ApiErrors.[](:apikey_too_short)
-      ) if @_params[:apikey].length < 64
+      @apikey = Apikey.new(@_params)
+      unless @apikey.valid?
+        errors = extract_object_errors(object: @apikey)
+        log_user('debug', "validation_errors: #{errors}")
+        if show_validation_errors || show_errors
+          return_api_error(ApiErrors.[](:invalid_request),
+                           errors: { validation: errors })
+        else
+          return_api_error(ApiErrors.[](:invalid_request))
+        end
+      end
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(Apikey).create_with?(
         @_params
       )
 
-      @apikey = Apikey.new(@_params)
       if @apikey.save
+        apikey_hash = @apikey.as_json
+        log_user('info', "created Apikey #{apikey_hash}")
+        # return plain apikey just this once after creation and do not log it
+        apikey_hash[:apikey] = @plain
         @result = ApiResponseSuccess.new(status_code: 201,
-                                         data: { object: @apikey })
-        loc = [request.base_url, 'api', 'v1', 'apikeys', @apikey.id].join('/')
+                                         data: { object: apikey_hash })
+        loc = "#{request.base_url}/api/v1/apikeys/#{@apikey.id}"
         response.headers['Location'] = loc
       end
-    rescue ArgumentError
-      @result = api_error(ApiErrors.[](:invalid_request))
-    rescue JSON::ParserError
-      @result = api_error(ApiErrors.[](:malformed_request))
-    rescue DataMapper::SaveFailureError
-      @result = if Apikey.first(apikey: @_params[:apikey]).nil?
-                  api_error(ApiErrors.[](:failed_create))
+    # re-raise authentication/authorization errors so that they don't end up
+    # in the last catchall
+    rescue Pundit::NotAuthorizedError, AuthenticationError
+      raise
+    rescue ArgumentError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:invalid_request),
+                            errors: { argument: err.message })
                 else
-                  api_error(ApiErrors.[](:resource_conflict))
+                  api_error(ApiErrors.[](:invalid_request))
                 end
+    rescue JSON::ParserError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:malformed_request),
+                            errors: { format: err.message })
+                else
+                  api_error(ApiErrors.[](:malformed_request))
+                end
+    rescue DataMapper::SaveFailureError => err
+      log_user('debug', err.message)
+      @result = api_error(ApiErrors.[](:failed_create))
+    rescue => err
+      # unhandled error, always log backtrace
+      log_user('error', err.message)
+      log_user('error', err.backtrace.join("\n"))
+      # print backtrace in api response only if we're in development env
+      errors = if settings.environment == :development
+                 { errors: [err.message, err.backtrace] }
+               else
+                 { errors: err.message }
+               end
+      @result = api_error(ApiErrors.[](:internal_error), errors)
     end
     return_apiresponse @result
   end
@@ -67,8 +112,21 @@ namespace '/api/v1/apikeys' do
       authorize(@apikey, :destroy?)
 
       begin
+        # check for show errors request
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @apikey.destroyed?
+
         @result = if @apikey.destroy
+                    log_user('info', "deleted Apikey #{@apikey.as_json}")
                     ApiResponseSuccess.new
+                  elsif show_errors
+                    errors = extract_destroy_errors(object: @apikey)
+                    api_error(
+                      ApiErrors.[](:failed_delete),
+                      errors: { relationships: errors }
+                    )
                   else
                     api_error(ApiErrors.[](:failed_delete))
                   end
@@ -83,6 +141,13 @@ namespace '/api/v1/apikeys' do
       authorize(@apikey, :update?)
 
       begin
+        # check for show errors request
+        show_validation_errors = params.key?('validate')
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @apikey.destroyed?
+
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
@@ -95,33 +160,80 @@ namespace '/api/v1/apikeys' do
           ) if @_params[:apikey].nil?
 
           return_api_error(
-            ApiErrors.[](:apikey_too_short)
+            ApiErrors.[](:apikey_length)
           ) if @_params[:apikey].length < 64
+
+          # hash the input plain text
+          @_params[:apikey] = Digest::SHA512.hexdigest(@_params[:apikey])
         end
 
-        # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:failed_update)) if @apikey.destroyed?
+        # perform validations on a dummy object, check only supplied attributes
+        dummy = Apikey.new(@_params)
+        unless dummy.valid?
+          error_attributes = @_params.keys & dummy.errors.keys
+          unless error_attributes.empty?
+            # extract only relevant errors for @_params
+            errors = extract_selected_errors(object: dummy,
+                                             selected: error_attributes)
+
+            log_user('debug', "validation_errors: #{errors}")
+            if show_validation_errors || show_errors
+              return_api_error(ApiErrors.[](:invalid_request),
+                               errors: { validation: errors })
+            else
+              return_api_error(ApiErrors.[](:invalid_request))
+            end
+          end
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(@apikey).update_with?(
           @_params
         )
 
-        @result = if @apikey.update(@_params)
-                    ApiResponseSuccess.new(data: { object: @apikey })
+        # remember old values for log message
+        old_attributes = @apikey.as_json
+
+        if @apikey.update(@_params)
+          log_user('info', "updated Apikey #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @apikey })
+        end
+      # re-raise authentication/authorization errors so that they don't end up
+      # in the last catchall
+      rescue Pundit::NotAuthorizedError, AuthenticationError
+        raise
+      rescue ArgumentError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:invalid_request),
+                              errors: { argument: err.message })
                   else
-                    api_error(ApiErrors.[](:failed_update))
+                    api_error(ApiErrors.[](:invalid_request))
                   end
-      rescue ArgumentError
-        @result = api_error(ApiErrors.[](:invalid_request))
-      rescue JSON::ParserError
-        @result = api_error(ApiErrors.[](:malformed_request))
-      rescue DataMapper::SaveFailureError
-        @result = if Apikey.first(apikey: @_params[:apikey]).nil?
-                    api_error(ApiErrors.[](:failed_update))
+      rescue JSON::ParserError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:malformed_request),
+                              errors: { format: err.message })
                   else
-                    api_error(ApiErrors.[](:resource_conflict))
+                    api_error(ApiErrors.[](:malformed_request))
                   end
+      rescue DataMapper::SaveFailureError => err
+        log_user('debug', err.message)
+        errors = extract_object_errors(object: @apikey)
+        log_user('debug', "update_errors: #{errors}")
+        @result = api_error(ApiErrors.[](:failed_update))
+      rescue => err
+        # unhandled error, always log backtrace
+        log_user('error', err.message)
+        log_user('error', err.backtrace.join("\n"))
+        # print backtrace in api response only if we're in development env
+        errors = if settings.environment == :development
+                   { errors: [err.message, err.backtrace] }
+                 else
+                   { errors: err.message }
+                 end
+        @result = api_error(ApiErrors.[](:internal_error), errors)
       end
       return_apiresponse @result
     end

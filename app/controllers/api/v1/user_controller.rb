@@ -170,7 +170,7 @@ namespace '/api/v1/users' do
         old_attributes = @_user.as_json
 
         if @_user.update(@_params)
-          log_user('info', "update User #{old_attributes} with #{@_params}")
+          log_user('info', "updated User #{old_attributes} with #{@_params}")
           @result = ApiResponseSuccess.new(data: { object: @_user })
         end
       # re-raise authentication/authorization errors so that they don't end up
