@@ -66,6 +66,7 @@ namespace '/api/v1/mailaccounts' do
       )
 
       if @mailaccount.save
+        log_user('info', "created MailAccount #{@mailaccount.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailaccount })
         loc = "#{request.base_url}/api/v1/mailaccounts/#{@mailaccount.id}"
@@ -136,10 +137,8 @@ namespace '/api/v1/mailaccounts' do
         return_api_error(ApiErrors.[](:not_found)) if @mailaccount.destroyed?
 
         @result = if @mailaccount.destroy
-                    log_user(
-                      'info',
-                      "deleted MailAccount #{@mailaccount.as_json}"
-                    )
+                    log_user('info',
+                             "deleted MailAccount #{@mailaccount.as_json}")
                     ApiResponseSuccess.new
                   elsif show_errors
                     errors = extract_destroy_errors(object: @mailaccount)
