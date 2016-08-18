@@ -241,5 +241,26 @@ namespace '/api/v1/apikeys' do
     get do
       return_authorized_resource(object: @apikey) if authorize(@apikey, :show?)
     end
+
+    post '/regenerate' do
+      apikey = SecureRandom.hex(32)
+      params = { apikey: apikey }
+      status, headers, body = call(
+        env.merge('REQUEST_METHOD' => 'PATCH',
+                  'PATH_INFO' => "/api/v1/apikeys/#{@apikey.id}",
+                  'rack.input' => StringIO.new(params.to_json),
+                  'rack.request.form_hash' => nil,
+                  'rack.request.form_vars' => nil)
+      )
+      status status
+      headers headers
+      # body seems to be wrapped in an array
+      body_hash = JSON.parse(body[0])
+      # include apikey plaintext in this once response
+      if body_hash['status'] == 'success'
+        body_hash['data']['object']['apikey'] = apikey
+      end
+      return_json_pretty(body_hash.to_json)
+    end
   end
 end
