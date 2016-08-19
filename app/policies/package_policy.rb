@@ -49,7 +49,7 @@ class PackagePolicy < ApplicationPolicy
     private
 
     def packages
-      scope.all(id: 0)
+      scope.all(user_id: user.id)
     end
   end
 

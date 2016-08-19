@@ -58,7 +58,7 @@ vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 
 # -- load only activated modules/controllers --
 # core modules
-%w(group user apikey auth).each do |f|
+%w(group user package apikey auth).each do |f|
   require './app/controllers/api/v1/' + f.to_s + '_controller.rb'
 end
 

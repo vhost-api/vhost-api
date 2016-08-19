@@ -121,24 +121,25 @@ class UserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def check_create_params(params)
-    params.each_pair do |k, v|
-      if k.to_s =~ %r{^quota_}
-        remaining = check_quota_prop(k)
-        return false unless remaining >= v
-      end
-    end
+    return check_package_set(params[:packages].to_set) if params.key?(:packages)
     true
   end
 
   # @return [Boolean]
   def check_update_params(params)
-    params.each_pair do |k, v|
-      if k.to_s =~ %r{^quota_}
-        remaining = check_quota_prop(k)
-        return false unless remaining >= (record.send(k) - v)
-      end
-    end
+    return check_package_set(params[:packages].to_set) if params.key?(:packages)
     true
+  end
+
+  def check_package_set(set)
+    return false unless user.reseller?
+    return true if reseller_package_set.superset?(set)
+    false
+  end
+
+  def reseller_package_set
+    return [].to_set unless user.reseller?
+    Package.all(user_id: user.id).map(&:id).to_set
   end
 
   # @return [Fixnum]
