@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+def reseller_allocated_quota(user, prop)
+  return 0 unless user.reseller?
+  result = 0
+  alloc_pkgs = user.customers.packages
+  unless alloc_pkgs.nil? || alloc_pkgs.empty?
+    result += alloc_pkgs.map(&prop).reduce(0, :+)
+  end
+  result
+end
+
 # @return [Fixnum]
 def allocated_customers(user)
   result = user.packages.map(&:quota_customers)
@@ -42,6 +52,11 @@ def allocated_mail_storage(user)
   result += user.customers.domains.mail_accounts
                 .map(&:quota).reduce(0, :+) if user.reseller?
   result
+end
+
+# @return [Fixnum]
+def allocated_custom_packages(user)
+  Package.all(user_id: user.id).size
 end
 
 # @return [Fixnum]
@@ -101,17 +116,13 @@ def allocated_shell_users(user)
 end
 
 # @return [Fixnum]
-def allocated_dns_zones(user)
-  result = user.packages.map(&:quota_dns_zones).reduce(0, :+)
-  result = user.customers.map(&:packages).map(&:quota_dns_zones)
-               .reduce(0, :+) if user.reseller?
-  result
+def allocated_dns_zones(_user)
+  # TODO: FIXME: impement me when building the DNS stuff
+  0
 end
 
 # @return [Fixnum]
-def allocated_dns_records(user)
-  result = user.packages.map(&:quota_dns_records).reduce(0, :+)
-  result = user.customers.map(&:packages).map(&:quota_dns_records)
-               .reduce(0, :+) if user.reseller?
-  result
+def allocated_dns_records(_user)
+  # TODO: FIXME: impement me when building the DNS stuff
+  0
 end

@@ -13,9 +13,6 @@ class UserPolicy < ApplicationPolicy
   #
   # @return [Boolean]
   def show?
-    if record.is_a?(DataMapper::Resource)
-      return false if record.destroyed?
-    end
     return true if record == user
     super
   end
@@ -24,9 +21,6 @@ class UserPolicy < ApplicationPolicy
   #
   # @return [Boolean]
   def update?
-    if record.is_a?(DataMapper::Resource)
-      return false if record.destroyed?
-    end
     return true if record == user
     super
   end
@@ -39,7 +33,7 @@ class UserPolicy < ApplicationPolicy
     if params.key?(:group_id)
       return false unless check_group_id(params[:group_id])
     end
-    check_create_params(params)
+    check_params(params)
   end
 
   # Checks if current user is allowed to update the record with given params
@@ -53,16 +47,13 @@ class UserPolicy < ApplicationPolicy
     if params.key?(:group_id)
       return false unless check_group_id(params[:group_id])
     end
-    check_update_params(params)
+    check_params(params)
   end
 
   # Checks if current user is allowed to delete the record
   #
   # @return [Boolean]
   def destroy?
-    if record.is_a?(DataMapper::Resource)
-      return false if record.destroyed?
-    end
     return true if record == user
     super
   end
@@ -120,14 +111,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   # @return [Boolean]
-  def check_create_params(params)
-    return check_package_set(params[:packages].to_set) if params.key?(:packages)
-    true
-  end
-
-  # @return [Boolean]
-  def check_update_params(params)
-    return check_package_set(params[:packages].to_set) if params.key?(:packages)
+  def check_params(params)
+    if params.key?(:packages)
+      return false unless check_package_set(params[:packages].to_set)
+      return false unless check_add_package(params)
+    end
     true
   end
 
@@ -135,6 +123,35 @@ class UserPolicy < ApplicationPolicy
     return false unless user.reseller?
     return true if reseller_package_set.superset?(set)
     false
+  end
+
+  def check_add_package(params)
+    current = sum_package_quotas(record.packages) if record.is_a?(User)
+    requested = sum_package_quotas(
+      params[:packages].map { |pid| Package.get(pid) }
+    )
+    check_package_quota_request(requested, current)
+  end
+
+  def sum_package_quotas(pkg_arr)
+    pkg_arr.map(&:attributes).reduce do |merged_hash, hash|
+      merged_hash.merge(hash) do |k, v1, v2|
+        v1 + v2 if k.to_s.start_with?('quota_')
+      end
+    end
+  end
+
+  def check_package_quota_request(requested, current = {})
+    requested.each_key do |k|
+      next unless k.to_s.start_with?('quota_')
+      remaining = check_quota_prop(k)
+      if current.nil? || current[k].nil?
+        return false unless remaining >= requested[k]
+      else
+        return false unless remaining >= (requested[k] - current[k])
+      end
+    end
+    true
   end
 
   def reseller_package_set
@@ -147,7 +164,7 @@ class UserPolicy < ApplicationPolicy
     prop = key.to_s[6..-1]
     # call helper methods from quota_helper.rb
     count = send("allocated_#{prop}", user)
-    user.send(key) - count
+    user.packages.map(&key).reduce(0, :+) - count
   end
 
   # @return [Boolean]

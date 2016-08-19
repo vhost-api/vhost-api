@@ -21,6 +21,9 @@ namespace '/api/v1/packages' do
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
+      # assign user
+      @_params[:user_id] = @user.id
+
       # perform validations
       @package = Package.new(@_params)
       unless @package.valid?

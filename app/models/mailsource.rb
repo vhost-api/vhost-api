@@ -16,7 +16,6 @@ class MailSource
   validates_format_of :address, as: :email_address
 
   belongs_to :domain
-  validates_presence_of :domain, message: 'domain_id must not be blank'
 
   has n, :mail_accounts, through: Resource, constraint: :skip
 

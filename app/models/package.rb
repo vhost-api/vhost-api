@@ -12,7 +12,8 @@ class Package
   property :name, String, required: true, length: 3..255
   property :price_unit, Integer, required: true, min: 0, max: (2**63 - 1)
   property :quota_apikeys, Integer, required: true, min: 0, default: 3
-  property :quota_ssh_pubkeys, Integer, required: true, min: 0, default: 10
+  property :quota_custom_packages, Integer, required: true, min: 0, default: 0
+  property :quota_ssh_pubkeys, Integer, required: true, min: 0, default: 2
   property :quota_customers, Integer, required: true, min: 0, default: 0
   property :quota_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_vhost_storage, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default

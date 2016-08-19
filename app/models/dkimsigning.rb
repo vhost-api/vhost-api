@@ -14,7 +14,6 @@ class DkimSigning
   property :enabled, Boolean, default: false
 
   belongs_to :dkim
-  validates_presence_of :dkim, message: 'dkim_id must not be blank'
 
   before :create do
     self.created_at = Time.now.to_i

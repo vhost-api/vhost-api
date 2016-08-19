@@ -43,6 +43,9 @@ namespace '/api/v1/users' do
         @_params[:packages] = @packages
       end
 
+      # assign reseller
+      @_params[:reseller_id] = @user.id if @user.reseller?
+
       # perform validations
       @_user = User.new(@_params)
       unless @_user.valid?
@@ -167,7 +170,7 @@ namespace '/api/v1/users' do
         end
 
         # check permissions for parameters
-        raise Pundit::NotAuthorizedError unless policy(User).create_with?(
+        raise Pundit::NotAuthorizedError unless policy(@_user).update_with?(
           @_params
         )
 

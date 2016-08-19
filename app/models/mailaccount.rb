@@ -24,7 +24,6 @@ class MailAccount
   validates_format_of :email, as: :email_address
 
   belongs_to :domain
-  validates_presence_of :domain, message: 'domain_id must not be blank'
 
   has n, :mail_sources, through: Resource, constraint: :skip
   has n, :mail_aliases, through: Resource, constraint: :skip
