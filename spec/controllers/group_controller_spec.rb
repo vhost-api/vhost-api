@@ -655,7 +655,7 @@ describe 'VHost-API Group Controller' do
             )
 
             expect(last_response.body).to eq(
-              spec_json_pretty({}.to_json)
+              spec_apiresponse(ApiResponseSuccess.new(data: { objects: {} }))
             )
           end
 

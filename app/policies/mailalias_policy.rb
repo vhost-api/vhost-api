@@ -112,19 +112,18 @@ class MailAliasPolicy < ApplicationPolicy
 
   def mailaccount_set
     return user_mailaccount_set unless user.reseller?
-    return reseller_mailaccount_set if user.reseller?
-    []
+    reseller_mailaccount_set
   end
 
   def user_mailaccount_set
     return user.domains.mail_accounts.map(&:id).to_set unless user.reseller?
-    []
+    [].to_set
   end
 
   def reseller_mailaccount_set
     return user.domains.mail_accounts.map(&:id).concat(
       user.customers.domains.mail_accounts.map(&:id)
     ).to_set if user.reseller?
-    []
+    [].to_Set
   end
 end
