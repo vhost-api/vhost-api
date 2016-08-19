@@ -16,7 +16,7 @@ def return_json_pretty(json)
 end
 
 def return_authorized_resource(object: nil)
-  return return_json_pretty({}.to_json) if object.nil?
+  return return_apiresponse(ApiResponseSuccess.new(data: nil)) if object.nil?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
   object = object.as_json(only: permitted_attributes)
@@ -24,21 +24,20 @@ def return_authorized_resource(object: nil)
 end
 
 def return_authorized_collection(object: nil, params: { fields: nil })
-  return return_json_pretty({}.to_json) if object.nil? || object.empty?
-
   begin
-    result = limited_collection(collection: object, params: params)
+    object = limited_collection(collection: object, params: params)
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
   rescue => err
     log_app('error', "#{err.message}\n#{err.backtrace}")
     return_api_error(ApiErrors.[](:invalid_request))
   end
-
-  return_apiresponse(ApiResponseSuccess.new(data: { objects: result }))
+  return_apiresponse(ApiResponseSuccess.new(data: { objects: object }))
 end
 
 def limited_collection(collection: nil, params: { fields: nil })
+  return {} if collection.nil? || collection.empty?
+
   collection = prepare_collection(
     collection: collection, params: params
   ) unless (params.keys - [:fields]).empty?
