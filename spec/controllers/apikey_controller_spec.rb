@@ -85,6 +85,30 @@ describe 'VHost-API Apikey Controller' do
           end
         end
 
+        describe 'POST /:id/regenerate' do
+          it 'generates a fresh apikey' do
+            testapikey.apikey = 'foo'
+            testapikey.save
+
+            prev_tstamp = testapikey.updated_at
+
+            sleep(1.0)
+
+            post(
+              "/api/v#{api_version}/apikeys/#{testapikey.id}/regenerate", nil,
+              auth_headers_apikey(testadmin.id)
+            )
+
+            updated_apikey = Apikey.get(testapikey.id)
+
+            expect(last_response.status).to eq(200)
+            expect(updated_apikey.updated_at).to be > prev_tstamp
+            expect(
+              JSON.parse(last_response.body)['data']['object']['apikey'].length
+            ).to eq(64)
+          end
+        end
+
         describe 'POST' do
           context 'with valid attributes' do
             let(:apikey_attrs) { attributes_for(:apikey) }

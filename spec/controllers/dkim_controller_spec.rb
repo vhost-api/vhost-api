@@ -87,6 +87,37 @@ describe 'VHost-API Dkim Controller' do
           end
         end
 
+        describe 'POST /:id/regenerate' do
+          it 'generates a fresh keypair' do
+            testdkim.private_key = 'foo'
+            testdkim.public_key = 'bar'
+            testdkim.save
+
+            post(
+              "/api/v#{api_version}/dkims/#{testdkim.id}/regenerate", nil,
+              auth_headers_apikey(testadmin.id)
+            )
+
+            privkey_regex = %r{
+              ^-----BEGIN\x20RSA\x20PRIVATE\x20KEY-----
+              .*
+              -----END\x20RSA\x20PRIVATE\x20KEY-----
+            }mx
+
+            pubkey_regex = %r{
+              ^-----BEGIN\x20PUBLIC\x20KEY-----
+              .*
+              -----END\x20PUBLIC\x20KEY-----
+            }mx
+
+            updated_dkim = Dkim.get(testdkim.id)
+
+            expect(last_response.status).to eq(200)
+            expect(updated_dkim.private_key =~ privkey_regex).to be_truthy
+            expect(updated_dkim.public_key =~ pubkey_regex).to be_truthy
+          end
+        end
+
         describe 'POST' do
           let(:domain) do
             create(:domain, name: 'new.org', user_id: testadmin.id)
