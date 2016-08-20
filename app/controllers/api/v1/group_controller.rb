@@ -66,13 +66,6 @@ namespace '/api/v1/groups' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue DataMapper::SaveFailureError => err
-      log_user('debug', err.message)
-      @result = if Group.first(name: @_params[:name]).nil?
-                  api_error(ApiErrors.[](:failed_create))
-                else
-                  api_error(ApiErrors.[](:resource_conflict))
-                end
     rescue => err
       # unhandled error, always log backtrace
       log_user('error', err.message)

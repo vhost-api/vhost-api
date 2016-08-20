@@ -78,9 +78,6 @@ namespace '/api/v1/apikeys' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue DataMapper::SaveFailureError => err
-      log_user('debug', err.message)
-      @result = api_error(ApiErrors.[](:failed_create))
     rescue => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
@@ -224,11 +221,6 @@ namespace '/api/v1/apikeys' do
                   else
                     api_error(ApiErrors.[](:malformed_request))
                   end
-      rescue DataMapper::SaveFailureError => err
-        log_user('debug', err.message)
-        errors = extract_object_errors(object: @apikey)
-        log_user('debug', "update_errors: #{errors}")
-        @result = api_error(ApiErrors.[](:failed_update))
       rescue => err
         # unhandled error, always log backtrace
         log_user('error', err.message)

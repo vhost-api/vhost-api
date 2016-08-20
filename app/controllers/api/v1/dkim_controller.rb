@@ -91,16 +91,6 @@ namespace '/api/v1/dkims' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue DataMapper::SaveFailureError => err
-      log_user('debug', err.message)
-      errors = extract_object_errors(object: @dkim)
-      log_user('debug', "create_errors: #{errors}")
-      @result = if show_validation_errors || show_errors
-                  api_error(ApiErrors.[](:failed_create),
-                            errors: errors)
-                else
-                  api_error(ApiErrors.[](:failed_create))
-                end
     rescue => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
@@ -237,16 +227,6 @@ namespace '/api/v1/dkims' do
                               errors: { format: err.message })
                   else
                     api_error(ApiErrors.[](:malformed_request))
-                  end
-      rescue DataMapper::SaveFailureError => err
-        log_user('debug', err.message)
-        errors = extract_object_errors(object: @dkim)
-        log_user('debug', "update_errors: #{errors}")
-        @result = if show_validation_errors || show_errors
-                    api_error(ApiErrors.[](:failed_update),
-                              errors: errors)
-                  else
-                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue => err
         # unhandled error, always log backtrace

@@ -92,13 +92,6 @@ namespace '/api/v1/mailaccounts' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue DataMapper::SaveFailureError => err
-      log_user('debug', err.message)
-      @result = if MailAccount.first(email: @_params[:email]).nil?
-                  api_error(ApiErrors.[](:failed_create))
-                else
-                  api_error(ApiErrors.[](:resource_conflict))
-                end
     rescue => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
@@ -271,13 +264,6 @@ namespace '/api/v1/mailaccounts' do
                               errors: { format: err.message })
                   else
                     api_error(ApiErrors.[](:malformed_request))
-                  end
-      rescue DataMapper::SaveFailureError => err
-        log_user('debug', err.message)
-        @result = if MailAccount.first(email: @_params[:email]).nil?
-                    api_error(ApiErrors.[](:failed_update))
-                  else
-                    api_error(ApiErrors.[](:resource_conflict))
                   end
       rescue => err
         # unhandled error, always log backtrace
