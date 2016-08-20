@@ -288,7 +288,7 @@ describe 'VHost-API Apikey Controller' do
                 )
               end
 
-              it 'shows an validate error message when using validate param' do
+              it 'shows a validate error message when using validate param' do
                 invalid_values = attributes_for(:apikey, user_id: nil)
                 errors = {
                   validation: [

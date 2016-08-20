@@ -272,7 +272,7 @@ describe 'VHost-API Group Controller' do
                 )
               end
 
-              it 'shows an validate error message when using validate param' do
+              it 'shows a validate error message when using validate param' do
                 errors = {
                   validation: [
                     {
