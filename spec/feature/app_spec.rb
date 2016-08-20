@@ -17,8 +17,6 @@ describe 'VHost-API Application' do
   end
 
   it 'returns an API Error for unexisting routes/endpoints' do
-    clear_cookies
-
     password = 'secret'
     testuser = create(:admin, password: password)
 

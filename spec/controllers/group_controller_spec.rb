@@ -456,6 +456,24 @@ describe 'VHost-API Group Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
+                patch(
+                  "/api/v#{api_version}/groups/#{testgroup.id}?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/groups/#{testgroup.id}",
@@ -498,6 +516,23 @@ describe 'VHost-API Group Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in Group'
+                patch(
+                  "/api/v#{api_version}/groups/#{testgroup.id}?verbose",
+                  invalid_group_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/groups/#{testgroup.id}",
@@ -536,6 +571,33 @@ describe 'VHost-API Group Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    {
+                      field: 'name',
+                      errors: [
+                        'Name must not be blank'
+                      ]
+                    }
+                  ]
+                }
+
+                patch(
+                  "/api/v#{api_version}/groups/#{testgroup.id}?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end

@@ -520,6 +520,25 @@ describe 'VHost-API MailSource Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{ , address: \'foo, enabled:true}\''
+                baseurl = "/api/v#{api_version}/mailsources"
+                patch(
+                  "#{baseurl}/#{testmailsource.id}?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/mailsources/#{testmailsource.id}",
@@ -532,14 +551,14 @@ describe 'VHost-API MailSource Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_mailsource_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the mailsource' do
                 prev_tstamp = testmailsource.updated_at
 
                 patch(
                   "/api/v#{api_version}/mailsources/#{testmailsource.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_mailsource_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -554,7 +573,7 @@ describe 'VHost-API MailSource Controller' do
               it 'returns an API Error' do
                 patch(
                   "/api/v#{api_version}/mailsources/#{testmailsource.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_mailsource_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -566,10 +585,29 @@ describe 'VHost-API MailSource Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in '
+                error_msg += 'MailSource'
+                baseurl = "/api/v#{api_version}/mailsources"
+                patch(
+                  "#{baseurl}/#{testmailsource.id}?verbose",
+                  invalid_mailsource_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/mailsources/#{testmailsource.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_mailsource_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -608,6 +646,30 @@ describe 'VHost-API MailSource Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'address',
+                      errors: ['Address must not be blank'] }
+                  ]
+                }
+
+                baseurl = "/api/v#{api_version}/mailsources"
+                patch(
+                  "#{baseurl}/#{testmailsource.id}?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end

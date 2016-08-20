@@ -432,6 +432,24 @@ describe 'VHost-API Apikey Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{, comment:\'foo, enabled: true }\''
+                patch(
+                  "/api/v#{api_version}/apikeys/#{testapikey.id}?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/apikeys/#{testapikey.id}",
@@ -444,14 +462,14 @@ describe 'VHost-API Apikey Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_apikey_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the apikey' do
                 prev_tstamp = testapikey.updated_at
 
                 patch(
                   "/api/v#{api_version}/apikeys/#{testapikey.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_apikey_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -464,7 +482,7 @@ describe 'VHost-API Apikey Controller' do
               it 'returns an API Error' do
                 patch(
                   "/api/v#{api_version}/apikeys/#{testapikey.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_apikey_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -476,10 +494,28 @@ describe 'VHost-API Apikey Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in '
+                error_msg += 'Apikey'
+                patch(
+                  "/api/v#{api_version}/apikeys/#{testapikey.id}?verbose",
+                  invalid_apikey_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/apikeys/#{testapikey.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_apikey_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -516,6 +552,30 @@ describe 'VHost-API Apikey Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:apikey_length)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                invalid_values = attributes_for(:apikey, user_id: nil)
+                errors = {
+                  validation: [
+                    { field: 'user_id',
+                      errors: ['User must not be blank'] }
+                  ]
+                }
+
+                patch(
+                  "/api/v#{api_version}/apikeys/#{testapikey.id}?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end
