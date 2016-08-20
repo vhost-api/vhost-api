@@ -173,6 +173,24 @@ describe 'VHost-API Group Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
+                post(
+                  "/api/v#{api_version}/groups?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/groups",
