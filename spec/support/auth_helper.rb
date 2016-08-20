@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module AuthHelpers
   def auth_login_params(login, password)
-    { 'user' => login, 'password' => password, 'apikey' => 'rspec' }
+    { 'user' => login, 'password' => password, 'apikey_comment' => 'rspec' }
   end
 
   def auth_headers_basic(login, password)

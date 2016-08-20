@@ -45,12 +45,12 @@ describe 'VHost-API Authentication' do
       quota_apikeys = testuser.packages.map(&:quota_apikeys).reduce(0, :+)
       # exhaust the quota
       quota_apikeys.times do |i|
-        params['apikey'] = "test#{i}"
+        params['apikey_comment'] = "test#{i}"
         post '/api/v1/auth/login', params
       end
 
       # try to allocate another apikey
-      params['apikey'] = 'rspec'
+      params['apikey_comment'] = 'rspec'
       post '/api/v1/auth/login', params
 
       expect(last_response.body).to eq(
@@ -66,7 +66,7 @@ describe 'VHost-API Authentication' do
       post '/api/v1/auth/login',
            'user' => testuser.login,
            'password' => 'wrong_password',
-           'apikey' => 'rspec'
+           'apikey_comment' => 'rspec'
 
       expect(last_response.body).to eq(
         spec_json_pretty(

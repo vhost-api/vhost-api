@@ -3,7 +3,7 @@ namespace '/api/v1/auth' do
   post '/login' do
     return_api_error(
       ApiErrors.[](:invalid_request)
-    ) unless params['user'] && params['password'] && params['apikey']
+    ) unless params['user'] && params['password'] && params['apikey_comment']
 
     @user = User.first(login: params['user'])
 
@@ -13,11 +13,12 @@ namespace '/api/v1/auth' do
 
     begin
       # allow re-generation of existing apikeys
-      authorize(Apikey, :create?) unless @user.apikeys.map(&:comment)
-                                              .include?(params['apikey'])
+      authorize(Apikey, :create?) unless @user.apikeys.map(&:comment).include?(
+        params['apikey_comment']
+      )
 
       # fetch desired apikey
-      apikey = @user.apikeys.first_or_new(comment: params['apikey'])
+      apikey = @user.apikeys.first_or_new(comment: params['apikey_comment'])
 
       # always generate fresh apikey and only store its sha512 hash in the db
       key = SecureRandom.hex(32)
