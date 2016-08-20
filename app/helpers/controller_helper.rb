@@ -31,7 +31,6 @@ def return_authorized_collection(object: nil, params: { fields: nil })
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
   rescue => err
-    binding.pry
     log_app('error', "#{err.message}\n#{err.backtrace}")
     return_api_error(ApiErrors.[](:invalid_request))
   end
