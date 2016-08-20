@@ -297,6 +297,29 @@ describe 'VHost-API MailAlias Controller' do
                 )
               end
 
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'address',
+                      errors: ['Address must not be blank'] }
+                  ]
+                }
+
+                post(
+                  "/api/v#{api_version}/mailaliases?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/mailaliases",
