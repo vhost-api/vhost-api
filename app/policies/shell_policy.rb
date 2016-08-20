@@ -26,4 +26,21 @@ class ShellPolicy < ApplicationPolicy
     class User < Reseller
     end
   end
+
+  private
+
+  # @return [Boolean]
+  def quotacheck
+    used = check_shelluser_num
+    available = user.packages.map(&:quota_shell_users).reduce(0, :+)
+    return true if used < available
+    false
+  end
+
+  # @return [Fixnum]
+  def check_shelluser_num
+    shelluser_usage = user.vhosts.shell_users.size
+    shelluser_usage += user.customers.vhosts.shell_users.size if user.reseller?
+    shelluser_usage
+  end
 end

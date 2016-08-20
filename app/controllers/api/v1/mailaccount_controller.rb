@@ -11,6 +11,7 @@ namespace '/api/v1/mailaccounts' do
       )
     end
   end
+
   get do
     @mailaccounts = policy_scope(MailAccount)
     return_authorized_collection(object: @mailaccounts, params: params)
@@ -23,24 +24,35 @@ namespace '/api/v1/mailaccounts' do
     authorize(MailAccount, :create?)
 
     begin
+      # check for show errors request
+      show_validation_errors = params.key?('validate')
+      show_errors = params.key?('verbose')
+
       # get json data from request body and symbolize all keys
       request.body.rewind
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # email addr must not be nil
-      return_api_error(ApiErrors.[](:invalid_email)) if @_params[:email].nil?
-
-      # password must not be nil
-      return_api_error(
-        ApiErrors.[](:password_required)
-      ) if @_params[:password].nil?
+      # force lowercase on email addr
+      @_params[:email].downcase! unless @_params[:email].nil?
 
       # generate dovecot password hash from plaintex
-      @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
+      @_params[:password] = gen_doveadm_pwhash(
+        @_params[:password].to_s
+      ) unless @_params[:password].nil?
 
-      # force lowercase on email addr
-      @_params[:email].downcase!
+      # perform validations
+      @mailaccount = MailAccount.new(@_params)
+      unless @mailaccount.valid?
+        errors = extract_object_errors(object: @mailaccount)
+        log_user('debug', "validation_errors: #{errors}")
+        if show_validation_errors || show_errors
+          return_api_error(ApiErrors.[](:invalid_request),
+                           errors: { validation: errors })
+        else
+          return_api_error(ApiErrors.[](:invalid_request))
+        end
+      end
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(MailAccount).create_with?(
@@ -53,23 +65,51 @@ namespace '/api/v1/mailaccounts' do
         domain_id: @_params[:domain_id]
       )
 
-      @mailaccount = MailAccount.new(@_params)
       if @mailaccount.save
+        log_user('info', "created MailAccount #{@mailaccount.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
                                          data: { object: @mailaccount })
         loc = "#{request.base_url}/api/v1/mailaccounts/#{@mailaccount.id}"
         response.headers['Location'] = loc
       end
-    rescue ArgumentError
-      @result = api_error(ApiErrors.[](:invalid_request))
-    rescue JSON::ParserError
-      @result = api_error(ApiErrors.[](:malformed_request))
-    rescue DataMapper::SaveFailureError
+    # re-raise authentication/authorization errors so that they don't end up
+    # in the last catchall
+    rescue Pundit::NotAuthorizedError, AuthenticationError
+      raise
+    rescue ArgumentError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:invalid_request),
+                            errors: { argument: err.message })
+                else
+                  api_error(ApiErrors.[](:invalid_request))
+                end
+    rescue JSON::ParserError => err
+      log_user('debug', err.message)
+      @result = if show_errors
+                  api_error(ApiErrors.[](:malformed_request),
+                            errors: { format: err.message })
+                else
+                  api_error(ApiErrors.[](:malformed_request))
+                end
+    rescue DataMapper::SaveFailureError => err
+      log_user('debug', err.message)
       @result = if MailAccount.first(email: @_params[:email]).nil?
                   api_error(ApiErrors.[](:failed_create))
                 else
                   api_error(ApiErrors.[](:resource_conflict))
                 end
+    rescue => err
+      # unhandled error, always log backtrace
+      log_user('error', err.message)
+      log_user('error', err.backtrace.join("\n"))
+      # print backtrace in api response only if we're in development env
+      errors = if settings.environment == :development
+                 { errors: [err.message, err.backtrace] }
+               else
+                 { errors: err.message }
+               end
+      @result = api_error(ApiErrors.[](:internal_error), errors)
     end
     return_apiresponse @result
   end
@@ -86,15 +126,26 @@ namespace '/api/v1/mailaccounts' do
     delete do
       @result = nil
 
-      # prevent any action being performed on a detroyed resource
-      return_api_error(ApiErrors.[](:failed_delete)) if @mailaccount.destroyed?
-
       # check creation permissions. i.e. admin/quotacheck
       authorize(@mailaccount, :destroy?)
 
       begin
+        # check for show errors request
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @mailaccount.destroyed?
+
         @result = if @mailaccount.destroy
+                    log_user('info',
+                             "deleted MailAccount #{@mailaccount.as_json}")
                     ApiResponseSuccess.new
+                  elsif show_errors
+                    errors = extract_destroy_errors(object: @mailaccount)
+                    api_error(
+                      ApiErrors.[](:failed_delete),
+                      errors: { relationships: errors }
+                    )
                   else
                     api_error(ApiErrors.[](:failed_delete))
                   end
@@ -109,35 +160,70 @@ namespace '/api/v1/mailaccounts' do
       authorize(@mailaccount, :update?)
 
       begin
+        # check for show errors request
+        show_validation_errors = params.key?('validate')
+        show_errors = params.key?('verbose')
+
+        # prevent any action being performed on a detroyed resource
+        return_api_error(ApiErrors.[](:not_found)) if @mailaccount.destroyed?
+
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
-        # prevent any action being performed on a detroyed resource
-        return_api_error(
-          ApiErrors.[](:failed_update)
-        ) if @mailaccount.destroyed?
+        # force lowercase on email addr
+        @_params[:email].downcase! unless @_params[:email].nil?
 
         # generate dovecot password hash from plaintex
-        unless @_params[:password].nil?
-          @_params[:password] = gen_doveadm_pwhash(@_params[:password].to_s)
+        @_params[:password] = gen_doveadm_pwhash(
+          @_params[:password].to_s
+        ) unless @_params[:password].nil?
+
+        # remove unmodified values from input params
+        @_params.each_key do |key|
+          next unless @mailaccount.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @mailaccount.send(key)
         end
 
-        if @_params.key?(:email)
-          # email addr must not be nil
-          return_api_error(
-            ApiErrors.[](:invalid_email)
-          ) if @_params[:email].nil?
+        # perform validations on a dummy object, check only supplied attributes
+        dummy = MailAccount.new(@_params)
+        unless dummy.valid?
+          error_attributes = @_params.keys & dummy.errors.keys
+          unless error_attributes.empty?
+            # extract only relevant errors for @_params
+            errors = extract_selected_errors(object: dummy,
+                                             selected: error_attributes)
 
+            log_user('debug', "validation_errors: #{errors}")
+            if show_validation_errors || show_errors
+              return_api_error(ApiErrors.[](:invalid_request),
+                               errors: { validation: errors })
+            else
+              return_api_error(ApiErrors.[](:invalid_request))
+            end
+          end
+        end
+
+        unless @_params[:email].nil?
           # force lowercase on email addr
           @_params[:email].downcase!
 
           # perform sanity checks
-          check_email_address_for_domain(
-            email: @_params[:email],
-            domain_id: @mailaccount.domain_id
-          )
+          if @_params.key?(:domain_id)
+            if @_params[:email] == @mailaccount.email
+              check_domain_for_email_address(
+                domain_id: @_params[:domain_id],
+                email: @_params[:email]
+              )
+            end
+            if @_params[:domain_id] == @mailaccount.domain_id
+              check_email_address_for_domain(
+                email: @_params[:email],
+                domain_id: @_params[:domain_id]
+              )
+            end
+          end
         end
 
         # check permissions for parameters
@@ -147,21 +233,63 @@ namespace '/api/v1/mailaccounts' do
           @_params
         )
 
+        # remember old values for log message
+        old_attributes = @mailaccount.as_json
+
         @result = if @mailaccount.update(@_params)
+                    log_user(
+                      'info',
+                      "updated MailAccount #{old_attributes} with #{@_params}"
+                    )
                     ApiResponseSuccess.new(data: { object: @mailaccount })
                   else
-                    api_error(ApiErrors.[](:failed_update))
+                    errors = extract_object_errors(object: @mailaccount)
+                    log_user('debug', "validation_errors: #{errors}")
+                    if show_validation_errors || show_errors
+                      return_api_error(ApiErrors.[](:failed_update),
+                                       errors: { validation: errors })
+                    else
+                      return_api_error(ApiErrors.[](:failed_update))
+                    end
                   end
-      rescue ArgumentError
-        @result = api_error(ApiErrors.[](:invalid_request))
-      rescue JSON::ParserError
-        @result = api_error(ApiErrors.[](:malformed_request))
-      rescue DataMapper::SaveFailureError
+      # re-raise authentication/authorization errors so that they don't end up
+      # in the last catchall
+      rescue Pundit::NotAuthorizedError, AuthenticationError
+        raise
+      rescue ArgumentError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:invalid_request),
+                              errors: { argument: err.message })
+                  else
+                    api_error(ApiErrors.[](:invalid_request))
+                  end
+      rescue JSON::ParserError => err
+        log_user('debug', err.message)
+        @result = if show_errors
+                    api_error(ApiErrors.[](:malformed_request),
+                              errors: { format: err.message })
+                  else
+                    api_error(ApiErrors.[](:malformed_request))
+                  end
+      rescue DataMapper::SaveFailureError => err
+        log_user('debug', err.message)
         @result = if MailAccount.first(email: @_params[:email]).nil?
                     api_error(ApiErrors.[](:failed_update))
                   else
                     api_error(ApiErrors.[](:resource_conflict))
                   end
+      rescue => err
+        # unhandled error, always log backtrace
+        log_user('error', err.message)
+        log_user('error', err.backtrace.join("\n"))
+        # print backtrace in api response only if we're in development env
+        errors = if settings.environment == :development
+                   { errors: [err.message, err.backtrace] }
+                 else
+                   { errors: err.message }
+                 end
+        @result = api_error(ApiErrors.[](:internal_error), errors)
       end
       return_apiresponse @result
     end
@@ -233,11 +361,22 @@ namespace '/api/v1/mailaccounts' do
         file.close!
 
         return_apiresponse(ApiResponseSuccess.new)
-      ensure
+      rescue => err
         # cleanup tempfile
         file.unlink
         file.close!
+        # unhandled error, always log backtrace
+        log_user('error', err.message)
+        log_user('error', err.backtrace.join("\n"))
+        # print backtrace in api response only if we're in development env
+        errors = if settings.environment == :development
+                   { errors: [err.message, err.backtrace] }
+                 else
+                   { errors: err.message }
+                 end
+        @result = api_error(ApiErrors.[](:internal_error), errors)
       end
+      return_apiresponse @result
     end
   end
 end

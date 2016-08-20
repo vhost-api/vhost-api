@@ -16,6 +16,15 @@ def check_email_localpart(email: nil, domain: nil)
   true
 end
 
+def check_domain_for_email_address(domain_id: nil, email: nil)
+  mismatch_error = ApiErrors.[](:domain_mismatch)
+  # check if requested domain_id matches given email address
+  str_domain = email.split('@')[1]
+  did = domain_id
+  return_api_error(mismatch_error) unless str_domain == Domain.get(did).name
+  true
+end
+
 def check_email_address_for_domain(email: nil, domain_id: nil)
   check_email_address(email: email)
   mismatch_error = ApiErrors.[](:email_mismatch)

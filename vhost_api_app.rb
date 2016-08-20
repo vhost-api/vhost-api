@@ -15,6 +15,9 @@ require 'English'
 # load models and stuff
 require_relative './init'
 
+# load additional helpers
+Dir.glob('./app/helpers/*.rb').each { |file| require file }
+
 # setup stuff
 ::Logger.class_eval { alias_method :write, :'<<' }
 access_log = 'log/' + settings.environment.to_s + '_access.log'
@@ -26,8 +29,10 @@ error_logger.sync = true
 configure do
   use ::Rack::CommonLogger, access_logger
   use Rack::TempfileReaper
+  use Rack::Deflater
   set :root, File.expand_path('../', __FILE__)
   set :start_time, Time.now
+  set :logging, false
   @appconfig = YAML.load(
     File.read('config/appconfig.yml')
   )[settings.environment.to_s]
@@ -35,6 +40,21 @@ configure do
     set key, @appconfig[key]
   end
 end
+
+# setup logging
+case settings.log_method
+when 'internal' then
+  vhost_api_logfile_name = "log/vhost-api_#{settings.environment}.log"
+  vhost_api_logfile = ::File.new(vhost_api_logfile_name, 'a+')
+  vhost_api_logfile.sync = true
+  vhost_api_logger = Logger.new(vhost_api_logfile)
+when 'syslog' then
+  require 'syslog/logger'
+  vhost_api_logger = Syslog::Logger.new("vhost-api_#{settings.environment}")
+else
+  abort('ERROR: error parsing appconfig.yml: invalid log_method')
+end
+vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 
 # -- load only activated modules/controllers --
 # core modules
@@ -69,14 +89,18 @@ configure :development, :test do
   require 'binding_of_caller'
   set :show_exceptions, :after_handler
   set :raise_errors, false
+  set :dump_errors, true
   use BetterErrors::Middleware
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
+  set :app_logger, vhost_api_logger
 end
 
 configure :production do
   set :show_exceptions, false
   set :raise_errors, false
+  set :dump_errors, false
+  set :app_logger, vhost_api_logger
 end
 
 # setup database connection

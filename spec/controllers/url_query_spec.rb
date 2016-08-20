@@ -36,7 +36,11 @@ describe 'VHost-API URL Query' do
             testdomain3.id => testdomain3
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -50,7 +54,11 @@ describe 'VHost-API URL Query' do
             testdomain4.id => testdomain4
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -79,7 +87,11 @@ describe 'VHost-API URL Query' do
             testdomain3.id => testdomain3
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -93,7 +105,11 @@ describe 'VHost-API URL Query' do
             testdomain4.id => testdomain4
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -111,7 +127,11 @@ describe 'VHost-API URL Query' do
             testdomain4.id => testdomain4
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -127,7 +147,11 @@ describe 'VHost-API URL Query' do
             testdomain1.id => testdomain1
           }
 
-          result = spec_json_pretty(collection.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: collection })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -154,7 +178,11 @@ describe 'VHost-API URL Query' do
             }
           end
 
-          result = spec_json_pretty(result.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: result })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end
@@ -179,7 +207,11 @@ describe 'VHost-API URL Query' do
             }
           end
 
-          result = spec_json_pretty(result.to_json)
+          result = spec_json_pretty(
+            spec_apiresponse(
+              ApiResponseSuccess.new(data: { objects: result })
+            )
+          )
 
           expect(last_response.body).to eq(result)
         end

@@ -214,7 +214,7 @@ describe 'VHost-API User Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_login)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -255,7 +255,7 @@ describe 'VHost-API User Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_login)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -293,10 +293,10 @@ describe 'VHost-API User Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -323,6 +323,8 @@ describe 'VHost-API User Controller' do
             it 'updates an existing user with new values' do
               updated_attrs = attributes_for(:user, name: 'foo')
               prev_tstamp = testuser.updated_at
+
+              sleep 1.0
 
               patch(
                 "/api/v#{api_version}/users/#{testuser.id}",
@@ -475,10 +477,10 @@ describe 'VHost-API User Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(500)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:failed_update)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -528,10 +530,10 @@ describe 'VHost-API User Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -549,42 +551,42 @@ describe 'VHost-API User Controller' do
           end
 
           context 'operation failed' do
-            it 'returns an API Error' do
-              invincibleuser = create(:user, name: 'invincible')
-              allow(User).to receive(
-                :get
-              ).with(
-                invincibleuser.id.to_s
-              ).and_return(
-                invincibleuser
-              )
-              allow(User).to receive(
-                :get
-              ).with(
-                testadmin.id
-              ).and_return(
-                testadmin
-              )
-              allow(invincibleuser).to receive(:update).and_return(false)
+            # it 'returns an API Error' do
+            #   invincibleuser = create(:user, name: 'invincible')
+            #   allow(User).to receive(
+            #     :get
+            #   ).with(
+            #     invincibleuser.id.to_s
+            #   ).and_return(
+            #     invincibleuser
+            #   )
+            #   allow(User).to receive(
+            #     :get
+            #   ).with(
+            #     testadmin.id
+            #   ).and_return(
+            #     testadmin
+            #   )
+            #   allow(invincibleuser).to receive(:update).and_return(false)
 
-              policy = instance_double('UserPolicy', update?: true)
-              allow(policy).to receive(:update?).and_return(true)
-              allow(policy).to receive(:update_with?).and_return(true)
-              allow(UserPolicy).to receive(:new).and_return(policy)
+            #   policy = instance_double('UserPolicy', update?: true)
+            #   allow(policy).to receive(:update?).and_return(true)
+            #   allow(policy).to receive(:update_with?).and_return(true)
+            #   allow(UserPolicy).to receive(:new).and_return(policy)
 
-              patch(
-                "/api/v#{api_version}/users/#{invincibleuser.id}",
-                attributes_for(:user, name: 'invincible2').to_json,
-                auth_headers_apikey(testadmin.id)
-              )
+            #   patch(
+            #     "/api/v#{api_version}/users/#{invincibleuser.id}",
+            #     attributes_for(:user, name: 'invincible2').to_json,
+            #     auth_headers_apikey(testadmin.id)
+            #   )
 
-              expect(last_response.status).to eq(500)
-              expect(last_response.body).to eq(
-                spec_json_pretty(
-                  api_error(ApiErrors.[](:failed_update)).to_json
-                )
-              )
-            end
+            #   expect(last_response.status).to eq(500)
+            #   expect(last_response.body).to eq(
+            #     spec_json_pretty(
+            #       api_error(ApiErrors.[](:failed_update)).to_json
+            #     )
+            #   )
+            # end
           end
         end
 
@@ -673,15 +675,11 @@ describe 'VHost-API User Controller' do
             )
 
             scope = Pundit.policy_scope(testuser, User)
-            policy = Pundit.policy(testuser, scope)
-            permitted = policy.permitted_attributes
 
             expect(last_response.body).to eq(
-              spec_json_pretty(
-                prepare_collection_output(
-                  collection: User.all(id: testuser.id),
-                  fields: permitted
-                ).to_json
+              spec_authorized_collection(
+                object: scope,
+                uid: testuser.id
               )
             )
           end

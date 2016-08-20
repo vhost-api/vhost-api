@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require File.expand_path '../application_policy.rb', __FILE__
 
-# Policy for Group
-class GroupPolicy < ApplicationPolicy
+# Policy for Package
+class PackagePolicy < ApplicationPolicy
   def permitted_attributes
     return Permissions::Admin.new(record).attributes if user.admin?
     return Permissions::Reseller.new(record).attributes if user.reseller?
@@ -39,32 +39,16 @@ class GroupPolicy < ApplicationPolicy
     super
   end
 
-  # Checks if current user is allowed to create a record with given params
-  #
-  # @return [Boolean]
-  def create_with?(_params)
-    return true if user.admin?
-    false
-  end
-
-  # Checks if current user is allowed to update the record with given params
-  #
-  # @return [Boolean]
-  def update_with?(_params)
-    return true if user.admin?
-    false
-  end
-
-  # Scope for Group
+  # Scope for Package
   class Scope < Scope
     def resolve
       return scope.all if user.admin?
-      groups
+      packages
     end
 
     private
 
-    def groups
+    def packages
       scope.all(id: 0)
     end
   end

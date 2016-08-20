@@ -1,17 +1,32 @@
 # frozen_string_literal: true
+# rubocop:disable Metrics/LineLength
 group_list = [
-  ['admin', true]
+  ['admin', true],
+  ['reseller', true],
+  ['user', true]
 ]
 group_list.each do |group|
   Group.new(name: group[0], enabled: group[1]).save
 end
 
 user_list = [
-  ['admin', 'admin', 'secret', true, 1]
+  ['admin', 'admin', SecureRandom.hex(8), true, 'admin']
 ]
 user_list.each do |user|
-  User.new(name: user[0], login: user[1], password: user[2], enabled: user[3],
-           group_id: user[4]).save
+  u = User.new(name: user[0], login: user[1], password: user[2], enabled: user[3],
+               group_id: Group.first(name: user[4]).id)
+  u.save
+  puts "Created User #{u.name} with login #{u.login} and password #{user[2]}"
+end
+
+package_list = [
+  ['default', 0, true, 'admin']
+]
+package_list.each do |package|
+  Package.new(name: package[0],
+              price_unit: package[1],
+              enabled: package[2],
+              user: User.first(login: package[3])).save
 end
 
 # create the 4 necessary views

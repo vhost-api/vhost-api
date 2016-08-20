@@ -7,6 +7,48 @@ def gen_mysql_pwhash(password)
   '*' + Digest::SHA1.hexdigest(Digest::SHA1.digest(password)).upcase
 end
 
+def extract_destroy_errors(object: nil)
+  return [] if object.nil?
+  preventing = []
+  object.send(:relationships).each do |relationship|
+    next unless relationship.respond_to?(:enforce_destroy_constraint)
+    preventing.push(
+      relationship.name
+    ) unless relationship.enforce_destroy_constraint(object)
+  end
+  preventing
+end
+
+def extract_object_errors(object: nil)
+  return {} if object.nil?
+  object.errors.map do |v|
+    { field: object.errors.invert[v], errors: v }
+  end
+end
+
+def extract_selected_errors(object: nil, selected: nil)
+  return {} if object.nil? || selected.nil?
+  all_errors = extract_object_errors(object: object)
+
+  # extract only relevant errors for selected
+  all_errors.map do |e|
+    e if selected.include?(e[:field])
+  end.compact
+end
+
+def log_user(level = 'debug', message = '')
+  formatted = "user: #{@user.login} (#{@user.id}), #{message}"
+  settings.app_logger.send(level, formatted)
+end
+
+def log_app_error(message)
+  settings.app_logger.info(message)
+end
+
+def log_app_action(message)
+  settings.app_logger.info(message)
+end
+
 # @param program [String]
 # @return [Boolean]
 def tool_installed?(program)

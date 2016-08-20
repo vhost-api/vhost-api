@@ -227,7 +227,7 @@ describe 'VHost-API MailAccount Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -268,7 +268,7 @@ describe 'VHost-API MailAccount Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -320,10 +320,10 @@ describe 'VHost-API MailAccount Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -529,7 +529,7 @@ describe 'VHost-API MailAccount Controller' do
                 expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:invalid_email)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -587,10 +587,10 @@ describe 'VHost-API MailAccount Controller' do
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(last_response.status).to eq(409)
+                expect(last_response.status).to eq(422)
                 expect(last_response.body).to eq(
                   spec_json_pretty(
-                    api_error(ApiErrors.[](:resource_conflict)).to_json
+                    api_error(ApiErrors.[](:invalid_request)).to_json
                   )
                 )
               end
@@ -915,7 +915,7 @@ describe 'VHost-API MailAccount Controller' do
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount,
-                               name: 'new@new.org',
+                               email: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 auth_headers_apikey(testuser.id)
               )
@@ -927,7 +927,7 @@ describe 'VHost-API MailAccount Controller' do
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount,
-                               name: 'new@new.org',
+                               email: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 auth_headers_apikey(testuser.id)
               )
@@ -944,7 +944,7 @@ describe 'VHost-API MailAccount Controller' do
               post(
                 "/api/v#{api_version}/mailaccounts",
                 attributes_for(:mailaccount,
-                               name: 'new@new.org',
+                               email: 'new@new.org',
                                domain_id: anotheruser.domains.first.id).to_json,
                 auth_headers_apikey(testuser.id)
               )

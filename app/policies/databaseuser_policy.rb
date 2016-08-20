@@ -40,7 +40,8 @@ class DatabaseUserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_dbuser_num < user.quota_db_users
+    available = user.packages.map(&:quota_database_users).reduce(0, :+)
+    return true if check_dbuser_num < available
     false
   end
 

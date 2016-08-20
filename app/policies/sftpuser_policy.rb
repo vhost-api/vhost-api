@@ -41,7 +41,8 @@ class SftpUserPolicy < ApplicationPolicy
 
   # @return [Boolean]
   def quotacheck
-    return true if check_sftpuser_num < user.quota_sftp_users
+    available = user.packages.map(&:quota_sftp_users).reduce(0, :+)
+    return true if check_sftpuser_num < available
     false
   end
 
