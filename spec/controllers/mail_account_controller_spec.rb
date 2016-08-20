@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require File.expand_path '../../spec_helper.rb', __FILE__
+require 'fileutils'
 
 describe 'VHost-API MailAccount Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
@@ -84,6 +85,43 @@ describe 'VHost-API MailAccount Controller' do
                 api_error(ApiErrors.[](:not_found)).to_json
               )
             )
+          end
+        end
+
+        describe 'sieve script feature' do
+          it 'allows up- and downloading of sieve script files' do
+            baseurl = "/api/v#{api_version}/mailaccounts"
+            resource = "#{baseurl}/#{testmailaccount.id}/sievescript"
+
+            dest_dir = appconfig[:mail_home].to_s
+            dest_dir += "/#{testmailaccount.email.split('@')[1]}"
+            dest_dir += "/#{testmailaccount.email.split('@')[0]}"
+            dest_file = "#{dest_dir}/#{appconfig[:sieve_file]}"
+            FileUtils.mkdir_p(dest_dir)
+
+            sieve_script = "redirect \"foo@bar.com\";\nkeep;\n"
+            sieve_file = File.open('./test.sieve', 'w')
+            sieve_file.sync = true
+            sieve_file.write(sieve_script)
+            sieve_multipart_file = Rack::Test::UploadedFile.new(sieve_file,
+                                                                'text/plain')
+
+            # upload script
+            post(resource,
+                 { data:  sieve_multipart_file },
+                 auth_headers_apikey(testadmin.id))
+            expect(last_response.status).to eq(200)
+
+            # download script
+            get(resource, nil, auth_headers_apikey(testadmin.id))
+            expect(last_response.status).to eq(200)
+            expect(last_response.body).to eq(sieve_script)
+
+            # cleanup
+            FileUtils.rm(dest_file)
+            FileUtils.rmdir(dest_dir)
+            sieve_file.close
+            FileUtils.rm(sieve_file)
           end
         end
 

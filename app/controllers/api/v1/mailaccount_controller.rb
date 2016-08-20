@@ -360,9 +360,8 @@ namespace '/api/v1/mailaccounts' do
                  else
                    { errors: err.message }
                  end
-        @result = api_error(ApiErrors.[](:internal_error), errors)
+        return_apiresponse(api_error(ApiErrors.[](:internal_error), errors))
       end
-      return_apiresponse @result
     end
   end
 end
