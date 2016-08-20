@@ -227,6 +227,24 @@ describe 'VHost-API Apikey Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in '
+                error_msg += 'Apikey'
+                post(
+                  "/api/v#{api_version}/apikeys?verbose",
+                  invalid_apikey_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/apikeys",
