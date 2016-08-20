@@ -113,8 +113,6 @@ controller_files.each do |f|
   end
 end
 
-# TODO: FIXME: auth_controller needs special handling!
-
 result = {}
 result[:swagger] = '2.0'
 result[:info] = { title: 'vhost-api',
