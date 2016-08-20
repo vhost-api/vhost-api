@@ -41,18 +41,14 @@ class Package
   end
 
   belongs_to :user
-  has n, :users, through: Resource, constraint: :skip
-
-  # @param options [Hash]
-  # @return [Hash]
-  def as_json(options = {})
-    defaults = { exclude: [:user_id],
-                 relationships: { user: { only: [:id, :name, :login] } } }
-    super(model_serialization_opts(defaults: defaults, options: options))
-  end
+  has n, :users, through: Resource, constraint: :protect
 
   # @return [User]
   def owner
     user
+  end
+
+  def customer
+    { id: user.id, name: user.name, login: user.login }
   end
 end

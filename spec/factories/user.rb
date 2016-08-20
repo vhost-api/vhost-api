@@ -81,6 +81,15 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_exhausted_custom_packages_quota, parent: :reseller do
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_custom_packages: 0)
+        user.save
+      end
+    end
+
     factory :reseller_with_exhausted_domain_quota, parent: :reseller do
       after(:create) do |user, evaluator|
         user.packages = create_list(:reseller_package,

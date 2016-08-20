@@ -40,7 +40,9 @@ class PackagePolicy < ApplicationPolicy
     if record.is_a?(DataMapper::Resource)
       return false if record.destroyed?
     end
-    super
+    return true if user.admin?
+    return false unless record.users.empty?
+    record.user_id == user.id
   end
 
   # Checks if current user is allowed to create a record with given params
@@ -62,7 +64,7 @@ class PackagePolicy < ApplicationPolicy
   # Scope for Package
   class Scope < Scope
     def resolve
-      return scope.all if user.admin?
+      return(scope.all) if user.admin?
       packages
     end
 
@@ -70,7 +72,6 @@ class PackagePolicy < ApplicationPolicy
 
     def packages
       result = scope.all(user_id: user.id)
-      result.concat(user.packages)
       result
     end
   end
@@ -78,9 +79,6 @@ class PackagePolicy < ApplicationPolicy
   class Permissions < ApplicationPermissions
     # include :user relation
     class Admin < self
-      def attributes
-        super.push(:user)
-      end
     end
 
     class Reseller < Admin

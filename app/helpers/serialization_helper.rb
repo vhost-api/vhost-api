@@ -9,7 +9,7 @@ def model_serialization_opts(defaults: nil, options: {})
   options = defaults.merge(options)
 
   # force exclude over only
-  unless options[:only].nil?
+  unless options[:only].nil? || options[:exclude].nil?
     options[:exclude].each do |prop|
       options[:only].delete(prop) if options[:only].include?(prop)
     end

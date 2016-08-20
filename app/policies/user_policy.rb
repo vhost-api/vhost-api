@@ -145,11 +145,8 @@ class UserPolicy < ApplicationPolicy
     requested.each_key do |k|
       next unless k.to_s.start_with?('quota_')
       remaining = check_quota_prop(k)
-      if current.nil? || current[k].nil?
-        return false unless remaining >= requested[k]
-      else
-        return false unless remaining >= (requested[k] - current[k])
-      end
+      cur = current[l].to_i ||= 0
+      return false unless remaining >= (requested[k] - cur)
     end
     true
   end
