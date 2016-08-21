@@ -14,7 +14,11 @@ class MailForwarding
   property :updated_at, Integer, min: 0, max: (2**63 - 1), default: 0
   property :enabled, Boolean, default: false
 
-  validates_format_of :address, as: :email_address
+  validates_with_block :address do
+    return true if check_email_address(address)
+    [false, 'Address has an invalid format']
+  end
+
   validates_with_block :address do
     if MailAccount.first(email: address).nil? &&
        MailAlias.first(address: address).nil?
@@ -61,6 +65,7 @@ class MailForwarding
   private
 
   def check_email_address(email = nil)
+    return false if email.nil?
     return false unless email.count('@') == 1
     return false unless email.length <= 254
     return false unless check_email_localpart(email)
@@ -69,6 +74,8 @@ class MailForwarding
 
   def check_email_localpart(email = nil)
     lpart = email.split('@')[0]
+    # allow catchall
+    return true if lpart.empty?
     return false unless lpart =~ %r{^[a-z]+[a-z0-9._-]*$}
     return false if lpart =~ %r{\.\.{1,}}
     return false if %w(. _ -).include?(lpart[-1, 1])

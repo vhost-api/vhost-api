@@ -319,7 +319,8 @@ describe 'VHost-API MailAlias Controller' do
                 errors = {
                   validation: [
                     { field: 'address',
-                      errors: ['Address must not be blank'] }
+                      errors: ['Address must not be blank',
+                               'Address has an invalid format'] }
                   ]
                 }
 
@@ -653,7 +654,8 @@ describe 'VHost-API MailAlias Controller' do
                 errors = {
                   validation: [
                     { field: 'address',
-                      errors: ['Address must not be blank'] }
+                      errors: ['Address must not be blank',
+                               'Address has an invalid format'] }
                   ]
                 }
 
