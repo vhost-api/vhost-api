@@ -33,6 +33,15 @@ def allocated_mail_accounts(user)
 end
 
 # @return [Fixnum]
+def allocated_mail_forwardings(user)
+  result = user.domains.mail_forwardings.map(&:destinations)
+               .join("\n").split("\n").size
+  result += user.customers.domains.mail_forwardings.map(&:destinations)
+                .join("\n").split("\n").size if user.reseller?
+  result
+end
+
+# @return [Fixnum]
 def allocated_mail_aliases(user)
   result = user.domains.mail_aliases.size
   result += user.customers.domains.mail_aliases.size if user.reseller?

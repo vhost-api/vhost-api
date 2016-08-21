@@ -73,11 +73,12 @@ class MailForwardingPolicy < ApplicationPolicy
   end
 
   def forwarding_num(user = nil, users = nil)
-    if user.nil? && !users.nil?
-      user.customers.domains.mail_forwardings.destinations.split("\n").size
-    else
-      user.domains.mail_forwardings.destinations.split("\n").size
-    end
+    forwardings = if user.nil? && !users.nil?
+                    users.domains.mail_forwardings
+                  else
+                    user.domains.mail_forwardings
+                  end
+    forwardings.map(&:destinations).join("\n").split("\n").size
   end
 
   # @retun [Boolean]
