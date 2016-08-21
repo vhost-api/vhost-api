@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rubocop:disable Metrics/ClassLength
 require File.expand_path '../application_policy.rb', __FILE__
 
 # Policy for User
@@ -113,7 +114,7 @@ class UserPolicy < ApplicationPolicy
   # @return [Boolean]
   def check_params(params)
     if params.key?(:packages)
-      return false unless check_package_set(params[:packages].to_set)
+      return false unless check_package_set(params[:packages].map(&:id).to_set)
       return false unless check_add_package(params)
     end
     true
@@ -134,6 +135,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   def sum_package_quotas(pkg_arr)
+    unless pkg_arr.any?
+      empty_pkg_hash = {}
+      Package.properties.map(&:name).each { |x| empty_pkg_hash[x] = 0 }
+      return empty_pkg_hash
+    end
     pkg_arr.map(&:attributes).reduce do |merged_hash, hash|
       merged_hash.merge(hash) do |k, v1, v2|
         v1 + v2 if k.to_s.start_with?('quota_')
@@ -145,7 +151,7 @@ class UserPolicy < ApplicationPolicy
     requested.each_key do |k|
       next unless k.to_s.start_with?('quota_')
       remaining = check_quota_prop(k)
-      cur = current[l].to_i ||= 0
+      cur = current[k].to_i ||= 0
       return false unless remaining >= (requested[k] - cur)
     end
     true
