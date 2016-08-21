@@ -29,14 +29,14 @@ class MailForwardingPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       return scope.all if user.admin?
-      mailaliases
+      mailforwardings
     end
 
     private
 
-    def mailaliases
-      result = user.domains.mail_aliases.all
-      result.concat(user.customers.domains.mail_aliases) if user.reseller?
+    def mailforwardings
+      result = user.domains.mail_forwardings.all
+      result.concat(user.customers.domains.mail_forwardings) if user.reseller?
       result
     end
   end
