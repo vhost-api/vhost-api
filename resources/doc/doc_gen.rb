@@ -46,28 +46,28 @@ end
 optional_modules = []
 api_modules.map(&:upcase).each do |apimod|
   case apimod
-    when 'EMAIL' then optional_modules.push(
-        %w(domain dkim dkimsigning mailaccount mailalias mailsource)
-    )
-    when 'VHOST' then optional_modules.push(
-        %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
-    )
-    # TODO: no dns controllers exist yet
-    when 'DNS' then optional_modules.push(%w(domain))
-    # TODO: no database/databaseuser controllers exist yet
-    when 'DATABASE' then nil
+  when 'EMAIL' then optional_modules.push(
+    %w(domain dkim dkimsigning mailaccount mailalias mailsource)
+  )
+  when 'VHOST' then optional_modules.push(
+    %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
+  )
+  # TODO: no dns controllers exist yet
+  when 'DNS' then optional_modules.push(%w(domain))
+  # TODO: no database/databaseuser controllers exist yet
+  when 'DATABASE' then nil
   end
 end
 
 def get_type_from_primitive(primitive)
   type = nil
   case primitive.to_s
-    when 'Integer'
-      type = 'integer'
-    when 'String'
-      type = 'string'
-    when 'TrueClass', 'FalseClass'
-      type = 'boolean'
+  when 'Integer'
+    type = 'integer'
+  when 'String'
+    type = 'string'
+  when 'TrueClass', 'FalseClass'
+    type = 'boolean'
   end
   type
 end
@@ -105,9 +105,9 @@ controller_files.each do |f|
       end
 
       modules[class_name] = {
-          class_name: class_name,
-          filename: filename,
-          namespace: namespace
+        class_name: class_name,
+        filename: filename,
+        namespace: namespace
       }
     end
   end
@@ -126,32 +126,32 @@ paths = {}
 definitions = {}
 
 paths['/auth/login'] = {
-    post: {
-        summary: 'API Login Action',
-        description: 'Returns an Apikey after successful login',
-        tags: ['Auth'],
-        consumes: ['application/json'],
-        parameters: [
-            { in: 'body',
-              name: 'body',
-              description: 'Auth Data',
-              required: true,
-              schema: {
-                  '$ref' => '#/definitions/Auth'
-              } }
-        ],
-        responses: {
-            '200' => {
-                description: 'Success',
-                schema: {
-                    '$ref' => '#/definitions/AuthSuccess'
-                }
-            },
-            '403' => {
-                description: 'apikey quota exhausted'
-            }
+  post: {
+    summary: 'API Login Action',
+    description: 'Returns an Apikey after successful login',
+    tags: ['Auth'],
+    consumes: ['application/json'],
+    parameters: [
+      { in: 'body',
+        name: 'body',
+        description: 'Auth Data',
+        required: true,
+        schema: {
+          '$ref' => '#/definitions/Auth'
+        } }
+    ],
+    responses: {
+      '200' => {
+        description: 'Success',
+        schema: {
+          '$ref' => '#/definitions/AuthSuccess'
         }
+      },
+      '403' => {
+        description: 'apikey quota exhausted'
+      }
     }
+  }
 }
 
 modules.each do |_, module_value|
@@ -162,153 +162,153 @@ modules.each do |_, module_value|
   clazz = Object.const_get(class_name)
 
   paths["/#{ns}"] = {
-      get: {
-          summary: "Collection of #{class_name.pluralize}",
-          description: "Get the full collection of created #{class_name.pluralize}",
-          tags: [class_name],
-          parameters: [
-              { in: 'query',
-                name: 'limit',
-                description: 'Limits the output',
-                required: false,
-                type: 'integer' },
-              { in: 'query',
-                name: 'offset',
-                description: 'Offsets the output (needs limit)',
-                required: false,
-                type: 'integer' },
-              { in: 'query',
-                name: 'q[fieldName]',
-                description: 'Seach for the field',
-                required: false,
-                type: 'string' },
-              { in: 'query',
-                name: 'sort',
-                description: 'Sort by given field name (descending by - prefix)',
-                required: false,
-                type: 'string' },
-              { in: 'query',
-                name: 'fields',
-                description: 'Give only the requested fields (comma separated list)',
-                required: false,
-                type: 'string' }
-          ],
-          responses: {
-              '200' => {
-                  description: "An array of #{class_name.pluralize}",
-                  schema: {
-                      type: 'array',
-                      items: {
-                          '$ref' => "\#/definitions/#{class_name}"
-                      }
-                  }
-              },
-              default: {
-                  description: 'Unexpected error',
-                  schema: {
-                      '$ref' => '#/definitions/Error'
-                  }
-              }
+    get: {
+      summary: "Collection of #{class_name.pluralize}",
+      description: "Get the full collection of created #{class_name.pluralize}",
+      tags: [class_name],
+      parameters: [
+        { in: 'query',
+          name: 'limit',
+          description: 'Limits the output',
+          required: false,
+          type: 'integer' },
+        { in: 'query',
+          name: 'offset',
+          description: 'Offsets the output (needs limit)',
+          required: false,
+          type: 'integer' },
+        { in: 'query',
+          name: 'q[fieldName]',
+          description: 'Seach for the field',
+          required: false,
+          type: 'string' },
+        { in: 'query',
+          name: 'sort',
+          description: 'Sort by given field name (descending by - prefix)',
+          required: false,
+          type: 'string' },
+        { in: 'query',
+          name: 'fields',
+          description: 'Give only the requested fields (comma separated list)',
+          required: false,
+          type: 'string' }
+      ],
+      responses: {
+        '200' => {
+          description: "An array of #{class_name.pluralize}",
+          schema: {
+            type: 'array',
+            items: {
+              '$ref' => "\#/definitions/#{class_name}"
+            }
           }
-      },
-      post: {
-          summary: "Creates a new #{class_name}",
-          description: "Create a new #{class_name} with the request body",
-          tags: [class_name],
-          consumes: ['application/json'],
-          parameters: [
-              { in: 'body',
-                name: 'body',
-                description: "The #{class_name} object without id",
-                required: true,
-                schema: {
-                    '$ref' => "\#/definitions/#{class_name}"
-                } }
-          ],
-          responses: {
-              '201' => {
-                  description: 'Success'
-              },
-              '400' => {
-                  description: 'Malformed request data'
-              },
-              '409' => {
-                  description: 'Resource conflict'
-              }
+        },
+        default: {
+          description: 'Unexpected error',
+          schema: {
+            '$ref' => '#/definitions/Error'
           }
+        }
       }
+    },
+    post: {
+      summary: "Creates a new #{class_name}",
+      description: "Create a new #{class_name} with the request body",
+      tags: [class_name],
+      consumes: ['application/json'],
+      parameters: [
+        { in: 'body',
+          name: 'body',
+          description: "The #{class_name} object without id",
+          required: true,
+          schema: {
+            '$ref' => "\#/definitions/#{class_name}"
+          } }
+      ],
+      responses: {
+        '201' => {
+          description: 'Success'
+        },
+        '400' => {
+          description: 'Malformed request data'
+        },
+        '409' => {
+          description: 'Resource conflict'
+        }
+      }
+    }
   }
   paths["/#{ns}/{#{class_name.downcase}Id}"] = {
-      delete: {
-          summary: "Delete #{class_name}",
-          description: "Deletes the #{class_name} by the given id",
-          parameters: [
-              { in: 'path',
-                name: "#{class_name.downcase}Id",
-                description: "#{class_name} id",
-                required: true,
-                type: 'integer',
-                format: 'int64' }
-          ],
-          responses: {
-              '200' => {
-                  description: 'Success'
-              },
-              '500' => {
-                  description: 'Could not delete'
-              }
-          }
-      },
-      patch: {
-          summary: "Update #{class_name}",
-          description: "Updates the given fields in the #{class_name} by id",
-          consumes: ['application/json'],
-          parameters: [
-              { in: 'path',
-                name: "#{class_name.downcase}Id",
-                description: "#{class_name} id",
-                required: true,
-                type: 'integer',
-                format: 'int64' },
-              { in: 'body',
-                name: 'body',
-                description: "The update fields of the #{class_name} object",
-                required: true,
-                schema: {
-                    '$ref' => "\#/definitions/#{class_name}"
-                } }
-          ],
-          responses: {
-              '200' => {
-                  description: 'Success'
-              },
-              '400' => {
-                  description: 'Malformed request'
-              },
-              '409' => {
-                  description: 'Resource conflict'
-              },
-              '422' => {
-                  description: 'Invalid request data'
-              },
-              '500' => {
-                  description: 'Could not update'
-              }
-          }
+    delete: {
+      summary: "Delete #{class_name}",
+      description: "Deletes the #{class_name} by the given id",
+      parameters: [
+        { in: 'path',
+          name: "#{class_name.downcase}Id",
+          description: "#{class_name} id",
+          required: true,
+          type: 'integer',
+          format: 'int64' }
+      ],
+      responses: {
+        '200' => {
+          description: 'Success'
+        },
+        '500' => {
+          description: 'Could not delete'
+        }
       }
+    },
+    patch: {
+      summary: "Update #{class_name}",
+      description: "Updates the given fields in the #{class_name} by id",
+      consumes: ['application/json'],
+      parameters: [
+        { in: 'path',
+          name: "#{class_name.downcase}Id",
+          description: "#{class_name} id",
+          required: true,
+          type: 'integer',
+          format: 'int64' },
+        { in: 'body',
+          name: 'body',
+          description: "The update fields of the #{class_name} object",
+          required: true,
+          schema: {
+            '$ref' => "\#/definitions/#{class_name}"
+          } }
+      ],
+      responses: {
+        '200' => {
+          description: 'Success'
+        },
+        '400' => {
+          description: 'Malformed request'
+        },
+        '409' => {
+          description: 'Resource conflict'
+        },
+        '422' => {
+          description: 'Invalid request data'
+        },
+        '500' => {
+          description: 'Could not update'
+        }
+      }
+    }
   }
 
   definitions[class_name] = {
-      type: 'object',
-      properties: {}
+    type: 'object',
+    properties: {}
   }
 
   clazz.properties.each do |prop|
     type = get_type_from_primitive(prop.primitive)
 
     definitions[class_name][:properties][prop.name] = {
-        type: type,
-        description: "#{prop.name} of #{class_name}"
+      type: type,
+      description: "#{prop.name} of #{class_name}"
     }
   end
 
@@ -321,8 +321,8 @@ modules.each do |_, module_value|
 
     File.open("#{lp}app/models/#{filename}") do |file|
       regex = 'relationships:\s*\{\s*' +
-          relation.name.to_s +
-          ':\s*\{([a-z:_,\[\] ]*)\}'
+              relation.name.to_s +
+              ':\s*\{([a-z:_,\[\] ]*)\}'
 
       match = file.read.match(regex)
 
@@ -332,8 +332,8 @@ modules.each do |_, module_value|
         only_hash = eval("{ #{only} }")
 
         relation_hash = {
-            type: 'object',
-            properties: {}
+          type: 'object',
+          properties: {}
         }
 
         only_hash.each do |_, value|
@@ -344,8 +344,8 @@ modules.each do |_, module_value|
             sub_type = get_type_from_primitive(parent_property.primitive)
 
             relation_hash[:properties][field] = {
-                type: sub_type,
-                description: "#{field} of #{relation.parent_model_name}"
+              type: sub_type,
+              description: "#{field} of #{relation.parent_model_name}"
             }
           end
         end
@@ -357,47 +357,47 @@ modules.each do |_, module_value|
 end
 
 definitions['Error'] = {
-    type: 'object',
-    properties: {
-        code: {
-            type: 'integer',
-            format: 'int32'
-        },
-        message: {
-            type: 'string'
-        },
-        fields: {
-            type: 'string'
-        }
+  type: 'object',
+  properties: {
+    code: {
+      type: 'integer',
+      format: 'int32'
+    },
+    message: {
+      type: 'string'
+    },
+    fields: {
+      type: 'string'
     }
+  }
 }
 
 definitions['Auth'] = {
-    type: 'object',
-    properties: {
-        username: {
-            type: 'string'
-        },
-        password: {
-            type: 'string'
-        },
-        apikey_comment: {
-            type: 'string'
-        }
+  type: 'object',
+  properties: {
+    username: {
+      type: 'string'
+    },
+    password: {
+      type: 'string'
+    },
+    apikey_comment: {
+      type: 'string'
     }
+  }
 }
 
 definitions['AuthSuccess'] = {
-    type: 'object',
-    properties: {
-        user_id: {
-            type: 'integer',
-            format: 'int32'
-        },
-        apikey: {
-            type: 'string'
-        }
+  type: 'object',
+  properties: {
+    user_id: {
+      type: 'integer',
+      format: 'int32'
+    },
+    apikey: {
+      type: 'string'
     }
+  }
 }
 
 result[:paths] = paths
