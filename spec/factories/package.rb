@@ -19,6 +19,7 @@ FactoryGirl.define do
     quota_dns_records 10
     quota_domains 1
     quota_mail_accounts 5
+    quota_mail_forwardings 10
     quota_mail_aliases 10
     quota_mail_sources 10
     quota_mail_storage 104_857_600
@@ -57,6 +58,7 @@ FactoryGirl.define do
       quota_dns_records 50
       quota_domains 10
       quota_mail_accounts 25
+      quota_mail_forwardings 50
       quota_mail_aliases 50
       quota_mail_sources 50
       quota_mail_storage 1_048_576_000

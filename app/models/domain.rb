@@ -21,6 +21,7 @@ class Domain
   belongs_to :user
 
   has n, :mail_accounts, constraint: :destroy
+  has n, :mail_forwardings, constraint: :destroy
   has n, :mail_aliases, constraint: :destroy
   has n, :mail_sources, constraint: :destroy
   has n, :dkims, constraint: :destroy

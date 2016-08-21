@@ -231,7 +231,7 @@ namespace '/api/v1/mailaliases' do
         if @mailalias.update(@_params)
           log_user('info',
                    "updated MailAlias #{old_attributes} with #{@_params}")
-          @result = ApiResponseSuccess.new(data: { object: @domain })
+          @result = ApiResponseSuccess.new(data: { object: @mailalias })
         end
 
         @result = if @mailalias.update(@_params)

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
-namespace '/api/v1/mailsources' do
+namespace '/api/v1/mailforwardings' do
   get do
-    @mailsources = policy_scope(MailSource)
-    return_authorized_collection(object: @mailsources, params: params)
+    @mailforwardings = policy_scope(MailForwarding)
+    return_authorized_collection(object: @mailforwardings, params: params)
   end
 
   post do
     @result = nil
 
     # check creation permissions. i.e. admin/quotacheck
-    authorize(MailSource, :create?)
+    authorize(MailForwarding, :create?)
 
     begin
       # check for show errors request
@@ -21,35 +21,19 @@ namespace '/api/v1/mailsources' do
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # sources must be an array if provided
-      unless @_params[:src].nil?
-        return_api_error(
-          ApiErrors.[](:invalid_sources)
-        ) unless @_params[:src].is_a?(Array)
-      end
-
       # force lowercase on email addr
       @_params[:address].downcase! unless @_params[:address].nil?
+      @_params[:destinations].downcase! unless @_params[:destinations].nil?
 
       # check permissions for parameters
-      raise Pundit::NotAuthorizedError unless policy(MailSource).create_with?(
-        @_params
-      )
-
-      # fetch sources as an array of mailaccounts
-      unless @_params[:src].nil?
-        @sources = MailAccount.all(id: 0)
-        mailaccount_ids = @_params.delete(:src)
-        mailaccount_ids.each do |acc_id|
-          @sources.push(MailAccount.get(acc_id))
-        end
-        @_params[:mail_accounts] = @sources
-      end
+      raise Pundit::NotAuthorizedError unless policy(
+        MailForwarding
+      ).create_with?(@_params)
 
       # perform validations
-      @mailsource = MailSource.new(@_params)
-      unless @mailsource.valid?
-        errors = extract_object_errors(object: @mailsource)
+      @mailforwarding = MailForwarding.new(@_params)
+      unless @mailforwarding.valid?
+        errors = extract_object_errors(object: @mailforwarding)
         log_user('debug', "validation_errors: #{errors}")
         if show_validation_errors || show_errors
           return_api_error(ApiErrors.[](:invalid_request),
@@ -65,11 +49,11 @@ namespace '/api/v1/mailsources' do
         domain_id: @_params[:domain_id]
       )
 
-      if @mailsource.save
-        log_user('info', "created MailSource #{@mailsource.as_json}")
+      if @mailforwarding.save
+        log_user('info', "created MailForwarding #{@mailforwarding.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
-                                         data: { object: @mailsource })
-        loc = "#{request.base_url}/api/v1/mailsources/#{@mailsource.id}"
+                                         data: { object: @mailforwarding })
+        loc = "#{request.base_url}/api/v1/mailforwardings/#{@mailforwarding.id}"
         response.headers['Location'] = loc
       end
     # re-raise authentication/authorization errors so that they don't end up
@@ -111,8 +95,8 @@ namespace '/api/v1/mailsources' do
     # namespace local before blocks are evaluate before global before blocks
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
-    @mailsource = MailSource.get(params[:id])
-    return_api_error(ApiErrors.[](:not_found)) if @mailsource.nil?
+    @mailforwarding = MailForwarding.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @mailforwarding.nil?
   end
 
   namespace '/:id' do
@@ -120,21 +104,23 @@ namespace '/api/v1/mailsources' do
       @result = nil
 
       # check creation permissions. i.e. admin/quotacheck
-      authorize(@mailsource, :destroy?)
+      authorize(@mailforwarding, :destroy?)
 
       begin
         # check for show errors request
         show_errors = params.key?('verbose')
 
         # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:not_found)) if @mailsource.destroyed?
+        return_api_error(ApiErrors.[](:not_found)) if @mailforwarding.destroyed?
 
-        @result = if @mailsource.destroy
-                    log_user('info',
-                             "deleted MailSource #{@mailsource.as_json}")
+        @result = if @mailforwarding.destroy
+                    log_user(
+                      'info',
+                      "deleted MailForwarding #{@mailforwarding.as_json}"
+                    )
                     ApiResponseSuccess.new
                   elsif show_errors
-                    errors = extract_destroy_errors(object: @mailsource)
+                    errors = extract_destroy_errors(object: @mailforwarding)
                     api_error(
                       ApiErrors.[](:failed_delete),
                       errors: { relationships: errors }
@@ -150,7 +136,7 @@ namespace '/api/v1/mailsources' do
       @result = nil
 
       # check update permissions. i.e. admin/owner/quotacheck
-      authorize(@mailsource, :update?)
+      authorize(@mailforwarding, :update?)
 
       begin
         # check for show errors request
@@ -158,46 +144,35 @@ namespace '/api/v1/mailsources' do
         show_errors = params.key?('verbose')
 
         # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:not_found)) if @mailsource.destroyed?
+        return_api_error(ApiErrors.[](:not_found)) if @mailforwarding.destroyed?
 
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
-        # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:failed_update)) if @mailsource.destroyed?
+        # force lowercase on email addr
+        @_params[:address].downcase! unless @_params[:address].nil?
+        @_params[:destinations].downcase! unless @_params[:destinations].nil?
 
-        unless @_params[:src].nil?
-          # sources must be an array
-          return_api_error(
-            ApiErrors.[](:invalid_sources)
-          ) unless @_params[:src].is_a?(Array)
-        end
+        # prevent any action being performed on a detroyed resource
+        return_api_error(
+          ApiErrors.[](:failed_update)
+        ) if @mailforwarding.destroyed?
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
-          @mailsource
+          @mailforwarding
         ).update_with?(@_params)
-
-        # fetch sources as an array of mailaccounts
-        unless @_params[:src].nil?
-          @sources = MailAccount.all(id: 0)
-          mailaccount_ids = @_params.delete(:src)
-          mailaccount_ids.each do |acc_id|
-            @sources.push(MailAccount.get(acc_id))
-          end
-          @_params[:mail_accounts] = @sources
-        end
 
         # remove unmodified values from input params
         @_params.each_key do |key|
-          next unless @mailsource.model.properties.map(&:name).include?(key)
-          @_params.delete(key) if @_params[key] == @mailsource.send(key)
+          next unless @mailforwarding.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @mailforwarding.send(key)
         end
 
         # perform validations on a dummy object, check only supplied attributes
-        dummy = MailSource.new(@_params)
+        dummy = MailForwarding.new(@_params)
         unless dummy.valid?
           error_attributes = @_params.keys & dummy.errors.keys
           unless error_attributes.empty?
@@ -216,27 +191,24 @@ namespace '/api/v1/mailsources' do
         end
 
         unless @_params[:address].nil?
-          # force lowercase on email addr
-          @_params[:address].downcase!
-
           # perform sanity checks
           check_email_address_for_domain(
             email: @_params[:address],
-            domain_id: @mailsource.domain_id
+            domain_id: @mailforwarding.domain_id
           )
         end
 
         # remember old values for log message
-        old_attributes = @mailsource.as_json
+        old_attributes = @mailforwarding.as_json
 
-        if @mailsource.update(@_params)
+        if @mailforwarding.update(@_params)
           log_user('info',
-                   "updated MailSource #{old_attributes} with #{@_params}")
-          @result = ApiResponseSuccess.new(data: { object: @mailsource })
+                   "updated MailForwarding #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @mailforwarding })
         end
 
-        @result = if @mailsource.update(@_params)
-                    ApiResponseSuccess.new(data: { object: @mailsource })
+        @result = if @mailforwarding.update(@_params)
+                    ApiResponseSuccess.new(data: { object: @mailforwarding })
                   else
                     api_error(ApiErrors.[](:failed_update))
                   end
@@ -276,8 +248,9 @@ namespace '/api/v1/mailsources' do
     end
 
     get do
-      return_authorized_resource(object: @mailsource) if authorize(@mailsource,
-                                                                   :show?)
+      return_authorized_resource(object: @mailforwarding) if authorize(
+        @mailforwarding, :show?
+      )
     end
   end
 end

@@ -108,6 +108,15 @@ FactoryGirl.define do
       end
     end
 
+    factory :reseller_with_exhausted_mailforwarding_quota, parent: :reseller do
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:reseller_package,
+                                    evaluator.package_count,
+                                    quota_mail_forwardings: 0)
+        user.save
+      end
+    end
+
     factory :reseller_with_exhausted_mailalias_quota, parent: :reseller do
       after(:create) do |user, evaluator|
         user.packages = create_list(:reseller_package,
@@ -402,6 +411,15 @@ FactoryGirl.define do
         user.packages = create_list(:package,
                                     evaluator.package_count,
                                     quota_mail_accounts: 0)
+        user.save
+      end
+    end
+
+    factory :user_with_exhausted_mailforwardings_quota do
+      after(:create) do |user, evaluator|
+        user.packages = create_list(:package,
+                                    evaluator.package_count,
+                                    quota_mail_forwardings: 0)
         user.save
       end
     end

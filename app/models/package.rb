@@ -23,6 +23,7 @@ class Package
   property :quota_dns_records, Integer, required: true, min: 0, default: 10
   property :quota_domains, Integer, required: true, min: 0, default: 1
   property :quota_mail_accounts, Integer, required: true, min: 0, default: 5
+  property :quota_mail_forwardings, Integer, required: true, min: 0, default: 10
   property :quota_mail_aliases, Integer, required: true, min: 0, default: 10
   property :quota_mail_sources, Integer, required: true, min: 0, default: 10
   property :quota_mail_storage, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default

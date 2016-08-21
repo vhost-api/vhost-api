@@ -22,6 +22,14 @@ class MailAccount
   property :enabled, Boolean, default: false
 
   validates_format_of :email, as: :email_address
+  validates_with_block :email do
+    if MailAlias.first(address: email).nil? &&
+       MailForwarding.first(address: email).nil?
+      true
+    else
+      [false, 'Email is already taken']
+    end
+  end
 
   belongs_to :domain
 

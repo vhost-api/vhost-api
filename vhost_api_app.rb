@@ -67,7 +67,7 @@ settings.api_modules.map(&:upcase).each do |apimod|
   optional_modules = []
   case apimod
   when 'EMAIL' then optional_modules.push(
-    %w(domain dkim dkimsigning mailaccount mailalias mailsource)
+    %w(domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding)
   )
   when 'VHOST' then optional_modules.push(
     %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
