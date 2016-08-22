@@ -55,4 +55,6 @@ config/session.secret
 coverage/**
 _coverage/**
 
+.edit.sh
+
 testdata/cookies/*
