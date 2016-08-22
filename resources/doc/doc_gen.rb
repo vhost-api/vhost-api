@@ -14,12 +14,14 @@ require 'active_support/inflector'
 lp = '../../'
 
 require_relative "#{lp}app/models/group"
+require_relative "#{lp}app/models/package"
 require_relative "#{lp}app/models/user"
 require_relative "#{lp}app/models/apikey"
 require_relative "#{lp}app/models/domain"
 require_relative "#{lp}app/models/dkim"
 require_relative "#{lp}app/models/dkimsigning"
 require_relative "#{lp}app/models/mailaccount"
+require_relative "#{lp}app/models/mailforwarding"
 require_relative "#{lp}app/models/mailsource"
 require_relative "#{lp}app/models/mailalias"
 require_relative "#{lp}app/models/ipv4address"
@@ -39,7 +41,7 @@ api_modules = appconfig[:api_modules]
 enabled_modules = []
 
 # core modules
-%w(group user apikey).each do |f|
+%w(group user apikey package).each do |f|
   enabled_modules.push(f)
 end
 
@@ -48,7 +50,7 @@ optional_modules = []
 api_modules.map(&:upcase).each do |apimod|
   case apimod
   when 'EMAIL' then optional_modules.push(
-    %w(domain dkim dkimsigning mailaccount mailalias mailsource)
+    %w(domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding)
   )
   when 'VHOST' then optional_modules.push(
     %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
