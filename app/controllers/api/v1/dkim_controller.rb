@@ -46,6 +46,10 @@ namespace '/api/v1/dkims' do
         @_params[:private_key], @_params[:public_key] = generate_dkim_keypair
       end
 
+      # remove trailing newlines, which cause the keys to be invalid
+      @_params[:private_key].chomp!("\n")
+      @_params[:public_key].chomp!("\n")
+
       # perform validations
       @dkim = Dkim.new(@_params)
       unless @dkim.valid?
@@ -176,6 +180,10 @@ namespace '/api/v1/dkims' do
           next unless @dkim.model.properties.map(&:name).include?(key)
           @_params.delete(key) if @_params[key] == @dkim.send(key)
         end
+
+        # remove trailing newlines, which cause the keys to be invalid
+        @_params[:private_key].chomp!("\n") unless @_params[:private_key].nil?
+        @_params[:public_key].chomp!("\n") unless @_params[:public_key].nil?
 
         # perform validations on a dummy object, check only supplied attributes
         dummy = Dkim.new(@_params)
