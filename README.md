@@ -43,6 +43,17 @@ calls using a tool or library of your choice.
 However this API is streamlined to be used in cojunction with vhost-api/web-ui,
 which provides a webinterface for all the features of this project.
 
+# Motivation
+
+There are some other solutions out there with a comparable scope, namely
+`ispconfig`, `cPanel`, `Plesk`, ..., the list goes on.
+Those projects have one thing in common:
+They are highly integrated and need to be installed using provided installers,
+resulting in a setup that doesn't allow any external changes most of the time.
+
+VHost-API is designed in a more flexible manner so that you can freely attach
+services to it while retaining some pre-existing configs/setups.
+
 ## Installation and Configuration
 
 Please take a look at `INSTALL.md`.
