@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rubocop:disable Lint/Eval
 require 'bundler/setup'
 require 'data_mapper'
 require 'dm-migrations'
