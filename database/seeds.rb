@@ -77,10 +77,15 @@ when 'POSTGRES'
         LEFT JOIN "mail_accounts"
           ON "mail_account_mail_sources"."mail_account_id"="mail_accounts"."id"
           AND "mail_accounts"."enabled" = TRUE
+        LEFT JOIN "domains"
+          ON
+            "mail_accounts"."domain_id"="domains"."id"
         RIGHT JOIN "mail_sources"
           ON "mail_account_mail_sources"."mail_source_id"="mail_sources"."id"
           AND "mail_sources"."enabled" = TRUE)
-      WHERE "mail_accounts"."email" IS NOT NULL;')
+      WHERE "mail_accounts"."email" IS NOT NULL
+      AND "domains"."enabled" = TRUE
+      AND "domains"."mail_enabled" = TRUE;')
   # sftp_user_maps
   adapter.execute('CREATE OR REPLACE VIEW "sftp_user_maps"
     AS
