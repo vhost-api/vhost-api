@@ -1,0 +1,2871 @@
+<!doctype html>
+<html>
+  <head>
+    <title>vhost-api</title>
+    <style type="text/css">
+      body { 
+	font-family: Trebuchet MS, sans-serif;
+	font-size: 15px;
+	color: #444;
+	margin-right: 24px;
+}
+
+h1	{
+	font-size: 25px;
+}
+h2	{
+	font-size: 20px;
+}
+h3	{
+	font-size: 16px;
+	font-weight: bold;
+}
+hr	{
+	height: 1px;
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+	display: none;
+}
+
+.app-desc {
+  clear: both;
+  margin-left: 20px;
+}
+.param-name {
+  width: 100%;
+}
+.license-info {
+  margin-left: 20px;
+}
+
+.license-url {
+  margin-left: 20px;
+}
+
+.model {
+  margin: 0 0 0px 20px;
+}
+
+.method {
+  margin-left: 20px;
+}
+
+.method-notes	{
+	margin: 10px 0 20px 0;
+	font-size: 90%;
+	color: #555;
+}
+
+pre {
+  padding: 10px;
+  margin-bottom: 2px;
+}
+
+.http-method {
+ text-transform: uppercase;
+}
+
+pre.get {
+  background-color: #0f6ab4;
+}
+
+pre.post {
+  background-color: #10a54a;
+}
+
+pre.put {
+  background-color: #c5862b;
+}
+
+pre.delete {
+  background-color: #a41e22;
+}
+
+.huge	{
+	color: #fff;
+}
+
+pre.example {
+  background-color: #f3f3f3;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+code {
+  white-space: pre;
+}
+
+.nickname {
+  font-weight: bold;
+}
+
+.method-path {
+  font-size: 1.5em;
+  background-color: #0f6ab4;
+}
+
+.up {
+  float:right;
+}
+
+.parameter {
+  width: 500px;
+}
+
+.param {
+  width: 500px;
+  padding: 10px 0 0 20px;
+  font-weight: bold;
+}
+
+.param-desc {
+  width: 700px;
+  padding: 0 0 0 20px;
+  color: #777;
+}
+
+.param-type {
+  font-style: italic;
+}
+
+.param-enum-header {
+width: 700px;
+padding: 0 0 0 60px;
+color: #777;
+font-weight: bold;
+}
+
+.param-enum {
+width: 700px;
+padding: 0 0 0 80px;
+color: #777;
+font-style: italic;
+}
+
+.field-label {
+  padding: 0;
+  margin: 0;
+  clear: both;
+}
+
+.field-items	{
+	padding: 0 0 15px 0;
+	margin-bottom: 15px;
+}
+
+.return-type {
+  clear: both;
+  padding-bottom: 10px;
+}
+
+.param-header {
+  font-weight: bold;
+}
+
+.method-tags {
+  text-align: right;
+}
+
+.method-tag {
+  background: none repeat scroll 0% 0% #24A600;
+  border-radius: 3px;
+  padding: 2px 10px;
+  margin: 2px;
+  color: #FFF;
+  display: inline-block;
+  text-decoration: none;
+}
+    </style>
+  </head>
+  <body>
+  <h1>vhost-api</h1>
+    <div class="app-desc">vhost-api</div>
+    <div class="app-desc">More information: <a href="https://github.com/vhost-api/vhost-api/">https://github.com/vhost-api/vhost-api/</a></div>
+    <div class="app-desc">Contact Info: <a href="me@foxxx0.de">me@foxxx0.de</a></div>
+    <div class="app-desc">Version: 0.1.1-alpha</div>
+    <div class="app-desc">BasePath:/api/v1</div>
+    <div class="license-info">AGPL v3</div>
+    <div class="license-url">https://github.com/vhost-api/vhost-api/blob/master/LICENSE</div>
+  <h2>Access</h2>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h2>Table of Contents </h2>
+  <div class="method-summary"></div>
+  <ol>
+  <li><a href="#apikeysGet"><code><span class="http-method">get</span> /apikeys</code></a></li>
+  <li><a href="#apikeysPost"><code><span class="http-method">post</span> /apikeys</code></a></li>
+  <li><a href="#authLoginPost"><code><span class="http-method">post</span> /auth/login</code></a></li>
+  <li><a href="#apikeysApikeyIdDelete"><code><span class="http-method">delete</span> /apikeys/{apikeyId}</code></a></li>
+  <li><a href="#apikeysApikeyIdPatch"><code><span class="http-method">patch</span> /apikeys/{apikeyId}</code></a></li>
+  <li><a href="#dkimsDkimIdDelete"><code><span class="http-method">delete</span> /dkims/{dkimId}</code></a></li>
+  <li><a href="#dkimsDkimIdPatch"><code><span class="http-method">patch</span> /dkims/{dkimId}</code></a></li>
+  <li><a href="#dkimsigningsDkimsigningIdDelete"><code><span class="http-method">delete</span> /dkimsignings/{dkimsigningId}</code></a></li>
+  <li><a href="#dkimsigningsDkimsigningIdPatch"><code><span class="http-method">patch</span> /dkimsignings/{dkimsigningId}</code></a></li>
+  <li><a href="#domainsDomainIdDelete"><code><span class="http-method">delete</span> /domains/{domainId}</code></a></li>
+  <li><a href="#domainsDomainIdPatch"><code><span class="http-method">patch</span> /domains/{domainId}</code></a></li>
+  <li><a href="#groupsGroupIdDelete"><code><span class="http-method">delete</span> /groups/{groupId}</code></a></li>
+  <li><a href="#groupsGroupIdPatch"><code><span class="http-method">patch</span> /groups/{groupId}</code></a></li>
+  <li><a href="#mailaccountsMailaccountIdDelete"><code><span class="http-method">delete</span> /mailaccounts/{mailaccountId}</code></a></li>
+  <li><a href="#mailaccountsMailaccountIdPatch"><code><span class="http-method">patch</span> /mailaccounts/{mailaccountId}</code></a></li>
+  <li><a href="#mailaliasesMailaliasIdDelete"><code><span class="http-method">delete</span> /mailaliases/{mailaliasId}</code></a></li>
+  <li><a href="#mailaliasesMailaliasIdPatch"><code><span class="http-method">patch</span> /mailaliases/{mailaliasId}</code></a></li>
+  <li><a href="#mailforwardingsMailforwardingIdDelete"><code><span class="http-method">delete</span> /mailforwardings/{mailforwardingId}</code></a></li>
+  <li><a href="#mailforwardingsMailforwardingIdPatch"><code><span class="http-method">patch</span> /mailforwardings/{mailforwardingId}</code></a></li>
+  <li><a href="#mailsourcesMailsourceIdDelete"><code><span class="http-method">delete</span> /mailsources/{mailsourceId}</code></a></li>
+  <li><a href="#mailsourcesMailsourceIdPatch"><code><span class="http-method">patch</span> /mailsources/{mailsourceId}</code></a></li>
+  <li><a href="#packagesPackageIdDelete"><code><span class="http-method">delete</span> /packages/{packageId}</code></a></li>
+  <li><a href="#packagesPackageIdPatch"><code><span class="http-method">patch</span> /packages/{packageId}</code></a></li>
+  <li><a href="#usersUserIdDelete"><code><span class="http-method">delete</span> /users/{userId}</code></a></li>
+  <li><a href="#usersUserIdPatch"><code><span class="http-method">patch</span> /users/{userId}</code></a></li>
+  <li><a href="#dkimsGet"><code><span class="http-method">get</span> /dkims</code></a></li>
+  <li><a href="#dkimsPost"><code><span class="http-method">post</span> /dkims</code></a></li>
+  <li><a href="#dkimsigningsGet"><code><span class="http-method">get</span> /dkimsignings</code></a></li>
+  <li><a href="#dkimsigningsPost"><code><span class="http-method">post</span> /dkimsignings</code></a></li>
+  <li><a href="#domainsGet"><code><span class="http-method">get</span> /domains</code></a></li>
+  <li><a href="#domainsPost"><code><span class="http-method">post</span> /domains</code></a></li>
+  <li><a href="#groupsGet"><code><span class="http-method">get</span> /groups</code></a></li>
+  <li><a href="#groupsPost"><code><span class="http-method">post</span> /groups</code></a></li>
+  <li><a href="#mailaccountsGet"><code><span class="http-method">get</span> /mailaccounts</code></a></li>
+  <li><a href="#mailaccountsPost"><code><span class="http-method">post</span> /mailaccounts</code></a></li>
+  <li><a href="#mailaliasesGet"><code><span class="http-method">get</span> /mailaliases</code></a></li>
+  <li><a href="#mailaliasesPost"><code><span class="http-method">post</span> /mailaliases</code></a></li>
+  <li><a href="#mailforwardingsGet"><code><span class="http-method">get</span> /mailforwardings</code></a></li>
+  <li><a href="#mailforwardingsPost"><code><span class="http-method">post</span> /mailforwardings</code></a></li>
+  <li><a href="#mailsourcesGet"><code><span class="http-method">get</span> /mailsources</code></a></li>
+  <li><a href="#mailsourcesPost"><code><span class="http-method">post</span> /mailsources</code></a></li>
+  <li><a href="#packagesGet"><code><span class="http-method">get</span> /packages</code></a></li>
+  <li><a href="#packagesPost"><code><span class="http-method">post</span> /packages</code></a></li>
+  <li><a href="#usersGet"><code><span class="http-method">get</span> /users</code></a></li>
+  <li><a href="#usersPost"><code><span class="http-method">post</span> /users</code></a></li>
+  </ol>
+
+  <div class="method"><a name="apikeysGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /apikeys</code></pre></div>
+    <div class="method-summary">Collection of Apikeys (<span class="nickname">apikeysGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Apikeys</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#Apikey">Apikey</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "apikey" : "aeiou",
+  "updated_at" : "",
+  "created_at" : "",
+  "comment" : "aeiou",
+  "id" : "",
+  "user" : {
+    "name" : "aeiou",
+    "id" : "",
+    "login" : "aeiou"
+  },
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Apikeys
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="apikeysPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /apikeys</code></pre></div>
+    <div class="method-summary">Creates a new Apikey (<span class="nickname">apikeysPost</span>)</div>
+    <div class="method-notes">Create a new Apikey with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Apikey object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="authLoginPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /auth/login</code></pre></div>
+    <div class="method-summary">API Login Action (<span class="nickname">authLoginPost</span>)</div>
+    <div class="method-notes">Returns an Apikey after successful login</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Auth Data </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#AuthSuccess">AuthSuccess</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "apikey" : "aeiou",
+  "user_id" : 123
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#AuthSuccess">AuthSuccess</a>
+    <h4 class="field-label">403</h4>
+    apikey quota exhausted
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="apikeysApikeyIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /apikeys/{apikeyId}</code></pre></div>
+    <div class="method-summary">Delete Apikey (<span class="nickname">apikeysApikeyIdDelete</span>)</div>
+    <div class="method-notes">Deletes the Apikey by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">apikeyId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Apikey id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="apikeysApikeyIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /apikeys/{apikeyId}</code></pre></div>
+    <div class="method-summary">Update Apikey (<span class="nickname">apikeysApikeyIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the Apikey by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">apikeyId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Apikey id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Apikey object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsDkimIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /dkims/{dkimId}</code></pre></div>
+    <div class="method-summary">Delete Dkim (<span class="nickname">dkimsDkimIdDelete</span>)</div>
+    <div class="method-notes">Deletes the Dkim by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">dkimId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Dkim id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsDkimIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /dkims/{dkimId}</code></pre></div>
+    <div class="method-summary">Update Dkim (<span class="nickname">dkimsDkimIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the Dkim by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">dkimId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Dkim id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Dkim object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsigningsDkimsigningIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /dkimsignings/{dkimsigningId}</code></pre></div>
+    <div class="method-summary">Delete DkimSigning (<span class="nickname">dkimsigningsDkimsigningIdDelete</span>)</div>
+    <div class="method-notes">Deletes the DkimSigning by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">dkimsigningId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; DkimSigning id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsigningsDkimsigningIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /dkimsignings/{dkimsigningId}</code></pre></div>
+    <div class="method-summary">Update DkimSigning (<span class="nickname">dkimsigningsDkimsigningIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the DkimSigning by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">dkimsigningId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; DkimSigning id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the DkimSigning object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="domainsDomainIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /domains/{domainId}</code></pre></div>
+    <div class="method-summary">Delete Domain (<span class="nickname">domainsDomainIdDelete</span>)</div>
+    <div class="method-notes">Deletes the Domain by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">domainId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Domain id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="domainsDomainIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /domains/{domainId}</code></pre></div>
+    <div class="method-summary">Update Domain (<span class="nickname">domainsDomainIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the Domain by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">domainId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Domain id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Domain object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="groupsGroupIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /groups/{groupId}</code></pre></div>
+    <div class="method-summary">Delete Group (<span class="nickname">groupsGroupIdDelete</span>)</div>
+    <div class="method-notes">Deletes the Group by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">groupId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Group id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="groupsGroupIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /groups/{groupId}</code></pre></div>
+    <div class="method-summary">Update Group (<span class="nickname">groupsGroupIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the Group by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">groupId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Group id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Group object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaccountsMailaccountIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /mailaccounts/{mailaccountId}</code></pre></div>
+    <div class="method-summary">Delete MailAccount (<span class="nickname">mailaccountsMailaccountIdDelete</span>)</div>
+    <div class="method-notes">Deletes the MailAccount by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailaccountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailAccount id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaccountsMailaccountIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /mailaccounts/{mailaccountId}</code></pre></div>
+    <div class="method-summary">Update MailAccount (<span class="nickname">mailaccountsMailaccountIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the MailAccount by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailaccountId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailAccount id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailAccount object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaliasesMailaliasIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /mailaliases/{mailaliasId}</code></pre></div>
+    <div class="method-summary">Delete MailAlias (<span class="nickname">mailaliasesMailaliasIdDelete</span>)</div>
+    <div class="method-notes">Deletes the MailAlias by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailaliasId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailAlias id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaliasesMailaliasIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /mailaliases/{mailaliasId}</code></pre></div>
+    <div class="method-summary">Update MailAlias (<span class="nickname">mailaliasesMailaliasIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the MailAlias by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailaliasId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailAlias id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailAlias object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailforwardingsMailforwardingIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /mailforwardings/{mailforwardingId}</code></pre></div>
+    <div class="method-summary">Delete MailForwarding (<span class="nickname">mailforwardingsMailforwardingIdDelete</span>)</div>
+    <div class="method-notes">Deletes the MailForwarding by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailforwardingId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailForwarding id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailforwardingsMailforwardingIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /mailforwardings/{mailforwardingId}</code></pre></div>
+    <div class="method-summary">Update MailForwarding (<span class="nickname">mailforwardingsMailforwardingIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the MailForwarding by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailforwardingId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailForwarding id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailForwarding object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailsourcesMailsourceIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /mailsources/{mailsourceId}</code></pre></div>
+    <div class="method-summary">Delete MailSource (<span class="nickname">mailsourcesMailsourceIdDelete</span>)</div>
+    <div class="method-notes">Deletes the MailSource by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailsourceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailSource id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailsourcesMailsourceIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /mailsources/{mailsourceId}</code></pre></div>
+    <div class="method-summary">Update MailSource (<span class="nickname">mailsourcesMailsourceIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the MailSource by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">mailsourceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; MailSource id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailSource object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="packagesPackageIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /packages/{packageId}</code></pre></div>
+    <div class="method-summary">Delete Package (<span class="nickname">packagesPackageIdDelete</span>)</div>
+    <div class="method-notes">Deletes the Package by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">packageId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Package id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="packagesPackageIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /packages/{packageId}</code></pre></div>
+    <div class="method-summary">Update Package (<span class="nickname">packagesPackageIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the Package by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">packageId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Package id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Package object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersUserIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /users/{userId}</code></pre></div>
+    <div class="method-summary">Delete User (<span class="nickname">usersUserIdDelete</span>)</div>
+    <div class="method-notes">Deletes the User by the given id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">userId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; User id format: int64</div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not delete
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersUserIdPatch"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="patch"><code class="huge"><span class="http-method">patch</span> /users/{userId}</code></pre></div>
+    <div class="method-summary">Update User (<span class="nickname">usersUserIdPatch</span>)</div>
+    <div class="method-notes">Updates the given fields in the User by id</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">userId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; User id format: int64</div>
+    </div>  <!-- field-items -->
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the User object </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid request data
+        <a href="#"></a>
+    <h4 class="field-label">500</h4>
+    Could not update
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /dkims</code></pre></div>
+    <div class="method-summary">Collection of Dkims (<span class="nickname">dkimsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Dkims</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#Dkim">Dkim</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "public_key" : "aeiou",
+  "updated_at" : "",
+  "domain" : {
+    "name" : "aeiou",
+    "id" : ""
+  },
+  "created_at" : "",
+  "selector" : "aeiou",
+  "private_key" : "aeiou",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Dkims
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /dkims</code></pre></div>
+    <div class="method-summary">Creates a new Dkim (<span class="nickname">dkimsPost</span>)</div>
+    <div class="method-notes">Create a new Dkim with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Dkim object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsigningsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /dkimsignings</code></pre></div>
+    <div class="method-summary">Collection of DkimSignings (<span class="nickname">dkimsigningsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created DkimSignings</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#DkimSigning">DkimSigning</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "updated_at" : "",
+  "dkim" : {
+    "id" : ""
+  },
+  "author" : "aeiou",
+  "created_at" : "",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of DkimSignings
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="dkimsigningsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /dkimsignings</code></pre></div>
+    <div class="method-summary">Creates a new DkimSigning (<span class="nickname">dkimsigningsPost</span>)</div>
+    <div class="method-notes">Create a new DkimSigning with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The DkimSigning object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="domainsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /domains</code></pre></div>
+    <div class="method-summary">Collection of Domains (<span class="nickname">domainsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Domains</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#Domain">Domain</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "mail_enabled" : true,
+  "updated_at" : "",
+  "name" : "aeiou",
+  "created_at" : "",
+  "dns_enabled" : true,
+  "id" : "",
+  "user" : {
+    "name" : "aeiou",
+    "id" : "",
+    "login" : "aeiou"
+  },
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Domains
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="domainsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /domains</code></pre></div>
+    <div class="method-summary">Creates a new Domain (<span class="nickname">domainsPost</span>)</div>
+    <div class="method-notes">Create a new Domain with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Domain object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="groupsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /groups</code></pre></div>
+    <div class="method-summary">Collection of Groups (<span class="nickname">groupsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Groups</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#Group">Group</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "updated_at" : "",
+  "name" : "aeiou",
+  "created_at" : "",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Groups
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="groupsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /groups</code></pre></div>
+    <div class="method-summary">Creates a new Group (<span class="nickname">groupsPost</span>)</div>
+    <div class="method-notes">Create a new Group with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Group object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaccountsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /mailaccounts</code></pre></div>
+    <div class="method-summary">Collection of MailAccounts (<span class="nickname">mailaccountsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created MailAccounts</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#MailAccount">MailAccount</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "quota_sieve_redirects" : "",
+  "created_at" : "",
+  "receiving_enabled" : true,
+  "enabled" : true,
+  "realname" : "aeiou",
+  "password" : "aeiou",
+  "quota_sieve_script" : "",
+  "updated_at" : "",
+  "quota" : "",
+  "domain" : {
+    "name" : "aeiou",
+    "id" : ""
+  },
+  "quota_sieve_actions" : "",
+  "id" : "",
+  "email" : "aeiou"
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of MailAccounts
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaccountsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /mailaccounts</code></pre></div>
+    <div class="method-summary">Creates a new MailAccount (<span class="nickname">mailaccountsPost</span>)</div>
+    <div class="method-notes">Create a new MailAccount with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailAccount object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaliasesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /mailaliases</code></pre></div>
+    <div class="method-summary">Collection of MailAliases (<span class="nickname">mailaliasesGet</span>)</div>
+    <div class="method-notes">Get the full collection of created MailAliases</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#MailAlias">MailAlias</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "address" : "aeiou",
+  "updated_at" : "",
+  "domain" : {
+    "name" : "aeiou",
+    "id" : ""
+  },
+  "created_at" : "",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of MailAliases
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailaliasesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /mailaliases</code></pre></div>
+    <div class="method-summary">Creates a new MailAlias (<span class="nickname">mailaliasesPost</span>)</div>
+    <div class="method-notes">Create a new MailAlias with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailAlias object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailforwardingsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /mailforwardings</code></pre></div>
+    <div class="method-summary">Collection of MailForwardings (<span class="nickname">mailforwardingsGet</span>)</div>
+    <div class="method-notes">Get the full collection of created MailForwardings</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#MailForwarding">MailForwarding</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "address" : "aeiou",
+  "updated_at" : "",
+  "destinations" : "aeiou",
+  "domain" : {
+    "name" : "aeiou",
+    "id" : ""
+  },
+  "created_at" : "",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of MailForwardings
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailforwardingsPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /mailforwardings</code></pre></div>
+    <div class="method-summary">Creates a new MailForwarding (<span class="nickname">mailforwardingsPost</span>)</div>
+    <div class="method-notes">Create a new MailForwarding with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailForwarding object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailsourcesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /mailsources</code></pre></div>
+    <div class="method-summary">Collection of MailSources (<span class="nickname">mailsourcesGet</span>)</div>
+    <div class="method-notes">Get the full collection of created MailSources</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#MailSource">MailSource</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "address" : "aeiou",
+  "updated_at" : "",
+  "domain" : {
+    "name" : "aeiou",
+    "id" : ""
+  },
+  "created_at" : "",
+  "id" : "",
+  "enabled" : true
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of MailSources
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="mailsourcesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /mailsources</code></pre></div>
+    <div class="method-summary">Creates a new MailSource (<span class="nickname">mailsourcesPost</span>)</div>
+    <div class="method-notes">Create a new MailSource with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailSource object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="packagesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /packages</code></pre></div>
+    <div class="method-summary">Collection of Packages (<span class="nickname">packagesGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Packages</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#Package">Package</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "quota_mail_sources" : "",
+  "quota_mail_forwardings" : "",
+  "quota_vhosts" : "",
+  "created_at" : "",
+  "quota_mail_aliases" : "",
+  "quota_apikeys" : "",
+  "enabled" : true,
+  "quota_custom_packages" : "",
+  "price_unit" : "",
+  "quota_mail_accounts" : "",
+  "quota_customers" : "",
+  "quota_domains" : "",
+  "updated_at" : "",
+  "quota_dns_zones" : "",
+  "quota_databases" : "",
+  "quota_sftp_users" : "",
+  "quota_dns_records" : "",
+  "name" : "aeiou",
+  "quota_database_users" : "",
+  "id" : "",
+  "quota_ssh_pubkeys" : "",
+  "quota_shell_users" : "",
+  "quota_mail_storage" : "",
+  "quota_vhost_storage" : ""
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Packages
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="packagesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /packages</code></pre></div>
+    <div class="method-summary">Creates a new Package (<span class="nickname">packagesPost</span>)</div>
+    <div class="method-notes">Create a new Package with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Package object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /users</code></pre></div>
+    <div class="method-summary">Collection of Users (<span class="nickname">usersGet</span>)</div>
+    <div class="method-notes">Get the full collection of created Users</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">limit (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Limits the output </div><div class="param">offset (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Offsets the output (needs limit) </div><div class="param">q[fieldName] (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Seach for the field </div><div class="param">sort (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Sort by given field name (descending by - prefix) </div><div class="param">fields (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Give only the requested fields (comma separated list) </div>
+    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#User">User</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>[ {
+  "password" : "aeiou",
+  "updated_at" : "",
+  "name" : "aeiou",
+  "created_at" : "",
+  "id" : "",
+  "login" : "aeiou",
+  "enabled" : true,
+  "contact_email" : "aeiou",
+  "group" : {
+    "name" : "aeiou",
+    "id" : ""
+  }
+} ]</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    An array of Users
+        
+    <h4 class="field-label">0</h4>
+    Unexpected error
+        <a href="#Error">Error</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="usersPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /users</code></pre></div>
+    <div class="method-summary">Creates a new User (<span class="nickname">usersPost</span>)</div>
+    <div class="method-notes">Create a new User with the request body</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The User object without id </div>
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Success
+        <a href="#"></a>
+    <h4 class="field-label">400</h4>
+    Malformed request data
+        <a href="#"></a>
+    <h4 class="field-label">409</h4>
+    Resource conflict
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+
+  <div class="up"><a href="#__Models">Up</a></div>
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#Apikey"><code>Apikey</code></a></li>
+    <li><a href="#Apikey_user"><code>Apikey_user</code></a></li>
+    <li><a href="#Auth"><code>Auth</code></a></li>
+    <li><a href="#AuthSuccess"><code>AuthSuccess</code></a></li>
+    <li><a href="#Dkim"><code>Dkim</code></a></li>
+    <li><a href="#DkimSigning"><code>DkimSigning</code></a></li>
+    <li><a href="#DkimSigning_dkim"><code>DkimSigning_dkim</code></a></li>
+    <li><a href="#Dkim_domain"><code>Dkim_domain</code></a></li>
+    <li><a href="#Domain"><code>Domain</code></a></li>
+    <li><a href="#Error"><code>Error</code></a></li>
+    <li><a href="#Group"><code>Group</code></a></li>
+    <li><a href="#MailAccount"><code>MailAccount</code></a></li>
+    <li><a href="#MailAlias"><code>MailAlias</code></a></li>
+    <li><a href="#MailForwarding"><code>MailForwarding</code></a></li>
+    <li><a href="#MailSource"><code>MailSource</code></a></li>
+    <li><a href="#Package"><code>Package</code></a></li>
+    <li><a href="#User"><code>User</code></a></li>
+    <li><a href="#User_group"><code>User_group</code></a></li>
+  </ol>
+
+  <div class="model">
+    <h3 class="field-label"><a name="Apikey">Apikey</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Apikey </div>
+<div class="param">apikey (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> apikey of Apikey </div>
+<div class="param">comment (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> comment of Apikey </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of Apikey </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of Apikey </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of Apikey </div>
+<div class="param">user (optional)</div><div class="param-desc"><span class="param-type"><a href="#Apikey_user">Apikey_user</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Apikey_user">Apikey_user</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of User </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of User </div>
+<div class="param">login (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> login of User </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Auth">Auth</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">username (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">apikey_comment (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="AuthSuccess">AuthSuccess</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">user_id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">apikey (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Dkim">Dkim</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Dkim </div>
+<div class="param">selector (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> selector of Dkim </div>
+<div class="param">private_key (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> private_key of Dkim </div>
+<div class="param">public_key (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> public_key of Dkim </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of Dkim </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of Dkim </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of Dkim </div>
+<div class="param">domain (optional)</div><div class="param-desc"><span class="param-type"><a href="#Dkim_domain">Dkim_domain</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="DkimSigning">DkimSigning</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of DkimSigning </div>
+<div class="param">author (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> author of DkimSigning </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of DkimSigning </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of DkimSigning </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of DkimSigning </div>
+<div class="param">dkim (optional)</div><div class="param-desc"><span class="param-type"><a href="#DkimSigning_dkim">DkimSigning_dkim</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="DkimSigning_dkim">DkimSigning_dkim</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Dkim </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Dkim_domain">Dkim_domain</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Domain </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Domain </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Domain">Domain</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Domain </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Domain </div>
+<div class="param">mail_enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> mail_enabled of Domain </div>
+<div class="param">dns_enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> dns_enabled of Domain </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of Domain </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of Domain </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of Domain </div>
+<div class="param">user (optional)</div><div class="param-desc"><span class="param-type"><a href="#Apikey_user">Apikey_user</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Error">Error</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">code (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">fields (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Group">Group</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Group </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Group </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of Group </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of Group </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of Group </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="MailAccount">MailAccount</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailAccount </div>
+<div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> email of MailAccount </div>
+<div class="param">realname (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> realname of MailAccount </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> password of MailAccount </div>
+<div class="param">quota (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota of MailAccount </div>
+<div class="param">quota_sieve_script (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_sieve_script of MailAccount </div>
+<div class="param">quota_sieve_actions (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_sieve_actions of MailAccount </div>
+<div class="param">quota_sieve_redirects (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_sieve_redirects of MailAccount </div>
+<div class="param">receiving_enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> receiving_enabled of MailAccount </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of MailAccount </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of MailAccount </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of MailAccount </div>
+<div class="param">domain (optional)</div><div class="param-desc"><span class="param-type"><a href="#Dkim_domain">Dkim_domain</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="MailAlias">MailAlias</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailAlias </div>
+<div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailAlias </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of MailAlias </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of MailAlias </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of MailAlias </div>
+<div class="param">domain (optional)</div><div class="param-desc"><span class="param-type"><a href="#Dkim_domain">Dkim_domain</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="MailForwarding">MailForwarding</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailForwarding </div>
+<div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailForwarding </div>
+<div class="param">destinations (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> destinations of MailForwarding </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of MailForwarding </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of MailForwarding </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of MailForwarding </div>
+<div class="param">domain (optional)</div><div class="param-desc"><span class="param-type"><a href="#Dkim_domain">Dkim_domain</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="MailSource">MailSource</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailSource </div>
+<div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailSource </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of MailSource </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of MailSource </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of MailSource </div>
+<div class="param">domain (optional)</div><div class="param-desc"><span class="param-type"><a href="#Dkim_domain">Dkim_domain</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="Package">Package</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Package </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Package </div>
+<div class="param">price_unit (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> price_unit of Package </div>
+<div class="param">quota_apikeys (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_apikeys of Package </div>
+<div class="param">quota_custom_packages (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_custom_packages of Package </div>
+<div class="param">quota_ssh_pubkeys (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_ssh_pubkeys of Package </div>
+<div class="param">quota_customers (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_customers of Package </div>
+<div class="param">quota_vhosts (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_vhosts of Package </div>
+<div class="param">quota_vhost_storage (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_vhost_storage of Package </div>
+<div class="param">quota_databases (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_databases of Package </div>
+<div class="param">quota_database_users (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_database_users of Package </div>
+<div class="param">quota_dns_zones (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_dns_zones of Package </div>
+<div class="param">quota_dns_records (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_dns_records of Package </div>
+<div class="param">quota_domains (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_domains of Package </div>
+<div class="param">quota_mail_accounts (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_mail_accounts of Package </div>
+<div class="param">quota_mail_forwardings (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_mail_forwardings of Package </div>
+<div class="param">quota_mail_aliases (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_mail_aliases of Package </div>
+<div class="param">quota_mail_sources (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_mail_sources of Package </div>
+<div class="param">quota_mail_storage (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_mail_storage of Package </div>
+<div class="param">quota_sftp_users (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_sftp_users of Package </div>
+<div class="param">quota_shell_users (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> quota_shell_users of Package </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of Package </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of Package </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of Package </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="User">User</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of User </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of User </div>
+<div class="param">login (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> login of User </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> password of User </div>
+<div class="param">contact_email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> contact_email of User </div>
+<div class="param">created_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> created_at of User </div>
+<div class="param">updated_at (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> updated_at of User </div>
+<div class="param">enabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> enabled of User </div>
+<div class="param">group (optional)</div><div class="param-desc"><span class="param-type"><a href="#User_group">User_group</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3 class="field-label"><a name="User_group">User_group</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Group </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Group </div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
