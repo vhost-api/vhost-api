@@ -57,10 +57,15 @@ when 'POSTGRES'
           ON
             "mail_account_mail_aliases"."mail_account_id"="mail_accounts"."id"
           AND "mail_accounts"."enabled" = TRUE
+        LEFT JOIN "domains"
+          ON
+            "mail_accounts"."domain_id"="domains"."id"
         RIGHT JOIN "mail_aliases"
           ON "mail_account_mail_aliases"."mail_alias_id"="mail_aliases"."id"
           AND "mail_aliases"."enabled" = TRUE)
       WHERE "mail_accounts"."email" IS NOT NULL
+      AND "domains"."enabled" = TRUE
+      AND "domains"."mail_enabled" = TRUE
       GROUP BY "mail_aliases"."address";')
   # mail_sendas_maps
   adapter.execute('CREATE OR REPLACE VIEW "mail_sendas_maps"
