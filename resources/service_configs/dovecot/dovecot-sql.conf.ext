@@ -1,0 +1,9 @@
+driver = mysql
+connect = host=localhost dbname=vhostapi user=vhostapi_ro password=secret
+default_pass_scheme = SHA512-CRYPT
+
+password_query = SELECT email AS user, password FROM mail_user_maps WHERE email='%u';
+
+user_query = SELECT "vmail" AS uid, "vmail" AS gid, CONCAT('*:storage=', quota, 'B') AS quota_rule FROM mail_user_maps WHERE email='%u';
+
+iterate_query = SELECT email AS user FROM mail_user_maps;

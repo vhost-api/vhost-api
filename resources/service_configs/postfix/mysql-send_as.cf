@@ -1,0 +1,6 @@
+user = vhostapi_ro
+password = secret
+dbname = vhostapi
+table = mail_sendas_maps
+query = SELECT user FROM mail_sendas_maps WHERE source='%s'
+hosts = localhost

@@ -1,0 +1,6 @@
+user = vhostapi_ro
+password = secret
+dbname = vhostapi
+table = mail_alias_maps
+query = SELECT destination FROM mail_alias_maps WHERE source='%s'
+hosts = localhost

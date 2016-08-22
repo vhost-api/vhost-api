@@ -1,0 +1,157 @@
+# main.cf
+
+# general server settings
+# daemon_directory = /usr/lib/postfix/bin
+mydomain = example.com
+myorigin = $mydomain
+myhostname = host01.example.com
+mydestination = 
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+append_dot_mydomain = no
+
+default_database_type=btree
+
+relay_domains = mysql:/etc/postfix/mysql-relay_domains.cf 
+
+#do not cache recipient lookups
+address_verify_map =
+
+parent_domain_matches_subdomains=
+
+mynetworks = 127.0.0.1, [::ffff:127.0.0.0]/104, [::1]/128, 1.2.3.4
+
+# ssl cert stuff
+smtpd_tls_cert_file = /etc/letsencrypt/live/host01.example.com/fullchain.pem
+smtpd_tls_key_file = /etc/letsencrypt/live/host01.example.com/privkey.pem
+smtpd_tls_dh1024_param_file = /etc/dh2048.pem
+smtpd_tls_dh512_param_file = /etc/dh512.pem
+smtpd_tls_eecdh_grade=ultra
+tls_preempt_cipherlist = yes
+smtpd_tls_loglevel = 1
+smtpd_tls_security_level = may
+smtpd_tls_mandatory_protocols = !SSLv2 !SSLv3
+smtp_tls_mandatory_protocols = !SSLv2 !SSLv3
+smtp_tls_protocols = !SSLv2, !SSLv3
+smtpd_tls_protocols = !SSLv2 !SSLv3
+smtpd_use_tls = yes
+smtp_tls_loglevel = 1
+smtp_tls_security_level = may
+smtpd_tls_session_cache_database = btree:/var/lib/postfix/smtpd_scache
+smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache
+smtp_tls_CApath = /etc/ssl/certs
+
+# transport settings
+transport_maps = $relay_domains
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+lmtp_destination_recipient_limit=1
+mailbox_size_limit = 0
+message_size_limit = 104857600
+recipient_delimiter = +
+inet_interfaces = 127.0.0.1, [::1], 1.2.3.4
+inet_protocols = all
+disable_vrfy_command = yes
+# enable for testing new config
+#soft_bounce = yes
+
+debug_peer_list =
+
+# we handle those in recipient_restrictions
+smtpd_relay_restrictions =
+
+# custom restriction classes
+policy_check = check_policy_service inet:127.0.0.1:10040
+
+smtpd_recipient_restrictions =
+# policy services
+ $policy_check,
+# white-/blacklisting
+ check_recipient_access btree:/etc/postfix/access_recipient,
+ check_client_access btree:/etc/postfix/access_client,
+ check_helo_access btree:/etc/postfix/access_helo,
+ check_sender_access btree:/etc/postfix/access_sender,
+# check mailbox quota before delivery
+ check_policy_service inet:localhost:12122,
+# reject unclean mails
+ reject_unauth_pipelining,
+ reject_non_fqdn_recipient,
+ reject_non_fqdn_sender,
+ reject_unknown_recipient_domain,
+ reject_unknown_sender_domain,
+# allow our users
+ reject_authenticated_sender_login_mismatch,
+ permit_sasl_authenticated,
+ permit_mynetworks,
+# reject relaying
+ reject_unauth_destination,
+# cache if recipient exists
+ reject_unverified_recipient,
+# reject mailservers without proper rDNS and hostname->IP
+ warn_if_reject reject_unknown_client_hostname,
+# check the HELO
+ warn_if_reject reject_invalid_helo_hostname,
+#permit_mx_backup,
+ permit
+
+# some rate limiting rules only work after data so check it again
+smtpd_end_of_data_restrictions = $policy_check
+
+# needed to put our users on HOLD
+post_queue_smtpd_recipient_restrictions =
+ check_sender_access btree:/etc/postfix/access_sender-post-filter,
+ permit_mynetworks,
+ reject
+
+unverified_recipient_reject_code = 550
+unknown_hostname_reject_code = 550
+unknown_client_reject_code = 550
+unknown_address_reject_code = 550
+
+smtpd_reject_footer = For assistance contact <postmaster@example.com>. Please provide the following information in your problem report: time ($localtime) and client ($client_address).
+
+smtpd_sasl_auth_enable = yes
+smtpd_tls_auth_only = yes
+
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = /var/run/dovecot/auth-client
+smtpd_tls_received_header = yes
+# needed for SA
+smtpd_sasl_authenticated_header = yes
+
+smtpd_helo_required = yes
+
+smtpd_client_connection_rate_limit = 400
+smtpd_client_message_rate_limit = 500
+smtpd_client_recipient_rate_limit = 500
+
+strict_rfc821_envelopes = yes
+
+alias_maps = mysql:/etc/postfix/mysql-alias_maps.cf
+alias_database = $alias_maps
+
+# virtual users (database)
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+virtual_alias_maps = mysql:/etc/postfix/mysql-forwarding_maps.cf, mysql:/etc/postfix/mysql-alias_maps.cf
+
+# send-as permission
+smtpd_sender_login_maps = mysql:/etc/postfix/mysql-send_as.cf
+
+# reject mails to system users (nobody looks in those mailboxes)
+local_recipient_maps = btree:/etc/postfix/users $alias_maps
+relocated_maps = btree:/etc/postfix/relocated
+
+relay_recipient_maps = 
+
+
+authorized_mailq_users = root
+
+header_checks = pcre:/etc/postfix/header_checks
+
+notify_classes = resource, software
+delay_warning_time = 4h 
+
+non_smtpd_milters=unix:/var/spool/opendkim/opendkim
+smtpd_milters=unix:/var/spool/opendkim/opendkim

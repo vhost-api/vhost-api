@@ -1,0 +1,6 @@
+user = vhostapi_ro
+password = secret
+dbname = vhostapi
+table = mail_forwarding_maps
+query = SELECT destination FROM mail_forwarding_maps WHERE source='%s'
+hosts = localhost

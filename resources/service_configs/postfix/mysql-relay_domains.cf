@@ -1,0 +1,6 @@
+user = vhostapi_ro
+password = secret
+dbname = vhostapi
+table = domains
+query = SELECT "lmtp:unix:/var/run/dovecot/lmtp" AS transport FROM domains WHERE name='%s' AND mail_enabled='1' AND enabled='1'
+hosts = localhost
