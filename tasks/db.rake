@@ -119,24 +119,6 @@ begin
       printf "<= %s done in %.2fs\n", t.name, time
     end
 
-    desc 'Load the development seed data from database/seeds_dev.rb'
-    task :dev do |t|
-      puts '=> Loading development seed data'
-      time = Benchmark.realtime do
-        require './database/seeds_dev.rb'
-      end
-      printf "<= %s done in %.2fs\n", t.name, time
-    end
-
-    desc 'Load the test seed data from database/seeds_test.rb'
-    task :test do |t|
-      puts '=> Loading test seed data'
-      time = Benchmark.realtime do
-        require './database/seeds_test.rb'
-      end
-      printf "<= %s done in %.2fs\n", t.name, time
-    end
-
     desc 'Create the database, migrate and init with the seed data'
     task setup: [:create, :migrate, :seed]
   end

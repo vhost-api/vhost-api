@@ -19,9 +19,9 @@ class Domain
   validates_format_of :name, with: FQDN
 
   belongs_to :user
-  validates_presence_of :user, message: 'user_id must not be blank'
 
   has n, :mail_accounts, constraint: :destroy
+  has n, :mail_forwardings, constraint: :destroy
   has n, :mail_aliases, constraint: :destroy
   has n, :mail_sources, constraint: :destroy
   has n, :dkims, constraint: :destroy

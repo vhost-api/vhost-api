@@ -15,6 +15,5 @@
 
 + Prepend `RACK_ENV="development"` for most stuff to set up the environment correctly
 + Install development and test gems by running `bundle install --with development test`
-+ Instead of `db:seed` use `db:dev` to fill the database with some testdata from `database/seeds_test.rb`
 + Run the application via `RACK_ENV="development" bundle exec shotgun config.ru` to enable auto-reloading of all files at runtime
 + To empty the database simply run `RACK_ENV="development" bundle exec rake db:reset` and you can load your seed data once again

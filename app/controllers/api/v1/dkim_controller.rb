@@ -46,6 +46,10 @@ namespace '/api/v1/dkims' do
         @_params[:private_key], @_params[:public_key] = generate_dkim_keypair
       end
 
+      # remove trailing newlines, which cause the keys to be invalid
+      @_params[:private_key].chomp!("\n")
+      @_params[:public_key].chomp!("\n")
+
       # perform validations
       @dkim = Dkim.new(@_params)
       unless @dkim.valid?
@@ -90,16 +94,6 @@ namespace '/api/v1/dkims' do
                             errors: { format: err.message })
                 else
                   api_error(ApiErrors.[](:malformed_request))
-                end
-    rescue DataMapper::SaveFailureError => err
-      log_user('debug', err.message)
-      errors = extract_object_errors(object: @dkim)
-      log_user('debug', "create_errors: #{errors}")
-      @result = if show_validation_errors || show_errors
-                  api_error(ApiErrors.[](:failed_create),
-                            errors: errors)
-                else
-                  api_error(ApiErrors.[](:failed_create))
                 end
     rescue => err
       # unhandled error, always log backtrace
@@ -187,6 +181,10 @@ namespace '/api/v1/dkims' do
           @_params.delete(key) if @_params[key] == @dkim.send(key)
         end
 
+        # remove trailing newlines, which cause the keys to be invalid
+        @_params[:private_key].chomp!("\n") unless @_params[:private_key].nil?
+        @_params[:public_key].chomp!("\n") unless @_params[:public_key].nil?
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = Dkim.new(@_params)
         unless dummy.valid?
@@ -237,16 +235,6 @@ namespace '/api/v1/dkims' do
                               errors: { format: err.message })
                   else
                     api_error(ApiErrors.[](:malformed_request))
-                  end
-      rescue DataMapper::SaveFailureError => err
-        log_user('debug', err.message)
-        errors = extract_object_errors(object: @dkim)
-        log_user('debug', "update_errors: #{errors}")
-        @result = if show_validation_errors || show_errors
-                    api_error(ApiErrors.[](:failed_update),
-                              errors: errors)
-                  else
-                    api_error(ApiErrors.[](:failed_update))
                   end
       rescue => err
         # unhandled error, always log backtrace

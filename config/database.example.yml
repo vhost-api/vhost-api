@@ -1,10 +1,3 @@
-development:
-  :db_adapter: mysql
-  :db_host: localhost
-  :db_user: foo
-  :db_pass: bar
-  :db_name: vhost_api_dev
-
 production:
   :db_adapter: postgres
   :db_encoding: unicode
@@ -20,3 +13,10 @@ test:
   :db_user: foo
   :db_pass: bar
   :db_name: vhost_api_test
+
+development:
+  :db_adapter: mysql
+  :db_host: localhost
+  :db_user: foo
+  :db_pass: bar
+  :db_name: vhost_api_dev

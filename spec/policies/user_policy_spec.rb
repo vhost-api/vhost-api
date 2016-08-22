@@ -37,16 +37,49 @@ describe UserPolicy do
   end
 
   context 'for the reseller of the user' do
-    let(:user) { create(:reseller_with_customers) }
+    let(:user) do
+      reseller = create(:reseller_with_customers)
+      package = create(:reseller_package)
+      reseller.packages << package
+      reseller.save
+      reseller
+    end
     let(:testuser) { user.customers.first }
     let(:group) { testuser.group }
-    let(:params) do
-      attributes_for(:user, reseller_id: user.id, group_id: group.id)
+
+    context 'assigning 1 package' do
+      let(:params) do
+        packages = create_list(:package, 2, user_id: user.id)
+        attrs = attributes_for(:user, reseller_id: user.id, group_id: group.id)
+        attrs[:packages] = [packages.first]
+        attrs
+      end
+
+      context 'with available quota' do
+        it { should permit(:create) }
+        it { should permit_args(:create_with, params) }
+      end
     end
 
-    context 'with available quota' do
-      it { should permit(:create) }
-      it { should permit_args(:create_with, params) }
+    context 'assigning 3 packages' do
+      let(:testuser) do
+        testuser = user.customers.first
+        packages = create_list(:package, 2, user_id: user.id)
+        testuser.packages = packages
+        testuser.save
+        testuser
+      end
+      let(:params) do
+        packages = create_list(:package, 3, user_id: user.id)
+        attrs = attributes_for(:user, reseller_id: user.id, group_id: group.id)
+        attrs[:packages] = packages
+        attrs
+      end
+
+      context 'with available quota' do
+        it { should permit(:create) }
+        it { should permit_args(:create_with, params) }
+      end
     end
 
     context 'with exhausted quota' do

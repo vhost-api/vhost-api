@@ -39,6 +39,26 @@ describe 'VHost-API Authentication' do
         Apikey.first(user_id: testuser.id, comment: 'rspec').apikey
       )
     end
+
+    it 'returns an API error if apikey quota exhausted' do
+      params = auth_login_params(testuser.login, password)
+      quota_apikeys = testuser.packages.map(&:quota_apikeys).reduce(0, :+)
+      # exhaust the quota
+      quota_apikeys.times do |i|
+        params['apikey_comment'] = "test#{i}"
+        post '/api/v1/auth/login', params
+      end
+
+      # try to allocate another apikey
+      params['apikey_comment'] = 'rspec'
+      post '/api/v1/auth/login', params
+
+      expect(last_response.body).to eq(
+        spec_json_pretty(
+          api_error(ApiErrors.[](:quota_apikey)).to_json
+        )
+      )
+    end
   end
 
   context 'with invalid credentials' do
@@ -46,7 +66,7 @@ describe 'VHost-API Authentication' do
       post '/api/v1/auth/login',
            'user' => testuser.login,
            'password' => 'wrong_password',
-           'apikey' => 'rspec'
+           'apikey_comment' => 'rspec'
 
       expect(last_response.body).to eq(
         spec_json_pretty(

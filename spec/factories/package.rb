@@ -8,6 +8,7 @@ FactoryGirl.define do
     name { generate(:package_name) }
     price_unit 2_99
     quota_apikeys 3
+    quota_custom_packages 0
     quota_ssh_pubkeys 5
     quota_customers 0
     quota_vhosts 1
@@ -18,6 +19,7 @@ FactoryGirl.define do
     quota_dns_records 10
     quota_domains 1
     quota_mail_accounts 5
+    quota_mail_forwardings 10
     quota_mail_aliases 10
     quota_mail_sources 10
     quota_mail_storage 104_857_600
@@ -39,12 +41,13 @@ FactoryGirl.define do
 
     factory :invalid_package do
       name nil
-      price nil
+      price_unit nil
       user nil
     end
 
     factory :reseller_package do
       quota_apikeys 10
+      quota_custom_packages 10
       quota_ssh_pubkeys 10
       quota_customers 5
       quota_vhosts 25
@@ -55,6 +58,7 @@ FactoryGirl.define do
       quota_dns_records 50
       quota_domains 10
       quota_mail_accounts 25
+      quota_mail_forwardings 50
       quota_mail_aliases 50
       quota_mail_sources 50
       quota_mail_storage 1_048_576_000

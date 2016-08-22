@@ -67,6 +67,24 @@ describe 'VHost-API User Controller' do
           end
         end
 
+        describe 'GET enabled_modules' do
+          it 'returns the globally enabled modules' do
+            get(
+              "/api/v#{api_version}/users/#{testuser.id}/enabled_modules", nil,
+              auth_headers_apikey(testadmin.id)
+            )
+
+            expect(last_response.status).to eq(200)
+            expect(last_response.body).to eq(
+              spec_apiresponse(
+                ApiResponseSuccess.new(
+                  data: { object: appconfig[:api_modules] }
+                )
+              )
+            )
+          end
+        end
+
         describe 'GET inexistent record' do
           it 'returns an API Error' do
             inexistent = testuser.id
@@ -88,6 +106,17 @@ describe 'VHost-API User Controller' do
 
         describe 'POST' do
           context 'with valid attributes' do
+            let(:user_packages) do
+              packages = create_list(:package, 2)
+              packages.map(&:id)
+            end
+
+            let(:user_attrs) do
+              factory_attrs = attributes_for(:user, name: 'new')
+              factory_attrs[:packages] = user_packages
+              factory_attrs
+            end
+
             it 'authorizes the request by using the policies' do
               expect(Pundit.authorize(testadmin, User, :create?)).to be_truthy
             end
@@ -97,7 +126,7 @@ describe 'VHost-API User Controller' do
 
               post(
                 "/api/v#{api_version}/users",
-                attributes_for(:user, name: 'new').to_json,
+                user_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -107,7 +136,7 @@ describe 'VHost-API User Controller' do
             it 'returns an API Success containing the new user' do
               post(
                 "/api/v#{api_version}/users",
-                attributes_for(:user, name: 'new').to_json,
+                user_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -125,7 +154,7 @@ describe 'VHost-API User Controller' do
             it 'returns a valid JSON object' do
               post(
                 "/api/v#{api_version}/users",
-                attributes_for(:user, name: 'new').to_json,
+                user_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -135,7 +164,7 @@ describe 'VHost-API User Controller' do
             it 'redirects to the new user' do
               post(
                 "/api/v#{api_version}/users",
-                attributes_for(:user, name: 'new').to_json,
+                user_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -174,6 +203,24 @@ describe 'VHost-API User Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:malformed_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
+                post(
+                  "/api/v#{api_version}/users?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
                   )
                 )
               end
@@ -219,6 +266,23 @@ describe 'VHost-API User Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in User'
+                post(
+                  "/api/v#{api_version}/users?verbose",
+                  invalid_user_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/users",
@@ -256,6 +320,31 @@ describe 'VHost-API User Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'name',
+                      errors: ['Name must not be blank'] },
+                    { field: 'login',
+                      errors: ['Login must not be blank'] }
+                  ]
+                }
+
+                post(
+                  "/api/v#{api_version}/users?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end
@@ -316,32 +405,40 @@ describe 'VHost-API User Controller' do
 
         describe 'PATCH' do
           context 'with valid attributes' do
+            let(:user_packages) do
+              packages = create_list(:package, 2)
+              packages.map(&:id)
+            end
+
+            let(:upd_attrs) do
+              factory_attrs = attributes_for(:user, name: 'foo')
+              factory_attrs[:packages] = user_packages
+              factory_attrs
+            end
+
             it 'authorizes the request by using the policies' do
               expect(Pundit.authorize(testadmin, User, :create?)).to be_truthy
             end
 
             it 'updates an existing user with new values' do
-              updated_attrs = attributes_for(:user, name: 'foo')
               prev_tstamp = testuser.updated_at
 
               sleep 1.0
 
               patch(
                 "/api/v#{api_version}/users/#{testuser.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              expect(User.get(testuser.id).name).to eq(updated_attrs[:name])
+              expect(User.get(testuser.id).name).to eq(upd_attrs[:name])
               expect(User.get(testuser.id).updated_at).to be > prev_tstamp
             end
 
             it 'returns an API Success containing the updated user' do
-              updated_attrs = attributes_for(:user, name: 'foo')
-
               patch(
                 "/api/v#{api_version}/users/#{testuser.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -357,11 +454,9 @@ describe 'VHost-API User Controller' do
             end
 
             it 'returns a valid JSON object' do
-              updated_attrs = attributes_for(:user, name: 'foo')
-
               patch(
                 "/api/v#{api_version}/users/#{testuser.id}",
-                updated_attrs.to_json,
+                upd_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -397,6 +492,24 @@ describe 'VHost-API User Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:malformed_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
+                patch(
+                  "/api/v#{api_version}/users/#{testuser.id}?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
                   )
                 )
               end
@@ -443,6 +556,23 @@ describe 'VHost-API User Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in User'
+                patch(
+                  "/api/v#{api_version}/users/#{testuser.id}?verbose",
+                  invalid_user_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/users/#{testuser.id}",
@@ -481,6 +611,31 @@ describe 'VHost-API User Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'name',
+                      errors: ['Name must not be blank'] },
+                    { field: 'login',
+                      errors: ['Login must not be blank'] }
+                  ]
+                }
+
+                patch(
+                  "/api/v#{api_version}/users/#{testuser.id}?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end

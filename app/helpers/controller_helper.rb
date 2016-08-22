@@ -16,7 +16,9 @@ def return_json_pretty(json)
 end
 
 def return_authorized_resource(object: nil)
-  return return_json_pretty({}.to_json) if object.nil?
+  return return_apiresponse(
+    ApiResponseSuccess.new(data: { object: nil })
+  ) if object.nil?
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
   object = object.as_json(only: permitted_attributes)
@@ -24,21 +26,20 @@ def return_authorized_resource(object: nil)
 end
 
 def return_authorized_collection(object: nil, params: { fields: nil })
-  return return_json_pretty({}.to_json) if object.nil? || object.empty?
-
   begin
-    result = limited_collection(collection: object, params: params)
+    object = limited_collection(collection: object, params: params)
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
   rescue => err
     log_app('error', "#{err.message}\n#{err.backtrace}")
     return_api_error(ApiErrors.[](:invalid_request))
   end
-
-  return_apiresponse(ApiResponseSuccess.new(data: { objects: result }))
+  return_apiresponse(ApiResponseSuccess.new(data: { objects: object }))
 end
 
 def limited_collection(collection: nil, params: { fields: nil })
+  return {} if collection.nil? || collection.empty?
+
   collection = prepare_collection(
     collection: collection, params: params
   ) unless (params.keys - [:fields]).empty?
@@ -56,8 +57,7 @@ def prepare_collection(collection: nil, params: { fields: nil })
                                  query: symbolize_params_hash(params[:q]))
 
   # sort the collection
-  collection = sort_collection(collection: collection,
-                               sort_params: params[:sort])
+  collection = sort_collection(collection: collection, params: params[:sort])
 
   # return only requested fields
   filter_params = { limit: params[:limit], offset: params[:offset] }
@@ -65,8 +65,9 @@ def prepare_collection(collection: nil, params: { fields: nil })
                                  params: filter_params) unless params.empty?
 
   # halt with empty response if search/filter returns nil/empty
-  halt 200, return_json_pretty({}.to_json) if collection.nil? ||
-                                              collection.empty?
+  halt 200, return_apiresponse(
+    ApiResponseSuccess.new(data: { objects: {} })
+  ) if collection.nil? || collection.empty?
 
   collection
 end
@@ -102,10 +103,10 @@ def filter_collection(collection: nil, params: { fields: nil })
   collection
 end
 
-def sort_collection(collection: nil, sort_params: nil)
-  return collection if sort_params.nil?
+def sort_collection(collection: nil, params: nil)
+  return collection if params.nil?
 
-  sort_columns = sort_params.split(',')
+  sort_columns = params.split(',')
   query = []
   sort_columns.each do |col|
     query.push(col[0] == '-' ? col[1..-1].to_sym.desc : col.to_sym.asc)
@@ -115,7 +116,7 @@ def sort_collection(collection: nil, sort_params: nil)
 end
 
 def prepare_collection_output(collection: nil, fields: nil)
-  # result = []
+  return {} if collection.nil? || collection.empty?
   result = {}
   collection.each do |record|
     # result.push(record.as_json(only: fields))

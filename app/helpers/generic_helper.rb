@@ -41,12 +41,8 @@ def log_user(level = 'debug', message = '')
   settings.app_logger.send(level, formatted)
 end
 
-def log_app_error(message)
-  settings.app_logger.info(message)
-end
-
-def log_app_action(message)
-  settings.app_logger.info(message)
+def log_app(level = 'debug', message = '')
+  settings.app_logger.send(level, message)
 end
 
 # @param program [String]

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
-namespace '/api/v1/users' do
+namespace '/api/v1/packages' do
   get do
-    @users = policy_scope(User)
-    return_authorized_collection(object: @users, params: params)
+    @packages = policy_scope(Package)
+    return_authorized_collection(object: @packages, params: params)
   end
 
   post do
     @result = nil
 
     # check creation permissions. i.e. admin/quotacheck
-    authorize(User, :create?)
+    authorize(Package, :create?)
 
     begin
       # check for show errors request
@@ -21,35 +21,13 @@ namespace '/api/v1/users' do
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # has to be an array if provided
-      unless @_params[:packages].nil?
-        return_api_error(
-          ApiErrors.[](:invalid_packages)
-        ) unless @_params[:packages].is_a?(Array)
-      end
-
-      # check permissions for parameters
-      raise Pundit::NotAuthorizedError unless policy(User).create_with?(
-        @_params
-      )
-
-      # fetch packages as an array of mailaccounts
-      unless @_params[:packages].nil?
-        @packages = Package.all(id: 0)
-        package_ids = @_params.delete(:packages)
-        package_ids.each do |pkg_id|
-          @packages.push(Package.get(pkg_id))
-        end
-        @_params[:packages] = @packages
-      end
-
-      # assign reseller
-      @_params[:reseller_id] = @user.id if @user.reseller?
+      # assign user
+      @_params[:user_id] = @user.id
 
       # perform validations
-      @_user = User.new(@_params)
-      unless @_user.valid?
-        errors = extract_object_errors(object: @_user)
+      @package = Package.new(@_params)
+      unless @package.valid?
+        errors = extract_object_errors(object: @package)
         log_user('debug', "validation_errors: #{errors}")
         if show_validation_errors || show_errors
           return_api_error(ApiErrors.[](:invalid_request),
@@ -59,11 +37,16 @@ namespace '/api/v1/users' do
         end
       end
 
-      if @_user.save
-        log_user('info', "created User #{@_user.as_json}")
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(Package).create_with?(
+        @_params
+      )
+
+      if @package.save
+        log_user('info', "created Package #{@package.as_json}")
         @result = ApiResponseSuccess.new(status_code: 201,
-                                         data: { object: @_user })
-        loc = "#{request.base_url}/api/v1/users/#{@_user.id}"
+                                         data: { object: @package })
+        loc = "#{request.base_url}/api/v1/packages/#{@package.id}"
         response.headers['Location'] = loc
       end
     # re-raise authentication/authorization errors so that they don't end up
@@ -105,8 +88,8 @@ namespace '/api/v1/users' do
     # namespace local before blocks are evaluate before global before blocks
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
-    @_user = User.get(params[:id])
-    return_api_error(ApiErrors.[](:not_found)) if @_user.nil?
+    @package = Package.get(params[:id])
+    return_api_error(ApiErrors.[](:not_found)) if @package.nil?
   end
 
   namespace '/:id' do
@@ -114,17 +97,17 @@ namespace '/api/v1/users' do
       @result = nil
 
       # check creation permissions. i.e. admin/quotacheck
-      authorize(@_user, :destroy?)
+      authorize(@package, :destroy?)
 
       begin
         # check for show errors request
         show_errors = params.key?('verbose')
 
-        @result = if @_user.destroy
-                    log_user('info', "deleted User #{@_user.as_json}")
+        @result = if @package.destroy
+                    log_user('info', "deleted Package #{@package.as_json}")
                     ApiResponseSuccess.new
                   elsif show_errors
-                    errors = extract_destroy_errors(object: @_user)
+                    errors = extract_destroy_errors(object: @package)
                     api_error(
                       ApiErrors.[](:failed_delete),
                       errors: { relationships: errors }
@@ -140,7 +123,7 @@ namespace '/api/v1/users' do
       @result = nil
 
       # check creation permissions. i.e. admin/quotacheck
-      authorize(@_user, :update?)
+      authorize(@package, :update?)
 
       begin
         # check for show errors request
@@ -148,43 +131,21 @@ namespace '/api/v1/users' do
         show_errors = params.key?('verbose')
 
         # prevent any action being performed on a detroyed resource
-        return_api_error(ApiErrors.[](:not_found)) if @_user.destroyed?
+        return_api_error(ApiErrors.[](:not_found)) if @package.destroyed?
 
         # get json data from request body and symbolize all keys
         request.body.rewind
         @_params = JSON.parse(request.body.read)
         @_params = symbolize_params_hash(@_params)
 
-        # has to be an array if provided
-        unless @_params[:packages].nil?
-          return_api_error(
-            ApiErrors.[](:invalid_packages)
-          ) unless @_params[:packages].is_a?(Array)
-        end
-
-        # check permissions for parameters
-        raise Pundit::NotAuthorizedError unless policy(@_user).update_with?(
-          @_params
-        )
-
-        # fetch packages as an array of mailaccounts
-        unless @_params[:packages].nil?
-          @packages = Package.all(id: 0)
-          package_ids = @_params.delete(:packages)
-          package_ids.each do |pkg_id|
-            @packages.push(Package.get(pkg_id))
-          end
-          @_params[:packages] = @packages
-        end
-
         # remove unmodified values from input params
         @_params.each_key do |key|
-          next unless @_user.model.properties.map(&:name).include?(key)
-          @_params.delete(key) if @_params[key] == @_user.send(key)
+          next unless @package.model.properties.map(&:name).include?(key)
+          @_params.delete(key) if @_params[key] == @package.send(key)
         end
 
         # perform validations on a dummy object, check only supplied attributes
-        dummy = User.new(@_params)
+        dummy = Package.new(@_params)
         unless dummy.valid?
           error_attributes = @_params.keys & dummy.errors.keys
           unless error_attributes.empty?
@@ -202,12 +163,17 @@ namespace '/api/v1/users' do
           end
         end
 
-        # remember old values for log message
-        old_attributes = @_user.as_json
+        # check permissions for parameters
+        raise Pundit::NotAuthorizedError unless policy(@package).update_with?(
+          @_params
+        )
 
-        if @_user.update(@_params)
-          log_user('info', "updated User #{old_attributes} with #{@_params}")
-          @result = ApiResponseSuccess.new(data: { object: @_user })
+        # remember old values for log message
+        old_attributes = @package.as_json
+
+        if @package.update(@_params)
+          log_user('info', "updated Package #{old_attributes} with #{@_params}")
+          @result = ApiResponseSuccess.new(data: { object: @package })
         end
       # re-raise authentication/authorization errors so that they don't end up
       # in the last catchall
@@ -245,13 +211,8 @@ namespace '/api/v1/users' do
     end
 
     get do
-      return_authorized_resource(object: @_user) if authorize(@_user, :show?)
-    end
-
-    get '/enabled_modules' do
-      return_apiresponse(
-        ApiResponseSuccess.new(data: { object: settings.api_modules })
-      )
+      return_authorized_resource(object: @package) if authorize(@package,
+                                                                :show?)
     end
   end
 end

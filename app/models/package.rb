@@ -12,7 +12,8 @@ class Package
   property :name, String, required: true, length: 3..255
   property :price_unit, Integer, required: true, min: 0, max: (2**63 - 1)
   property :quota_apikeys, Integer, required: true, min: 0, default: 3
-  property :quota_ssh_pubkeys, Integer, required: true, min: 0, default: 10
+  property :quota_custom_packages, Integer, required: true, min: 0, default: 0
+  property :quota_ssh_pubkeys, Integer, required: true, min: 0, default: 2
   property :quota_customers, Integer, required: true, min: 0, default: 0
   property :quota_vhosts, Integer, required: true, min: 0, default: 1
   property :quota_vhost_storage, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default
@@ -22,6 +23,7 @@ class Package
   property :quota_dns_records, Integer, required: true, min: 0, default: 10
   property :quota_domains, Integer, required: true, min: 0, default: 1
   property :quota_mail_accounts, Integer, required: true, min: 0, default: 5
+  property :quota_mail_forwardings, Integer, required: true, min: 0, default: 10
   property :quota_mail_aliases, Integer, required: true, min: 0, default: 10
   property :quota_mail_sources, Integer, required: true, min: 0, default: 10
   property :quota_mail_storage, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default
@@ -40,18 +42,14 @@ class Package
   end
 
   belongs_to :user
-  has n, :users, through: Resource, constraint: :skip
-
-  # @param options [Hash]
-  # @return [Hash]
-  def as_json(options = {})
-    defaults = { exclude: [:user_id],
-                 relationships: { user: { only: [:id, :name, :login] } } }
-    super(model_serialization_opts(defaults: defaults, options: options))
-  end
+  has n, :users, through: Resource, constraint: :protect
 
   # @return [User]
   def owner
     user
+  end
+
+  def customer
+    { id: user.id, name: user.name, login: user.login }
   end
 end

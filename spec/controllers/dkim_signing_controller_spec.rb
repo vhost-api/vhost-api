@@ -194,6 +194,24 @@ describe 'VHost-API DkimSigning Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{, author: \'foo, enabled:true}\''
+                post(
+                  "/api/v#{api_version}/dkimsignings?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/dkimsignings",
@@ -235,6 +253,24 @@ describe 'VHost-API DkimSigning Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in '
+                error_msg += 'DkimSigning'
+                post(
+                  "/api/v#{api_version}/dkimsignings?verbose",
+                  invalid_dkimsigning_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 post(
                   "/api/v#{api_version}/dkimsignings",
@@ -272,6 +308,29 @@ describe 'VHost-API DkimSigning Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'author',
+                      errors: ['Author must not be blank'] }
+                  ]
+                }
+
+                post(
+                  "/api/v#{api_version}/dkimsignings?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end
@@ -390,6 +449,25 @@ describe 'VHost-API DkimSigning Controller' do
                 )
               end
 
+              it 'shows a format error message when using verbose param' do
+                error_msg = '784: unexpected token at '
+                error_msg += '\'{, author: \'foo, enabled:true}\''
+                baseurl = "/api/v#{api_version}/dkimsignings"
+                patch(
+                  "#{baseurl}/#{testdkimsigning.id}?verbose",
+                  invalid_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(400)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:malformed_request),
+                    errors: { format: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
@@ -402,14 +480,14 @@ describe 'VHost-API DkimSigning Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_user_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_dkimsigning_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the dkimsigning' do
                 prev_tstamp = testdkimsigning.updated_at
 
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkimsigning_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -424,7 +502,7 @@ describe 'VHost-API DkimSigning Controller' do
               it 'returns an API Error' do
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkimsigning_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -436,10 +514,29 @@ describe 'VHost-API DkimSigning Controller' do
                 )
               end
 
+              it 'shows an argument error message when using verbose param' do
+                error_msg = 'The attribute \'foo\' is not accessible in '
+                error_msg += 'DkimSigning'
+                baseurl = "/api/v#{api_version}/dkimsignings"
+                patch(
+                  "#{baseurl}/#{testdkimsigning.id}?verbose",
+                  invalid_dkimsigning_attrs.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: { argument: error_msg }
+                  )
+                )
+              end
+
               it 'returns a valid JSON object' do
                 patch(
                   "/api/v#{api_version}/dkimsignings/#{testdkimsigning.id}",
-                  invalid_user_attrs.to_json,
+                  invalid_dkimsigning_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -478,6 +575,30 @@ describe 'VHost-API DkimSigning Controller' do
                 expect(last_response.body).to eq(
                   spec_json_pretty(
                     api_error(ApiErrors.[](:invalid_request)).to_json
+                  )
+                )
+              end
+
+              it 'shows a validate error message when using validate param' do
+                errors = {
+                  validation: [
+                    { field: 'author',
+                      errors: ['Author must not be blank'] }
+                  ]
+                }
+
+                baseurl = "/api/v#{api_version}/dkimsignings"
+                patch(
+                  "#{baseurl}/#{testdkimsigning.id}?validate",
+                  invalid_values.to_json,
+                  auth_headers_apikey(testadmin.id)
+                )
+
+                expect(last_response.status).to eq(422)
+                expect(last_response.body).to eq(
+                  spec_api_error(
+                    ApiErrors.[](:invalid_request),
+                    errors: errors
                   )
                 )
               end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require File.expand_path '../../spec_helper.rb', __FILE__
 
-describe 'VHost-API Dkim Controller' do
+describe 'VHost-API Package Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
   api_versions = %w(1)
@@ -11,17 +11,17 @@ describe 'VHost-API Dkim Controller' do
       context 'by an admin user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
-        let!(:testdkim) { create(:dkim) }
-        let!(:testadmin) { create(:admin, password: 'secret') }
+        let!(:usergroup) { create(:group, name: 'user') }
+        let(:testpackage) { create(:package, name: 'Test') }
+        let(:testadmin) { create(:admin, password: 'secret') }
 
         describe 'GET all' do
-          it 'authorizes (policies) and returns an array of dkims' do
+          it 'authorizes (policies) and returns an array of packages' do
             get(
-              "/api/v#{api_version}/dkims", nil,
+              "/api/v#{api_version}/packages", nil,
               auth_headers_apikey(testadmin.id)
             )
-
-            scope = Pundit.policy_scope(testadmin, Dkim)
+            scope = Pundit.policy_scope(testadmin, Package)
 
             expect(last_response.body).to eq(
               spec_authorized_collection(
@@ -33,7 +33,7 @@ describe 'VHost-API Dkim Controller' do
 
           it 'returns valid JSON' do
             get(
-              "/api/v#{api_version}/dkims", nil,
+              "/api/v#{api_version}/packages", nil,
               auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -43,25 +43,25 @@ describe 'VHost-API Dkim Controller' do
         describe 'GET one' do
           it 'authorizes the request by using the policies' do
             expect(
-              Pundit.authorize(testadmin, testdkim, :show?)
+              Pundit.authorize(testadmin, testpackage, :show?)
             ).to be_truthy
           end
 
-          it 'returns the dkim' do
+          it 'returns the package' do
             get(
-              "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
+              "/api/v#{api_version}/packages/#{testpackage.id}", nil,
               auth_headers_apikey(testadmin.id)
             )
 
             @user = testadmin
             expect(last_response.body).to eq(
-              spec_authorized_resource(object: testdkim, user: testadmin)
+              spec_authorized_resource(object: testpackage, user: testadmin)
             )
           end
 
           it 'returns valid JSON' do
             get(
-              "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
+              "/api/v#{api_version}/packages/#{testpackage.id}", nil,
               auth_headers_apikey(testadmin.id)
             )
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -70,11 +70,11 @@ describe 'VHost-API Dkim Controller' do
 
         describe 'GET inexistent record' do
           it 'returns an API Error' do
-            inexistent = testdkim.id
-            testdkim.destroy
+            inexistent = testpackage.id
+            testpackage.destroy
 
             get(
-              "/api/v#{api_version}/dkims/#{inexistent}", nil,
+              "/api/v#{api_version}/packages/#{inexistent}", nil,
               auth_headers_apikey(testadmin.id)
             )
 
@@ -87,75 +87,34 @@ describe 'VHost-API Dkim Controller' do
           end
         end
 
-        describe 'POST /:id/regenerate' do
-          it 'generates a fresh keypair' do
-            testdkim.private_key = 'foo'
-            testdkim.public_key = 'bar'
-            testdkim.save
-
-            post(
-              "/api/v#{api_version}/dkims/#{testdkim.id}/regenerate", nil,
-              auth_headers_apikey(testadmin.id)
-            )
-
-            privkey_regex = %r{
-              ^-----BEGIN\x20RSA\x20PRIVATE\x20KEY-----
-              .*
-              -----END\x20RSA\x20PRIVATE\x20KEY-----
-            }mx
-
-            pubkey_regex = %r{
-              ^-----BEGIN\x20PUBLIC\x20KEY-----
-              .*
-              -----END\x20PUBLIC\x20KEY-----
-            }mx
-
-            updated_dkim = Dkim.get(testdkim.id)
-
-            expect(last_response.status).to eq(200)
-            expect(updated_dkim.private_key =~ privkey_regex).to be_truthy
-            expect(updated_dkim.public_key =~ pubkey_regex).to be_truthy
-          end
-        end
-
         describe 'POST' do
-          let(:domain) do
-            create(:domain, name: 'new.org', user_id: testadmin.id)
-          end
-          let(:selector) { 'new@new.org' }
-          let(:new_attributes) do
-            attributes_for(:dkim,
-                           selector: selector,
-                           domain_id: domain.id)
-          end
-
           context 'with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
-                Pundit.authorize(testadmin, Dkim, :create?)
+                Pundit.authorize(testadmin, Package, :create?)
               ).to be_truthy
             end
 
-            it 'creates a new dkim' do
-              count = Dkim.all.count
+            it 'creates a new package' do
+              count = Package.all(user_id: testadmin.id).count
 
               post(
-                "/api/v#{api_version}/dkims",
-                new_attributes.to_json,
+                "/api/v#{api_version}/packages",
+                attributes_for(:package, name: 'new').to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              expect(Dkim.all.count).to eq(count + 1)
+              expect(Package.all(user_id: testadmin.id).count).to eq(count + 1)
             end
 
-            it 'returns an API Success containing the new dkim' do
+            it 'returns an API Success containing the new package' do
               post(
-                "/api/v#{api_version}/dkims",
-                new_attributes.to_json,
+                "/api/v#{api_version}/packages",
+                attributes_for(:package, name: 'new').to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              new = Dkim.last
+              new = Package.last
 
               expect(last_response.status).to eq(201)
               expect(last_response.body).to eq(
@@ -168,48 +127,48 @@ describe 'VHost-API Dkim Controller' do
 
             it 'returns a valid JSON object' do
               post(
-                "/api/v#{api_version}/dkims",
-                new_attributes.to_json,
+                "/api/v#{api_version}/packages",
+                attributes_for(:package, name: 'new').to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
               expect { JSON.parse(last_response.body) }.not_to raise_exception
             end
 
-            it 'redirects to the new dkim' do
+            it 'redirects to the new package' do
               post(
-                "/api/v#{api_version}/dkims",
-                new_attributes.to_json,
+                "/api/v#{api_version}/packages",
+                attributes_for(:package, name: 'new').to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              new = Dkim.last
+              new = Package.last
 
               expect(last_response.location).to eq(
-                "http://example.org/api/v#{api_version}/dkims/#{new.id}"
+                "http://example.org/api/v#{api_version}/packages/#{new.id}"
               )
             end
           end
 
           context 'with malformed request data' do
             context 'invalid json' do
-              let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
+              let(:invalid_json) { '{ , name: \'foo, enabled: true }' }
 
-              it 'does not create a new dkim' do
-                count = Dkim.all.count
+              it 'does not create a new package' do
+                count = Package.all(user_id: testadmin.id).count
 
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(Dkim.all.count).to eq(count)
+                expect(Package.all(user_id: testadmin.id).count).to eq(count)
               end
 
               it 'returns an API Error' do
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -224,9 +183,9 @@ describe 'VHost-API Dkim Controller' do
 
               it 'shows a format error message when using verbose param' do
                 error_msg = '784: unexpected token at '
-                error_msg += '\'{, selector: \'foo, enabled:true}\''
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
                 post(
-                  "/api/v#{api_version}/dkims?verbose",
+                  "/api/v#{api_version}/packages?verbose",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -242,7 +201,7 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -252,24 +211,24 @@ describe 'VHost-API Dkim Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_package_attrs) { { foo: 'bar', disabled: 1234 } }
 
-              it 'does not create a new dkim' do
-                count = Dkim.all.count
+              it 'does not create a new package' do
+                count = Package.all(user_id: testadmin.id).count
 
                 post(
-                  "/api/v#{api_version}/dkims",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(Dkim.all.count).to eq(count)
+                expect(Package.all(user_id: testadmin.id).count).to eq(count)
               end
 
               it 'returns an API Error' do
                 post(
-                  "/api/v#{api_version}/dkims",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -282,10 +241,10 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'shows an argument error message when using verbose param' do
-                error_msg = 'The attribute \'foo\' is not accessible in Dkim'
+                error_msg = 'The attribute \'foo\' is not accessible in Package'
                 post(
-                  "/api/v#{api_version}/dkims?verbose",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages?verbose",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -300,8 +259,8 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 post(
-                  "/api/v#{api_version}/dkims",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -310,23 +269,23 @@ describe 'VHost-API Dkim Controller' do
             end
 
             context 'with invalid values' do
-              let(:invalid_values) { attributes_for(:invalid_dkim) }
+              let(:invalid_values) { attributes_for(:invalid_package) }
 
-              it 'does not create a new dkim' do
-                count = Dkim.all.count
+              it 'does not create a new package' do
+                count = Package.all(user_id: testadmin.id).count
 
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(Dkim.all.count).to eq(count)
+                expect(Package.all(user_id: testadmin.id).count).to eq(count)
               end
 
               it 'returns an API Error' do
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -342,13 +301,17 @@ describe 'VHost-API Dkim Controller' do
               it 'shows a validate error message when using validate param' do
                 errors = {
                   validation: [
-                    { field: 'selector',
-                      errors: ['Selector must not be blank'] }
+                    { field: 'name',
+                      errors: ['Name must not be blank'] },
+                    { field: 'price_unit',
+                      errors: ['Price unit must not be blank'] },
+                    { field: 'user_id',
+                      errors: ['User must not be blank'] }
                   ]
                 }
 
                 post(
-                  "/api/v#{api_version}/dkims?validate",
+                  "/api/v#{api_version}/packages?validate",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -364,7 +327,7 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 post(
-                  "/api/v#{api_version}/dkims",
+                  "/api/v#{api_version}/packages",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -379,60 +342,52 @@ describe 'VHost-API Dkim Controller' do
           context 'with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
-                Pundit.authorize(testadmin, Dkim, :create?)
+                Pundit.authorize(testadmin, Package, :create?)
               ).to be_truthy
             end
 
-            it 'updates an existing dkim with new values' do
-              upd_attrs = attributes_for(
-                :dkim,
-                selector: "foo@#{testdkim.domain.name}"
-              )
-              prev_tstamp = testdkim.updated_at
+            it 'updates an existing package with new values' do
+              upd_attrs = attributes_for(:package, name: 'foo')
+              prev_tstamp = testpackage.updated_at
+
+              sleep 1.0
 
               patch(
-                "/api/v#{api_version}/dkims/#{testdkim.id}",
+                "/api/v#{api_version}/packages/#{testpackage.id}",
                 upd_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              expect(
-                Dkim.get(testdkim.id).selector
-              ).to eq(upd_attrs[:selector])
-              expect(
-                Dkim.get(testdkim.id).updated_at
-              ).to be > prev_tstamp
+              expect(Package.get(testpackage.id).name).to eq(upd_attrs[:name])
+              expect(Package.get(testpackage.id).updated_at).to be > prev_tstamp
             end
 
-            it 'returns an API Success containing the updated dkim' do
-              upd_attrs = attributes_for(
-                :dkim,
-                selector: "foo@#{testdkim.domain.name}"
-              )
+            it 'returns an API Success containing the updated package' do
+              updated_attrs = attributes_for(:package, name: 'foo')
 
               patch(
-                "/api/v#{api_version}/dkims/#{testdkim.id}",
-                upd_attrs.to_json,
+                "/api/v#{api_version}/packages/#{testpackage.id}",
+                updated_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
-              upd_source = Dkim.get(testdkim.id)
+              upd_user = Package.get(testpackage.id)
 
               expect(last_response.status).to eq(200)
               expect(last_response.body).to eq(
                 spec_json_pretty(
                   ApiResponseSuccess.new(status_code: 200,
-                                         data: { object: upd_source }).to_json
+                                         data: { object: upd_user }).to_json
                 )
               )
             end
 
             it 'returns a valid JSON object' do
-              upd_attrs = attributes_for(:dkim, selector: 'foo')
+              updated_attrs = attributes_for(:package, name: 'foo')
 
               patch(
-                "/api/v#{api_version}/dkims/#{testdkim.id}",
-                upd_attrs.to_json,
+                "/api/v#{api_version}/packages/#{testpackage.id}",
+                updated_attrs.to_json,
                 auth_headers_apikey(testadmin.id)
               )
 
@@ -442,28 +397,24 @@ describe 'VHost-API Dkim Controller' do
 
           context 'with malformed request data' do
             context 'invalid json' do
-              let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
+              let(:invalid_json) { '{ , name: \'foo, enabled: true }' }
 
-              it 'does not update the dkim' do
-                prev_tstamp = testdkim.updated_at
+              it 'does not update the package' do
+                prev_tstmp = testpackage.updated_at
 
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(
-                  Dkim.get(testdkim.id).selector
-                ).to eq(testdkim.selector)
-                expect(
-                  Dkim.get(testdkim.id).updated_at
-                ).to eq(prev_tstamp)
+                expect(Package.get(testpackage.id).name).to eq(testpackage.name)
+                expect(Package.get(testpackage.id).updated_at).to eq(prev_tstmp)
               end
 
               it 'returns an API Error' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -478,9 +429,9 @@ describe 'VHost-API Dkim Controller' do
 
               it 'shows a format error message when using verbose param' do
                 error_msg = '784: unexpected token at '
-                error_msg += '\'{, selector: \'foo, enabled:true}\''
+                error_msg += '\'{ , name: \'foo, enabled: true }\''
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}?verbose",
+                  "/api/v#{api_version}/packages/#{testpackage.id}?verbose",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -496,7 +447,7 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -506,29 +457,25 @@ describe 'VHost-API Dkim Controller' do
             end
 
             context 'invalid attributes' do
-              let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
+              let(:invalid_package_attrs) { { foo: 'bar', disabled: 1234 } }
 
-              it 'does not update the dkim' do
-                prev_tstamp = testdkim.updated_at
+              it 'does not update the package' do
+                prev_tstmp = testpackage.updated_at
 
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(
-                  Dkim.get(testdkim.id).selector
-                ).to eq(testdkim.selector)
-                expect(
-                  Dkim.get(testdkim.id).updated_at
-                ).to eq(prev_tstamp)
+                expect(Package.get(testpackage.id).name).to eq(testpackage.name)
+                expect(Package.get(testpackage.id).updated_at).to eq(prev_tstmp)
               end
 
               it 'returns an API Error' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -541,10 +488,10 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'shows an argument error message when using verbose param' do
-                error_msg = 'The attribute \'foo\' is not accessible in Dkim'
+                error_msg = 'The attribute \'foo\' is not accessible in Package'
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}?verbose",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages/#{testpackage.id}?verbose",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -559,8 +506,8 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
-                  invalid_dkim_attrs.to_json,
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
+                  invalid_package_attrs.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
@@ -569,28 +516,24 @@ describe 'VHost-API Dkim Controller' do
             end
 
             context 'with invalid values' do
-              let(:invalid_values) { attributes_for(:invalid_dkim) }
+              let(:invalid_values) { attributes_for(:invalid_package) }
 
-              it 'does not update the dkim' do
-                prev_tstamp = testdkim.updated_at
+              it 'does not update the package' do
+                prev_tstmp = testpackage.updated_at
 
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
 
-                expect(
-                  Dkim.get(testdkim.id).selector
-                ).to eq(testdkim.selector)
-                expect(
-                  Dkim.get(testdkim.id).updated_at
-                ).to eq(prev_tstamp)
+                expect(Package.get(testpackage.id).name).to eq(testpackage.name)
+                expect(Package.get(testpackage.id).updated_at).to eq(prev_tstmp)
               end
 
               it 'returns an API Error' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -606,13 +549,15 @@ describe 'VHost-API Dkim Controller' do
               it 'shows a validate error message when using validate param' do
                 errors = {
                   validation: [
-                    { field: 'selector',
-                      errors: ['Selector must not be blank'] }
+                    { field: 'name',
+                      errors: ['Name must not be blank'] },
+                    { field: 'price_unit',
+                      errors: ['Price unit must not be blank'] }
                   ]
                 }
 
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}?validate",
+                  "/api/v#{api_version}/packages/#{testpackage.id}?validate",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -628,7 +573,7 @@ describe 'VHost-API Dkim Controller' do
 
               it 'returns a valid JSON object' do
                 patch(
-                  "/api/v#{api_version}/dkims/#{testdkim.id}",
+                  "/api/v#{api_version}/packages/#{testpackage.id}",
                   invalid_values.to_json,
                   auth_headers_apikey(testadmin.id)
                 )
@@ -637,67 +582,28 @@ describe 'VHost-API Dkim Controller' do
               end
             end
           end
-
-          context 'operation failed' do
-            let(:domain) { create(:domain, name: 'invincible.de') }
-
-            # it 'returns an API Error' do
-            #   invincible = create(:dkim,
-            #                       selector: 'foobar',
-            #                       domain_id: domain.id)
-            #   allow(Dkim).to receive(:get).with(
-            #     invincible.id.to_s
-            #   ).and_return(invincible)
-            #   policy = instance_double('DkimPolicy', update?: true)
-            #   allow(policy).to receive(:update?).and_return(true)
-            #   allow(policy).to receive(:update_with?).and_return(true)
-            #   allow(DkimPolicy).to receive(:new).and_return(policy)
-            #   dummy = build(:dkim)
-            #   allow(Dkim).to receive(:new).and_return(dummy)
-            #   allow(dummy).to receive(:valid?).and_return(true)
-
-            #   allow(invincible).to receive(:update).and_raise(
-            #     DataMapper::SaveFailureError
-            #   )
-
-            #   patch(
-            #     "/api/v#{api_version}/dkims/#{invincible.id}",
-            #     attributes_for(:dkim, selector: 'foo').to_json,
-            #     auth_headers_apikey(testadmin.id)
-            #   )
-
-            #   # expect(last_response.status).to eq(500)
-            #   expect(last_response.body).to eq(
-            #     spec_json_pretty(
-            #       api_error(ApiErrors.[](:failed_update)).to_json
-            #     )
-            #   )
-            # end
-          end
         end
 
         describe 'DELETE' do
           it 'authorizes the request by using the policies' do
-            expect(
-              Pundit.authorize(testadmin, Dkim, :destroy?)
-            ).to be_truthy
+            expect(Pundit.authorize(testadmin, Package, :destroy?)).to be_truthy
           end
 
-          it 'deletes the requested dkim' do
-            id = testdkim.id
+          it 'deletes the requested package' do
+            id = testpackage.id
 
             delete(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
+              "/api/v#{api_version}/packages/#{testpackage.id}",
               nil,
               auth_headers_apikey(testadmin.id)
             )
 
-            expect(Dkim.get(id)).to eq(nil)
+            expect(Package.get(id)).to eq(nil)
           end
 
           it 'returns a valid JSON object' do
             delete(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
+              "/api/v#{api_version}/packages/#{testpackage.id}",
               nil,
               auth_headers_apikey(testadmin.id)
             )
@@ -707,22 +613,29 @@ describe 'VHost-API Dkim Controller' do
 
           context 'operation failed' do
             it 'returns an API Error' do
-              invincible = create(:dkim,
-                                  selector: 'invincible')
-              allow(Dkim).to receive(
+              invinciblepackage = create(:package, name: 'invincible')
+              allow(Package).to receive(
                 :get
               ).with(
-                invincible.id.to_s
+                invinciblepackage.id.to_s
               ).and_return(
-                invincible
+                invinciblepackage
               )
-              allow(invincible).to receive(:destroy).and_return(false)
-              policy = instance_double('DkimPolicy', destroy?: true)
+              allow(Package).to receive(
+                :get
+              ).with(
+                testadmin.id
+              ).and_return(
+                testadmin
+              )
+              allow(invinciblepackage).to receive(:destroy).and_return(false)
+
+              policy = instance_double('PackagePolicy', destroy?: true)
               allow(policy).to receive(:destroy?).and_return(true)
-              allow(DkimPolicy).to receive(:new).and_return(policy)
+              allow(PackagePolicy).to receive(:new).and_return(policy)
 
               delete(
-                "/api/v#{api_version}/dkims/#{invincible.id}",
+                "/api/v#{api_version}/packages/#{invinciblepackage.id}",
                 nil,
                 auth_headers_apikey(testadmin.id)
               )
@@ -741,34 +654,35 @@ describe 'VHost-API Dkim Controller' do
       context 'by an authenticated but unauthorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
-        let!(:usergroup) { create(:group) }
-        let!(:testuser) { create(:user_with_dkims) }
-        let!(:owner) { create(:user_with_dkims) }
-        let!(:testdkim) do
-          Dkim.first(domain_id: owner.domains.first.id)
+        let!(:usergroup) { create(:group, name: 'user') }
+        let(:testadmin) { create(:admin) }
+        let!(:testpackage) { create(:package) }
+        let!(:user) { create(:user, name: 'herpderp') }
+        before(:each) do
+          user.packages = [testpackage]
+          user.save
         end
 
         describe 'GET all' do
-          it 'returns only its own dkims' do
+          it 'returns no package' do
             get(
-              "/api/v#{api_version}/dkims", nil,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages", nil,
+              auth_headers_apikey(user.id)
             )
 
-            scope = Pundit.policy_scope(testuser, Dkim)
-
             expect(last_response.body).to eq(
-              spec_authorized_collection(
-                object: scope,
-                uid: testuser.id
+              spec_apiresponse(
+                ApiResponseSuccess.new(
+                  data: { objects: {} }
+                )
               )
             )
           end
 
           it 'returns a valid JSON object' do
             get(
-              "/api/v#{api_version}/dkims", nil,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages", nil,
+              auth_headers_apikey(user.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -776,16 +690,17 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'GET one' do
+          let(:otherpackage) { create(:package, user_id: testadmin.id) }
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testdkim, :show?)
+              Pundit.authorize(user, otherpackage, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
           it 'returns an API Error' do
             get(
-              "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages/#{otherpackage.id}", nil,
+              auth_headers_apikey(user.id)
             )
 
             expect(last_response.status).to eq(403)
@@ -798,8 +713,8 @@ describe 'VHost-API Dkim Controller' do
 
           it 'returns a valid JSON object' do
             get(
-              "/api/v#{api_version}/dkims/#{testdkim.id}", nil,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages/#{otherpackage.id}", nil,
+              auth_headers_apikey(user.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -807,20 +722,25 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'GET inexistent record' do
+          let(:otherpackage) { create(:package) }
           it 'does not authorize the request' do
             expect do
-              testdkim.destroy
-              Pundit.authorize(testuser, testdkim, :show?)
+              otherpackage.users = []
+              otherpackage.save
+              otherpackage.destroy
+              Pundit.authorize(user, otherpackage, :show?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
           it 'returns an API Error' do
-            inexistent = testdkim.id
-            testdkim.destroy
+            inexistent = otherpackage.id
+            otherpackage.users = []
+            otherpackage.save
+            otherpackage.destroy
 
             get(
-              "/api/v#{api_version}/dkims/#{inexistent}", nil,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages/#{inexistent}", nil,
+              auth_headers_apikey(user.id)
             )
 
             expect(last_response.status).to eq(404)
@@ -833,139 +753,29 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'POST' do
-          let(:testuser) { create(:user_with_dkims) }
-          let(:domain) { testuser.domains.first }
-          let(:new) do
-            attributes_for(:dkim,
-                           selector: "new@#{domain.name}",
-                           domain_id: domain.id)
-          end
-
-          it 'authorizes the request' do
-            expect(
-              Pundit.authorize(testuser, Dkim, :create?)
-            ).to be_truthy
-            expect(
-              Pundit.policy(testuser, Dkim).create_with?(new)
-            ).to be_truthy
-          end
-
-          it 'does create a new dkim' do
-            count = Dkim.all.count
-
-            post(
-              "/api/v#{api_version}/dkims",
-              new.to_json,
-              auth_headers_apikey(testuser.id)
-            )
-
-            expect(Dkim.all.count).to eq(count + 1)
-          end
-
-          it 'returns an API Success containing the new dkim' do
-            post(
-              "/api/v#{api_version}/dkims",
-              new.to_json,
-              auth_headers_apikey(testuser.id)
-            )
-
-            new = Dkim.last
-
-            expect(last_response.status).to eq(201)
-            expect(last_response.body).to eq(
-              spec_json_pretty(
-                ApiResponseSuccess.new(status_code: 201,
-                                       data: { object: new }).to_json
-              )
-            )
-          end
-
-          it 'returns a valid JSON object' do
-            post(
-              "/api/v#{api_version}/dkims",
-              new.to_json,
-              auth_headers_apikey(testuser.id)
-            )
-
-            expect { JSON.parse(last_response.body) }.not_to raise_exception
-          end
-
-          context 'with using different user_id in attributes' do
-            let(:testuser) { create(:user_with_dkims) }
-            let(:anotheruser) { create(:user_with_domains) }
-
-            it 'does not create a new dkim' do
-              count = Dkim.all.count
-
-              post(
-                "/api/v#{api_version}/dkims",
-                attributes_for(:dkim,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
-                auth_headers_apikey(testuser.id)
-              )
-
-              expect(Dkim.all.count).to eq(count)
-            end
-
-            it 'returns an API Error' do
-              post(
-                "/api/v#{api_version}/dkims",
-                attributes_for(:dkim,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
-                auth_headers_apikey(testuser.id)
-              )
-
-              expect(last_response.status).to eq(422)
-              expect(last_response.body).to eq(
-                spec_json_pretty(
-                  api_error(ApiErrors.[](:invalid_request)).to_json
-                )
-              )
-            end
-
-            it 'returns a valid JSON object' do
-              post(
-                "/api/v#{api_version}/dkims",
-                attributes_for(:dkim,
-                               name: 'new@new.org',
-                               domain_id: anotheruser.domains.first.id).to_json,
-                auth_headers_apikey(testuser.id)
-              )
-
-              expect { JSON.parse(last_response.body) }.not_to raise_exception
-            end
-          end
-        end
-
-        describe 'PATCH' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testdkim, :update?)
+              Pundit.authorize(user, Package, :create?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not update the dkim' do
-            upd_attrs = attributes_for(:dkim, selector: 'foo')
-            prev_tstamp = testdkim.updated_at
+          it 'does not create a new package' do
+            count = Package.all.count
 
-            patch(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
-              upd_attrs.to_json,
-              auth_headers_apikey(testuser.id)
+            post(
+              "/api/v#{api_version}/packages",
+              attributes_for(:package, name: 'new').to_json,
+              auth_headers_apikey(user.id)
             )
 
-            expect(testdkim.updated_at).to eq(prev_tstamp)
+            expect(Package.all.count).to eq(count)
           end
 
           it 'returns an API Error' do
-            upd_attrs = attributes_for(:dkim, selector: 'foo')
-
-            patch(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
-              upd_attrs.to_json,
-              auth_headers_apikey(testuser.id)
+            post(
+              "/api/v#{api_version}/packages",
+              attributes_for(:package, name: 'new').to_json,
+              auth_headers_apikey(user.id)
             )
 
             expect(last_response.status).to eq(403)
@@ -977,12 +787,60 @@ describe 'VHost-API Dkim Controller' do
           end
 
           it 'returns a valid JSON object' do
-            upd_attrs = attributes_for(:dkim, selector: 'foo')
+            post(
+              "/api/v#{api_version}/packages",
+              attributes_for(:package, name: 'new').to_json,
+              auth_headers_apikey(user.id)
+            )
+
+            expect { JSON.parse(last_response.body) }.not_to raise_exception
+          end
+        end
+
+        describe 'PATCH' do
+          it 'does not authorize the request' do
+            expect do
+              Pundit.authorize(user, testpackage, :update?)
+            end.to raise_exception(Pundit::NotAuthorizedError)
+          end
+
+          it 'does not update the package' do
+            updated_attrs = attributes_for(:package, name: 'foo')
+            prev_tstamp = testpackage.updated_at
 
             patch(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
-              upd_attrs.to_json,
-              auth_headers_apikey(testuser.id)
+              "/api/v#{api_version}/packages/#{testpackage.id}",
+              updated_attrs.to_json,
+              auth_headers_apikey(user.id)
+            )
+
+            expect(testpackage.updated_at).to eq(prev_tstamp)
+          end
+
+          it 'returns an API Error' do
+            updated_attrs = attributes_for(:package, name: 'foo')
+
+            patch(
+              "/api/v#{api_version}/packages/#{testpackage.id}",
+              updated_attrs.to_json,
+              auth_headers_apikey(user.id)
+            )
+
+            expect(last_response.status).to eq(403)
+            expect(last_response.body).to eq(
+              spec_json_pretty(
+                api_error(ApiErrors.[](:unauthorized)).to_json
+              )
+            )
+          end
+
+          it 'returns a valid JSON object' do
+            updated_attrs = attributes_for(:package, name: 'foo')
+
+            patch(
+              "/api/v#{api_version}/packages/#{testpackage.id}",
+              updated_attrs.to_json,
+              auth_headers_apikey(user.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -992,26 +850,26 @@ describe 'VHost-API Dkim Controller' do
         describe 'DELETE' do
           it 'does not authorize the request' do
             expect do
-              Pundit.authorize(testuser, testdkim, :destroy?)
+              Pundit.authorize(user, testpackage, :destroy?)
             end.to raise_exception(Pundit::NotAuthorizedError)
           end
 
-          it 'does not delete the dkim' do
+          it 'does not delete the package' do
             delete(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
+              "/api/v#{api_version}/packages/#{testpackage.id}",
               nil,
-              auth_headers_apikey(testuser.id)
+              auth_headers_apikey(user.id)
             )
 
-            expect(Dkim.get(testdkim.id)).not_to eq(nil)
-            expect(Dkim.get(testdkim.id)).to eq(testdkim)
+            expect(Package.get(testpackage.id)).not_to eq(nil)
+            expect(Package.get(testpackage.id)).to eq(testpackage)
           end
 
           it 'returns an API Error' do
             delete(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
+              "/api/v#{api_version}/packages/#{testpackage.id}",
               nil,
-              auth_headers_apikey(testuser.id)
+              auth_headers_apikey(user.id)
             )
 
             expect(last_response.status).to eq(403)
@@ -1024,9 +882,9 @@ describe 'VHost-API Dkim Controller' do
 
           it 'returns a valid JSON object' do
             delete(
-              "/api/v#{api_version}/dkims/#{testdkim.id}",
+              "/api/v#{api_version}/packages/#{testpackage.id}",
               nil,
-              auth_headers_apikey(testuser.id)
+              auth_headers_apikey(user.id)
             )
 
             expect { JSON.parse(last_response.body) }.not_to raise_exception
@@ -1034,19 +892,17 @@ describe 'VHost-API Dkim Controller' do
         end
       end
 
-      context 'by an unauthenticated user' do
-        let!(:testdkim) { create(:dkim) }
-
+      context 'by an unauthenticated (thus authentication_failed) user' do
         before(:each) do
           create(:user, name: 'admin')
           create(:user, name: 'reseller')
         end
 
-        let(:testuser) { create(:user) }
+        let(:testpackage) { create(:package) }
 
         describe 'GET all' do
-          it 'returns an an API authentication error' do
-            get "/api/v#{api_version}/dkims"
+          it 'returns an an API authentication failed error' do
+            get "/api/v#{api_version}/packages"
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
               spec_json_pretty(
@@ -1057,8 +913,8 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'GET one' do
-          it 'returns an an API authentication error' do
-            get "/api/v#{api_version}/dkims/#{testdkim.id}"
+          it 'returns an an API authentication failed error' do
+            get "/api/v#{api_version}/packages/#{testpackage.id}"
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
               spec_json_pretty(
@@ -1069,10 +925,10 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'GET inexistent record' do
-          it 'returns an an API authentication error' do
-            inexistent = testdkim.id
-            testdkim.destroy
-            get "/api/v#{api_version}/dkims/#{inexistent}"
+          it 'returns an an API authentication failed error' do
+            inexistent = testpackage.id
+            testpackage.destroy
+            get "/api/v#{api_version}/packages/#{inexistent}"
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
               spec_json_pretty(
@@ -1083,10 +939,10 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'POST' do
-          it 'returns an an API authentication error' do
+          it 'returns an an API authentication failed error' do
             post(
-              "/api/v#{api_version}/dkims",
-              'dkim' => attributes_for(:dkim)
+              "/api/v#{api_version}/packages",
+              'package' => attributes_for(:package)
             )
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
@@ -1098,11 +954,11 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'PATCH' do
-          it 'returns an an API authentication error' do
-            testdkim_foo = create(:dkim, selector: 'foo')
+          it 'returns an an API authentication failed error' do
+            testpackage_foo = create(:package, name: 'foo')
             patch(
-              "/api/v#{api_version}/dkims/#{testdkim_foo.id}",
-              'dkim' => attributes_for(:dkim)
+              "/api/v#{api_version}/packages/#{testpackage_foo.id}",
+              'package' => attributes_for(:package)
             )
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
@@ -1114,8 +970,8 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'DELETE' do
-          it 'returns an an API authentication error' do
-            delete "/api/v#{api_version}/dkims/#{testdkim.id}"
+          it 'returns an an API authentication failed error' do
+            delete "/api/v#{api_version}/packages/#{testpackage.id}"
             expect(last_response.status).to eq(401)
             expect(last_response.body).to eq(
               spec_json_pretty(

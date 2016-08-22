@@ -61,8 +61,8 @@ module FormatHelpers
     collection
   end
 
-  def spec_api_error(api_errors_hash)
-    spec_apiresponse(api_error(api_errors_hash))
+  def spec_api_error(api_errors_hash, errors = nil)
+    spec_apiresponse(api_error(api_errors_hash, errors))
   end
 
   def spec_apiresponse(response)

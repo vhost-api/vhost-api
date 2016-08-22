@@ -4,12 +4,10 @@ source 'https://rubygems.org'
 # core
 gem 'sinatra'
 gem 'sinatra-contrib'
-gem 'sinatra-logger'
 gem 'bcrypt'
 gem 'sshkey'
 # tools
 gem 'rake', require: false
-gem 'logger'
 # authorization
 gem 'sinatra-pundit'
 # database

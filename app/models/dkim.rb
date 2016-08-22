@@ -16,7 +16,6 @@ class Dkim
   property :enabled, Boolean, default: false
 
   belongs_to :domain
-  validates_presence_of :domain, message: 'domain_id must not be blank'
 
   has n, :dkim_signings, constraint: :destroy
 

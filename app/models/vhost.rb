@@ -42,7 +42,6 @@ class Vhost
   validates_within :auto_subdomain, set: SUBDOMAIN_TYPES
 
   belongs_to :user
-  validates_presence_of :user, message: 'user_id must not be blank'
 
   # alias vhosts
   has n, :aliases, self, child_key: :parent_id, constraint: :destroy

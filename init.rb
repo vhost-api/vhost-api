@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'yaml'
 
 @environment = ENV['RACK_ENV'] || 'development'
 @dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
@@ -30,6 +31,7 @@ require_relative 'app/models/apikey'
 require_relative 'app/models/domain'
 require_relative 'app/models/dkim'
 require_relative 'app/models/dkimsigning'
+require_relative 'app/models/mailforwarding'
 require_relative 'app/models/mailaccount'
 require_relative 'app/models/mailsource'
 require_relative 'app/models/mailalias'

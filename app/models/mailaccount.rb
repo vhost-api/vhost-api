@@ -22,9 +22,16 @@ class MailAccount
   property :enabled, Boolean, default: false
 
   validates_format_of :email, as: :email_address
+  validates_with_block :email do
+    if MailAlias.first(address: email).nil? &&
+       MailForwarding.first(address: email).nil?
+      true
+    else
+      [false, 'Email is already taken']
+    end
+  end
 
   belongs_to :domain
-  validates_presence_of :domain, message: 'domain_id must not be blank'
 
   has n, :mail_sources, through: Resource, constraint: :skip
   has n, :mail_aliases, through: Resource, constraint: :skip
