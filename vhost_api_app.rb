@@ -27,6 +27,8 @@ error_logger = ::File.new(error_log, 'a+')
 error_logger.sync = true
 
 configure do
+  set :app_version, '0.1.1-alpha'
+  set :api_version, 'v1'
   use ::Rack::CommonLogger, access_logger
   use Rack::TempfileReaper
   use Rack::Deflater
@@ -124,13 +126,15 @@ DataMapper.setup(:default,
 before { env['rack.errors'] = error_logger }
 
 before do
-  # enforce authentication everywhere except for login endpoints
-  authenticate! unless request.path_info.include?('/login')
+  # enforce authentication everywhere except for login endpoint and home
+  authenticate! unless %w(/login /).include?(request.path_info)
 
   content_type :json, charset: 'utf-8'
   cache_control :public, :must_revalidate
 end
 
 get '/' do
-  "Welcome #{@user.name} to VHost-API!"
+  app_ver = "VHost-API APP Version: #{settings.app_version}"
+  api_ver = "VHost-API API Version: #{settings.api_version}"
+  "#{app_ver}\n#{api_ver}\n"
 end

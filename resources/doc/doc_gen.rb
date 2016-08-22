@@ -118,7 +118,7 @@ result = {}
 result[:swagger] = '2.0'
 result[:info] = { title: 'vhost-api',
                   description: 'vhost-api',
-                  version: '0.0.1' }
+                  version: '0.1.1-alpha' }
 result[:schemes] = ['https']
 result[:basePath] = '/api/v1'
 result[:produces] = ['application/json']
