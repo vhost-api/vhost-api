@@ -60,7 +60,7 @@ Please take a look at `INSTALL.md`.
 
 ## Reference documentation
 
-
+http://htmlpreview.github.io/?https://github.com/vhost-api/vhost-api/blob/master/resources/doc/html/index.html
 
 ## Contributing
 
