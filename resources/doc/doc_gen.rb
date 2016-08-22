@@ -114,14 +114,33 @@ controller_files.each do |f|
   end
 end
 
+contact_info = {
+  name: 'Thore Bödecker',
+  email: 'me@foxxx0.de',
+  url: 'https://github.com/vhost-api/vhost-api/'
+}
+
+license_info = {
+  name: 'AGPL v3',
+  url: 'https://github.com/vhost-api/vhost-api/blob/master/LICENSE'
+}
+
 result = {}
 result[:swagger] = '2.0'
 result[:info] = { title: 'vhost-api',
                   description: 'vhost-api',
-                  version: '0.1.1-alpha' }
+                  version: '0.1.1-alpha',
+                  contact: contact_info,
+                  license: license_info }
 result[:schemes] = ['https']
 result[:basePath] = '/api/v1'
 result[:produces] = ['application/json']
+
+{
+    "name": "API Support",
+    "url": "http://www.swagger.io/support",
+    "email": "support@swagger.io"
+}
 
 paths = {}
 definitions = {}
