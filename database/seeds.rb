@@ -29,7 +29,7 @@ package_list.each do |package|
               user: User.first(login: package[3])).save
 end
 
-# create the 4 necessary views
+# create the necessary views
 adapter = DataMapper.repository(:default).adapter
 case adapter.options[:adapter].upcase
 when 'POSTGRES'
@@ -84,6 +84,36 @@ when 'POSTGRES'
           ON "mail_account_mail_sources"."mail_source_id"="mail_sources"."id"
           AND "mail_sources"."enabled" = TRUE)
       WHERE "mail_accounts"."email" IS NOT NULL
+      AND "domains"."enabled" = TRUE
+      AND "domains"."mail_enabled" = TRUE;')
+  # mail_forwarding_maps
+  adapter.execute('CREATE OR REPLACE VIEW "mail_forwarding_maps"
+    AS
+      SELECT
+        "mail_forwardings"."address" AS "source",
+        "mail_forwardings"."destinations" AS "destination"
+      FROM "mail_forwardings"
+        LEFT JOIN "domains"
+          ON
+            "mail_forwardings"."domain_id"="domains"."id"
+      WHERE "mail_forwardings"."address" IS NOT NULL
+      AND "mail_forwardings"."destinations" IS NOT NULL
+      AND "mail_forwardings"."enabled" = TRUE
+      AND "domains"."enabled" = TRUE
+      AND "domains"."mail_enabled" = TRUE;')
+  # mail_user_maps
+  adapter.execute('CREATE OR REPLACE VIEW "mail_user_maps"
+    AS
+      SELECT
+        "mail_accounts"."email" AS "email",
+        "mail_accounts"."password" AS "password"
+      FROM "mail_accounts"
+        LEFT JOIN "domains"
+          ON
+            "mail_accounts"."domain_id"="domains"."id"
+      WHERE "mail_accounts"."email" IS NOT NULL
+      AND "mail_accounts"."enabled" = TRUE
+      AND "mail_accounts"."receiving_enabled" = TRUE
       AND "domains"."enabled" = TRUE
       AND "domains"."mail_enabled" = TRUE;')
   # sftp_user_maps
@@ -154,6 +184,38 @@ when 'MYSQL'
           ON `mail_account_mail_sources`.`mail_source_id`=`mail_sources`.`id`
           AND `mail_sources`.`enabled` = 1)
       WHERE `mail_accounts`.`email` IS NOT NULL
+      AND `domains`.`enabled` = 1
+      AND `domains`.`mail_enabled` = 1;')
+  # mail_forwarding_maps
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
+  VIEW `mail_forwarding_maps`
+    AS
+      SELECT
+        `mail_forwardings`.`address` AS `source`,
+        `mail_forwardings`.`destinations` AS `destination`
+      FROM `mail_forwardings`
+        LEFT JOIN `domains`
+          ON
+            `mail_forwardings`.`domain_id`=`domains`.`id`
+      WHERE `mail_forwardings`.`address` IS NOT NULL
+      AND `mail_forwardings`.`destinations` IS NOT NULL
+      AND `mail_forwardings`.`enabled` = 1
+      AND `domains`.`enabled` = 1
+      AND `domains`.`mail_enabled` = 1;')
+  # mail_user_maps
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
+  VIEW `mail_user_maps`
+    AS
+      SELECT
+        `mail_accounts`.`email` AS `email`,
+        `mail_accounts`.`password` AS `password`
+      FROM `mail_accounts`
+        LEFT JOIN `domains`
+          ON
+            `mail_accounts`.`domain_id`=`domains`.`id`
+      WHERE `mail_accounts`.`email` IS NOT NULL
+      AND `mail_accounts`.`enabled` = 1
+      AND `mail_accounts`.`receiving_enabled` = 1
       AND `domains`.`enabled` = 1
       AND `domains`.`mail_enabled` = 1;')
   # sftp proftpd user lookup
