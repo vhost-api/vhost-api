@@ -17,7 +17,7 @@ Core features:
 + managing client-based apikeys for authentication
 + managing email domains, aliases, send-as permissions, forwardings (postfix+dovecot)
 + managing DKIM (opendkim)
-+ managing auotas through packages, reseller can define their own packages,
++ managing quotas through packages, reseller can define their own packages,
 	multiple packages can be assigned to users and resellers
 + managing DNS (powerdns is targeted) `not implemented yet`
 + managing virtual hosts and php-fpm pools `not implemented yet`
