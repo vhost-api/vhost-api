@@ -1,0 +1,2421 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "vhost-api",
+    "description": "vhost-api",
+    "version": "0.1.1-alpha",
+    "contact": {
+      "name": "Thore Bödecker",
+      "email": "me@foxxx0.de",
+      "url": "https://github.com/vhost-api/vhost-api/"
+    },
+    "license": {
+      "name": "AGPL v3",
+      "url": "https://github.com/vhost-api/vhost-api/blob/master/LICENSE"
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/api/v1",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "API Login Action",
+        "description": "Returns an Apikey after successful login",
+        "tags": [
+          "Auth"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Auth Data",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Auth"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AuthSuccess"
+            }
+          },
+          "403": {
+            "description": "apikey quota exhausted"
+          }
+        }
+      }
+    },
+    "/groups": {
+      "get": {
+        "summary": "Collection of Groups",
+        "description": "Get the full collection of created Groups",
+        "tags": [
+          "Group"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Groups",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Group"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new Group",
+        "description": "Create a new Group with the request body",
+        "tags": [
+          "Group"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The Group object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Group"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}": {
+      "delete": {
+        "summary": "Delete Group",
+        "description": "Deletes the Group by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "description": "Group id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Group",
+        "description": "Updates the given fields in the Group by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "description": "Group id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the Group object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Group"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Collection of Users",
+        "description": "Get the full collection of created Users",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Users",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new User",
+        "description": "Create a new User with the request body",
+        "tags": [
+          "User"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The User object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "delete": {
+        "summary": "Delete User",
+        "description": "Deletes the User by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "description": "User id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update User",
+        "description": "Updates the given fields in the User by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "description": "User id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the User object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/apikeys": {
+      "get": {
+        "summary": "Collection of Apikeys",
+        "description": "Get the full collection of created Apikeys",
+        "tags": [
+          "Apikey"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Apikeys",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Apikey"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new Apikey",
+        "description": "Create a new Apikey with the request body",
+        "tags": [
+          "Apikey"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The Apikey object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Apikey"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/apikeys/{apikeyId}": {
+      "delete": {
+        "summary": "Delete Apikey",
+        "description": "Deletes the Apikey by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "apikeyId",
+            "description": "Apikey id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Apikey",
+        "description": "Updates the given fields in the Apikey by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "apikeyId",
+            "description": "Apikey id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the Apikey object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Apikey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/packages": {
+      "get": {
+        "summary": "Collection of Packages",
+        "description": "Get the full collection of created Packages",
+        "tags": [
+          "Package"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Packages",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Package"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new Package",
+        "description": "Create a new Package with the request body",
+        "tags": [
+          "Package"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The Package object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Package"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/packages/{packageId}": {
+      "delete": {
+        "summary": "Delete Package",
+        "description": "Deletes the Package by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "packageId",
+            "description": "Package id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Package",
+        "description": "Updates the given fields in the Package by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "packageId",
+            "description": "Package id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the Package object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Package"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/domains": {
+      "get": {
+        "summary": "Collection of Domains",
+        "description": "Get the full collection of created Domains",
+        "tags": [
+          "Domain"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Domains",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Domain"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new Domain",
+        "description": "Create a new Domain with the request body",
+        "tags": [
+          "Domain"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The Domain object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Domain"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/domains/{domainId}": {
+      "delete": {
+        "summary": "Delete Domain",
+        "description": "Deletes the Domain by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domainId",
+            "description": "Domain id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Domain",
+        "description": "Updates the given fields in the Domain by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domainId",
+            "description": "Domain id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the Domain object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Domain"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/dkims": {
+      "get": {
+        "summary": "Collection of Dkims",
+        "description": "Get the full collection of created Dkims",
+        "tags": [
+          "Dkim"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of Dkims",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Dkim"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new Dkim",
+        "description": "Create a new Dkim with the request body",
+        "tags": [
+          "Dkim"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The Dkim object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Dkim"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/dkims/{dkimId}": {
+      "delete": {
+        "summary": "Delete Dkim",
+        "description": "Deletes the Dkim by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dkimId",
+            "description": "Dkim id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Dkim",
+        "description": "Updates the given fields in the Dkim by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dkimId",
+            "description": "Dkim id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the Dkim object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Dkim"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/dkimsignings": {
+      "get": {
+        "summary": "Collection of DkimSignings",
+        "description": "Get the full collection of created DkimSignings",
+        "tags": [
+          "DkimSigning"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of DkimSignings",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DkimSigning"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new DkimSigning",
+        "description": "Create a new DkimSigning with the request body",
+        "tags": [
+          "DkimSigning"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The DkimSigning object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DkimSigning"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/dkimsignings/{dkimsigningId}": {
+      "delete": {
+        "summary": "Delete DkimSigning",
+        "description": "Deletes the DkimSigning by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dkimsigningId",
+            "description": "DkimSigning id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update DkimSigning",
+        "description": "Updates the given fields in the DkimSigning by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dkimsigningId",
+            "description": "DkimSigning id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the DkimSigning object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DkimSigning"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/mailaccounts": {
+      "get": {
+        "summary": "Collection of MailAccounts",
+        "description": "Get the full collection of created MailAccounts",
+        "tags": [
+          "MailAccount"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of MailAccounts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MailAccount"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new MailAccount",
+        "description": "Create a new MailAccount with the request body",
+        "tags": [
+          "MailAccount"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The MailAccount object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailAccount"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/mailaccounts/{mailaccountId}": {
+      "delete": {
+        "summary": "Delete MailAccount",
+        "description": "Deletes the MailAccount by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailaccountId",
+            "description": "MailAccount id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update MailAccount",
+        "description": "Updates the given fields in the MailAccount by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailaccountId",
+            "description": "MailAccount id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the MailAccount object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailAccount"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/mailaliases": {
+      "get": {
+        "summary": "Collection of MailAliases",
+        "description": "Get the full collection of created MailAliases",
+        "tags": [
+          "MailAlias"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of MailAliases",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MailAlias"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new MailAlias",
+        "description": "Create a new MailAlias with the request body",
+        "tags": [
+          "MailAlias"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The MailAlias object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailAlias"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/mailaliases/{mailaliasId}": {
+      "delete": {
+        "summary": "Delete MailAlias",
+        "description": "Deletes the MailAlias by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailaliasId",
+            "description": "MailAlias id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update MailAlias",
+        "description": "Updates the given fields in the MailAlias by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailaliasId",
+            "description": "MailAlias id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the MailAlias object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailAlias"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/mailsources": {
+      "get": {
+        "summary": "Collection of MailSources",
+        "description": "Get the full collection of created MailSources",
+        "tags": [
+          "MailSource"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of MailSources",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MailSource"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new MailSource",
+        "description": "Create a new MailSource with the request body",
+        "tags": [
+          "MailSource"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The MailSource object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailSource"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/mailsources/{mailsourceId}": {
+      "delete": {
+        "summary": "Delete MailSource",
+        "description": "Deletes the MailSource by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailsourceId",
+            "description": "MailSource id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update MailSource",
+        "description": "Updates the given fields in the MailSource by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailsourceId",
+            "description": "MailSource id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the MailSource object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailSource"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    },
+    "/mailforwardings": {
+      "get": {
+        "summary": "Collection of MailForwardings",
+        "description": "Get the full collection of created MailForwardings",
+        "tags": [
+          "MailForwarding"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Limits the output",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offsets the output (needs limit)",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "in": "query",
+            "name": "q[fieldName]",
+            "description": "Seach for the field",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort by given field name (descending by - prefix)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "fields",
+            "description": "Give only the requested fields (comma separated list)",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of MailForwardings",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MailForwarding"
+              }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new MailForwarding",
+        "description": "Create a new MailForwarding with the request body",
+        "tags": [
+          "MailForwarding"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The MailForwarding object without id",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailForwarding"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request data"
+          },
+          "409": {
+            "description": "Resource conflict"
+          }
+        }
+      }
+    },
+    "/mailforwardings/{mailforwardingId}": {
+      "delete": {
+        "summary": "Delete MailForwarding",
+        "description": "Deletes the MailForwarding by the given id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailforwardingId",
+            "description": "MailForwarding id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Could not delete"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update MailForwarding",
+        "description": "Updates the given fields in the MailForwarding by id",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mailforwardingId",
+            "description": "MailForwarding id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The update fields of the MailForwarding object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MailForwarding"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Malformed request"
+          },
+          "409": {
+            "description": "Resource conflict"
+          },
+          "422": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Could not update"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of Group"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of Group"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of Group"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of Group"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of Group"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of User"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of User"
+        },
+        "login": {
+          "type": "string",
+          "description": "login of User"
+        },
+        "password": {
+          "type": "string",
+          "description": "password of User"
+        },
+        "contact_email": {
+          "type": "string",
+          "description": "contact_email of User"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of User"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of User"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of User"
+        },
+        "group": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Group"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Group"
+            }
+          }
+        }
+      }
+    },
+    "Apikey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of Apikey"
+        },
+        "apikey": {
+          "type": "string",
+          "description": "apikey of Apikey"
+        },
+        "comment": {
+          "type": "string",
+          "description": "comment of Apikey"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of Apikey"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of Apikey"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of Apikey"
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of User"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of User"
+            },
+            "login": {
+              "type": "string",
+              "description": "login of User"
+            }
+          }
+        }
+      }
+    },
+    "Package": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of Package"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of Package"
+        },
+        "price_unit": {
+          "type": "integer",
+          "description": "price_unit of Package"
+        },
+        "quota_apikeys": {
+          "type": "integer",
+          "description": "quota_apikeys of Package"
+        },
+        "quota_custom_packages": {
+          "type": "integer",
+          "description": "quota_custom_packages of Package"
+        },
+        "quota_ssh_pubkeys": {
+          "type": "integer",
+          "description": "quota_ssh_pubkeys of Package"
+        },
+        "quota_customers": {
+          "type": "integer",
+          "description": "quota_customers of Package"
+        },
+        "quota_vhosts": {
+          "type": "integer",
+          "description": "quota_vhosts of Package"
+        },
+        "quota_vhost_storage": {
+          "type": "integer",
+          "description": "quota_vhost_storage of Package"
+        },
+        "quota_databases": {
+          "type": "integer",
+          "description": "quota_databases of Package"
+        },
+        "quota_database_users": {
+          "type": "integer",
+          "description": "quota_database_users of Package"
+        },
+        "quota_dns_zones": {
+          "type": "integer",
+          "description": "quota_dns_zones of Package"
+        },
+        "quota_dns_records": {
+          "type": "integer",
+          "description": "quota_dns_records of Package"
+        },
+        "quota_domains": {
+          "type": "integer",
+          "description": "quota_domains of Package"
+        },
+        "quota_mail_accounts": {
+          "type": "integer",
+          "description": "quota_mail_accounts of Package"
+        },
+        "quota_mail_forwardings": {
+          "type": "integer",
+          "description": "quota_mail_forwardings of Package"
+        },
+        "quota_mail_aliases": {
+          "type": "integer",
+          "description": "quota_mail_aliases of Package"
+        },
+        "quota_mail_sources": {
+          "type": "integer",
+          "description": "quota_mail_sources of Package"
+        },
+        "quota_mail_storage": {
+          "type": "integer",
+          "description": "quota_mail_storage of Package"
+        },
+        "quota_sftp_users": {
+          "type": "integer",
+          "description": "quota_sftp_users of Package"
+        },
+        "quota_shell_users": {
+          "type": "integer",
+          "description": "quota_shell_users of Package"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of Package"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of Package"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of Package"
+        }
+      }
+    },
+    "Domain": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of Domain"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of Domain"
+        },
+        "mail_enabled": {
+          "type": "boolean",
+          "description": "mail_enabled of Domain"
+        },
+        "dns_enabled": {
+          "type": "boolean",
+          "description": "dns_enabled of Domain"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of Domain"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of Domain"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of Domain"
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of User"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of User"
+            },
+            "login": {
+              "type": "string",
+              "description": "login of User"
+            }
+          }
+        }
+      }
+    },
+    "Dkim": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of Dkim"
+        },
+        "selector": {
+          "type": "string",
+          "description": "selector of Dkim"
+        },
+        "private_key": {
+          "type": "string",
+          "description": "private_key of Dkim"
+        },
+        "public_key": {
+          "type": "string",
+          "description": "public_key of Dkim"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of Dkim"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of Dkim"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of Dkim"
+        },
+        "domain": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Domain"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Domain"
+            }
+          }
+        }
+      }
+    },
+    "DkimSigning": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of DkimSigning"
+        },
+        "author": {
+          "type": "string",
+          "description": "author of DkimSigning"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of DkimSigning"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of DkimSigning"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of DkimSigning"
+        },
+        "dkim": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Dkim"
+            }
+          }
+        }
+      }
+    },
+    "MailAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of MailAccount"
+        },
+        "email": {
+          "type": "string",
+          "description": "email of MailAccount"
+        },
+        "realname": {
+          "type": "string",
+          "description": "realname of MailAccount"
+        },
+        "password": {
+          "type": "string",
+          "description": "password of MailAccount"
+        },
+        "quota": {
+          "type": "integer",
+          "description": "quota of MailAccount"
+        },
+        "quota_sieve_script": {
+          "type": "integer",
+          "description": "quota_sieve_script of MailAccount"
+        },
+        "quota_sieve_actions": {
+          "type": "integer",
+          "description": "quota_sieve_actions of MailAccount"
+        },
+        "quota_sieve_redirects": {
+          "type": "integer",
+          "description": "quota_sieve_redirects of MailAccount"
+        },
+        "receiving_enabled": {
+          "type": "boolean",
+          "description": "receiving_enabled of MailAccount"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of MailAccount"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of MailAccount"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of MailAccount"
+        },
+        "domain": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Domain"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Domain"
+            }
+          }
+        }
+      }
+    },
+    "MailAlias": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of MailAlias"
+        },
+        "address": {
+          "type": "string",
+          "description": "address of MailAlias"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of MailAlias"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of MailAlias"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of MailAlias"
+        },
+        "domain": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Domain"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Domain"
+            }
+          }
+        }
+      }
+    },
+    "MailSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of MailSource"
+        },
+        "address": {
+          "type": "string",
+          "description": "address of MailSource"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of MailSource"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of MailSource"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of MailSource"
+        },
+        "domain": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Domain"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Domain"
+            }
+          }
+        }
+      }
+    },
+    "MailForwarding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "id of MailForwarding"
+        },
+        "address": {
+          "type": "string",
+          "description": "address of MailForwarding"
+        },
+        "destinations": {
+          "type": "string",
+          "description": "destinations of MailForwarding"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "created_at of MailForwarding"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "updated_at of MailForwarding"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "enabled of MailForwarding"
+        },
+        "domain": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "id of Domain"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of Domain"
+            }
+          }
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        }
+      }
+    },
+    "Auth": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "apikey_comment": {
+          "type": "string"
+        }
+      }
+    },
+    "AuthSuccess": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "apikey": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
