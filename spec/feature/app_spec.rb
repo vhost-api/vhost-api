@@ -5,12 +5,15 @@ describe 'VHost-API Application' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
   context 'by an unauthenticated user' do
-    it 'returns an an API unauthorized error' do
+    it 'returns APP and API versions' do
       get '/'
-      expect(last_response.status).to eq(401)
+      expect(last_response.status).to eq(200)
       expect(last_response.body).to eq(
         spec_json_pretty(
-          api_error(ApiErrors.[](:authentication_failed)).to_json
+          {
+            app_version: '0.1.1-alpha',
+            api_version: 'v1'
+          }.to_json
         )
       )
     end

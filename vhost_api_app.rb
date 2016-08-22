@@ -127,14 +127,15 @@ before { env['rack.errors'] = error_logger }
 
 before do
   # enforce authentication everywhere except for login endpoint and home
-  authenticate! unless %w(/login /).include?(request.path_info)
+  authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
 
   content_type :json, charset: 'utf-8'
   cache_control :public, :must_revalidate
 end
 
 get '/' do
-  app_ver = "VHost-API APP Version: #{settings.app_version}"
-  api_ver = "VHost-API API Version: #{settings.api_version}"
-  "#{app_ver}\n#{api_ver}\n"
+  return_json_pretty(
+    { app_version: settings.app_version,
+      api_version: settings.api_version }.to_json
+  )
 end
