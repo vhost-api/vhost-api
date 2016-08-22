@@ -51,6 +51,7 @@ describe 'VHost-API Authentication' do
 
       # try to allocate another apikey
       params['apikey_comment'] = 'rspec'
+
       post '/api/v1/auth/login', params
 
       expect(last_response.body).to eq(
