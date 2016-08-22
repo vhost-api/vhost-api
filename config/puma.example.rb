@@ -3,10 +3,9 @@ environment 'production'
 
 pidfile 'puma.pid'
 
-threads 0, 1
-workers 1
+threads 1, 4
+workers 2
 preload_app!
-
-# daemonize true
+quiet
 
 bind 'tcp://127.0.0.1:4567'
