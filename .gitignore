@@ -49,8 +49,8 @@ coverage.vim
 config/database.yml
 config/appconfig.yml
 config/puma.rb
-config/session.secret
 **/puma.pid
+resources/doc/*.json
 
 coverage/**
 _coverage/**
