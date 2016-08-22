@@ -126,10 +126,15 @@ when 'MYSQL'
         LEFT JOIN `mail_accounts`
           ON `mail_account_mail_aliases`.`mail_account_id`=`mail_accounts`.`id`
           AND `mail_accounts`.`enabled` = 1
+        LEFT JOIN `domains`
+          ON
+            `mail_accounts`.`domain_id`=`domains`.`id`
         RIGHT JOIN `mail_aliases`
           ON `mail_account_mail_aliases`.`mail_alias_id`=`mail_aliases`.`id`
           AND `mail_aliases`.`enabled` = 1)
       WHERE `mail_accounts`.`email` IS NOT NULL
+      AND `domains`.`enabled` = 1
+      AND `domains`.`mail_enabled` = 1
       GROUP BY `mail_aliases`.`address`;')
   # mail_sendas_maps
   adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
@@ -142,10 +147,15 @@ when 'MYSQL'
         LEFT JOIN `mail_accounts`
           ON `mail_account_mail_sources`.`mail_account_id`=`mail_accounts`.`id`
           AND `mail_accounts`.`enabled` = 1
+        LEFT JOIN `domains`
+          ON
+            `mail_accounts`.`domain_id`=`domains`.`id`
         RIGHT JOIN `mail_sources`
           ON `mail_account_mail_sources`.`mail_source_id`=`mail_sources`.`id`
           AND `mail_sources`.`enabled` = 1)
-      WHERE `mail_accounts`.`email` IS NOT NULL;')
+      WHERE `mail_accounts`.`email` IS NOT NULL
+      AND `domains`.`enabled` = 1
+      AND `domains`.`mail_enabled` = 1;')
   # sftp proftpd user lookup
   adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE VIEW `sftp_user_maps`
     AS
