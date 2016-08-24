@@ -18,18 +18,9 @@ require_relative './init'
 # load additional helpers
 Dir.glob('./app/helpers/*.rb').each { |file| require file }
 
-# setup stuff
-::Logger.class_eval { alias_method :write, :'<<' }
-access_log = 'log/' + settings.environment.to_s + '_access.log'
-access_logger = ::Logger.new(access_log)
-error_log = 'log/' + settings.environment.to_s + '_error.log'
-error_logger = ::File.new(error_log, 'a+')
-error_logger.sync = true
-
 configure do
   set :app_version, '0.1.1-alpha'
   set :api_version, 'v1'
-  use ::Rack::CommonLogger, access_logger
   use Rack::TempfileReaper
   use Rack::Deflater
   set :root, File.expand_path('../', __FILE__)
@@ -85,6 +76,13 @@ settings.api_modules.map(&:upcase).each do |apimod|
   end
 end
 
+# setup access logging for dev/test purporses
+access_log = 'log/' + settings.environment.to_s + '_access.log'
+access_logger = ::Logger.new(access_log)
+error_log = 'log/' + settings.environment.to_s + '_error.log'
+error_logger = ::File.new(error_log, 'a+')
+error_logger.sync = true
+
 configure :development, :test do
   require 'pry'
   require 'better_errors'
@@ -96,6 +94,7 @@ configure :development, :test do
   BetterErrors.application_root = __dir__
   BetterErrors.use_pry!
   set :app_logger, vhost_api_logger
+  use ::Rack::CommonLogger, access_logger
 end
 
 configure :production do
@@ -106,7 +105,6 @@ configure :production do
 end
 
 # setup database connection
-# DataMapper::Logger.new($stdout, :debug)
 DataMapper::Logger.new("log/datamapper_#{settings.environment}", :info)
 DataMapper::Property::String.length(255)
 DataMapper::Model.raise_on_save_failure = true
@@ -123,14 +121,14 @@ DataMapper.setup(:default,
                    @dbconfig[:db_name]
                  ].join)
 
-before { env['rack.errors'] = error_logger }
-
 before do
   # enforce authentication everywhere except for login endpoint and home
   authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
 
   content_type :json, charset: 'utf-8'
   cache_control :public, :must_revalidate
+
+  env['rack.errors'] = error_logger unless settings.environment == :production
 end
 
 get '/' do

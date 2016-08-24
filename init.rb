@@ -6,6 +6,7 @@ require 'yaml'
 
 require 'bundler/setup'
 
+require 'fileutils'
 require 'tempfile'
 require 'data_mapper'
 require 'dm-migrations'
@@ -55,3 +56,6 @@ require './app/helpers/generic_helper.rb'
 
 # finalize db layout when all models have been loaded
 DataMapper.finalize
+
+# create logdir
+FileUtils.mkdir_p('log')
