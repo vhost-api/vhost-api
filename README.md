@@ -66,6 +66,18 @@ services to it while retaining some pre-existing configs/setups.
 7. Run the application: `RACK_ENV="production" bundle exec rackup`
 8. Setup Apache or nginx as reverse proxy with SSL and stuff.
 
+In order for these services to work together you need to make sure everything has the correct permissions assigned.
+Take the following hints into consideration and adjust to your preferences:
+
++ create the mail data dir: `/var/vmail`
++ add a `vmail` user with its own `vmail` group and `/var/vmail` as homedir
++ set the correct permissions on `/var/vmail` and make sure new folders will inherit correct permissions:
+  + `find /var/vmail/ -type d -exec chmod 0750 {} +`
+  + `find /var/vmail/ -type f -exec chmod 0640 {} +`
+  + `find /var/vmail/ -type d -exec chmod g+s {} \;`
++ make sure the `postfix` user also belongs to the primary group of the `opendkim` user
++ make sure `/var/spool/opendkim/` is accessible by setting it to mode `0750`
+
 
 ### Development setup
 
