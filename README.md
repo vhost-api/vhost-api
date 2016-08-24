@@ -54,6 +54,14 @@ resulting in a setup that doesn't allow any external changes most of the time.
 VHost-API is designed in a more flexible manner so that you can freely attach
 services to it while retaining some pre-existing configs/setups.
 
+## Requirements
+
++ Ruby 2.3.0 or above
++ Bundler 1.12.0 or above
++ Opendkim with MySQL/PostgreSQL support
++ Postfix with MySQL/PostgreSQL support
++ Dovecot with MySQL/PostgreSQL support
+
 ## Installation and Configuration
 
 1. Clone the git repository to a location of your choice
@@ -62,13 +70,14 @@ services to it while retaining some pre-existing configs/setups.
 3. Prepare an empty database with user and password
 4. Copy example configs for `appconfig.yml` and `database.yml` from `config/*.example.yml` to `config/` and adjust to your preferences
 5. Setup the database layout by running `RACK_ENV="production" bundle exec rake db:migrate`
-6. Load initial seed data into the db by running `RACK_ENV="production" bundle exec rake db:seed`
+6. Load initial seed data into the db by running `RACK_ENV="production" bundle exec rake db:seed` and make sure to remember the generated admin password
 7. Run the application: `RACK_ENV="production" bundle exec rackup`
 8. Setup Apache or nginx as reverse proxy with SSL and stuff.
 
 In order for these services to work together you need to make sure everything has the correct permissions assigned.
 Take the following hints into consideration and adjust to your preferences:
 
++ create a second database user for the vhost-api db, that is only granted SELECT for opendkim/postfix/dovecot
 + create the mail data dir: `/var/vmail`
 + add a `vmail` user with its own `vmail` group and `/var/vmail` as homedir
 + set the correct permissions on `/var/vmail` and make sure new folders will inherit correct permissions:
@@ -88,7 +97,62 @@ Take the following hints into consideration and adjust to your preferences:
 
 ## Getting started
 
-~ TODO ~
+1. Use the password from [Installation and Configuration: Step 6](#installation-and-configuration) to request an apikey:
+   ```
+   curl --compress --globoff -i -X POST --data 'user=admin&password=SECRET&apikey_comment=curl' 'https://api.example.com/api/v1/auth/login'
+   ```
+   You will receive an apiresponse containing the user_id and an apikey, similar to the following:
+   ```
+   {
+     "user_id": 1,
+     "apikey": "BJzqrTsgcnsBS4FgHrGlrQnWVctf9gMQblg8Rrn5Fj56MFbT4ltJkqDFq9W66kLp"
+   }
+   ```
+
+2. Export user_id and apikey in environment variables for more convenience:
+   ```
+   export VHOSTAPI_USER='1'
+   export VHOSTAPI_KEY='BJzqrTsgcnsBS4FgHrGlrQnWVctf9gMQblg8Rrn5Fj56MFbT4ltJkqDFq9W66kLp'
+   ```
+
+3. Create your first domain:
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X POST 'https://api.example.com/api/v1/domains?verbose' --data '{"name":"example.com","enabled":true, "user_id":1}'
+   ```
+   The `?verbose` urlparam is optional but will reveal more detailed error messages from the API, useful when getting started.
+
+4. Looks like we forgot to enable the email feature for that domain, let's change it:
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X PATCH 'https://api.example.com/api/v1/domains/1?verbose' --data '{"mail_enabled":true}'
+   ```
+
+5. Create a DKIM keypair for that domain:
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X POST 'https://api.example.com/api/v1/dkims?verbose' --data '{"selector":"mail","enabled":true,"domain_id":1}'
+   ```
+   Use the public_key that was returned in the apiresonse, remove the `\n` characters and the headers/footer and create a DNS TXT record for `mail._domainkey.example.com` with `v=DKIM1; p=YOURDKIMPUBLICKEY;`.
+
+6. Assign an author to the freshly generated DKIM keypair:
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X POST 'https://api.example.com/api/v1/dkimsignings?verbose' --data '{"author":"example.com","enabled":true,"dkim_id":1}'
+   ```
+
+7. Create a mailbox:
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X POST 'https://api.example.com/api/v1/mailaccounts?verbose' --data '{"realname":"Max Mustermann","email":"max@example.com","password":"AVERYSECRETPASSWORD","receiving_enabled":true,"enabled":true,"domain_id":1}'
+   ```
+
+8. Allow this mailaccount to also send from its own address (`max@example.com`):
+   ```
+   curl --compress --globoff -i -H "Authorization: VHOSTAPI-KEY $(base64 <<< "${VHOSTAPI_USER}:${VHOSTAPI_KEY}" | tr -d '\n')" -X POST 'https://api.example.com/api/v1/mailsources?verbose' --data '{"address":"max@example.com","src":[1],"enabled":true,"domain_id":1}'
+   ```
+
+If all services (opendkim, postfix, dovecot) are configured properly and running, you should be able to login to your Mailaccount and send & receive emails now, using a client like Thunderbird for example.
+
+In case you receive any errors from the email client, make sure to look in the dovecot/postfix/opendkim log files as well as the log of the VHost-API application.
+
+For a more detailed overview over all the endpoints, parameters and models, please take a look at [Reference documentation](#reference-documentation).
+
 
 ## Reference documentation
 
