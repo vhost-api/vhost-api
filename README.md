@@ -156,7 +156,7 @@ For a more detailed overview over all the endpoints, parameters and models, plea
 
 ## Reference documentation
 
-http://htmlpreview.github.io/?https://github.com/vhost-api/vhost-api/blob/master/resources/doc/html/index.html
+http://htmlpreview.github.io/?https://github.com/vhost-api/vhost-api/blob/0.1.2-alpha/resources/doc/html/index.html
 
 ## Contributing
 

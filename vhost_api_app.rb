@@ -19,7 +19,7 @@ require_relative './init'
 Dir.glob('./app/helpers/*.rb').each { |file| require file }
 
 configure do
-  set :app_version, '0.1.1-alpha'
+  set :app_version, '0.1.2-alpha'
   set :api_version, 'v1'
   use Rack::TempfileReaper
   use Rack::Deflater
