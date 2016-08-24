@@ -106,7 +106,8 @@ when 'POSTGRES'
     AS
       SELECT
         "mail_accounts"."email" AS "email",
-        "mail_accounts"."password" AS "password"
+        "mail_accounts"."password" AS "password",
+        "mail_accounts"."quota" AS "quota"
       FROM "mail_accounts"
         LEFT JOIN "domains"
           ON
@@ -208,7 +209,8 @@ when 'MYSQL'
     AS
       SELECT
         `mail_accounts`.`email` AS `email`,
-        `mail_accounts`.`password` AS `password`
+        `mail_accounts`.`password` AS `password`,
+        `mail_accounts`.`quota` AS `quota`
       FROM `mail_accounts`
         LEFT JOIN `domains`
           ON
