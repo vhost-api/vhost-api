@@ -60,12 +60,12 @@ debug_peer_list =
 # we handle those in recipient_restrictions
 smtpd_relay_restrictions =
 
-# custom restriction classes
+# custom restriction classes (postfwd)
 policy_check = check_policy_service inet:127.0.0.1:10040
 
 smtpd_recipient_restrictions =
 # policy services
- $policy_check,
+ #$policy_check,
 # white-/blacklisting
  check_recipient_access btree:/etc/postfix/access_recipient,
  check_client_access btree:/etc/postfix/access_client,
