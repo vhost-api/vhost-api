@@ -72,7 +72,11 @@ class MailAccount
 
   # @return [Fixnum]
   def quotausage_rel
-    (quotausage.to_i * 100 / quota).round(1)
+    if quota.to_i.zero?
+      0.0
+    else
+      (quotausage.to_i * 100 / quota).round(1)
+    end
   end
 
   # @return [Fixnum, nil]
@@ -83,7 +87,11 @@ class MailAccount
 
   # @return [Fixnum]
   def sieveusage_rel
-    (sieveusage.to_i * 100 / quota_sieve_script).round(1)
+    if quota_sieve_script.to_i.zero?
+      0.0
+    else
+      (sieveusage.to_i * 100 / quota_sieve_script).round(1)
+    end
   end
 
   private
