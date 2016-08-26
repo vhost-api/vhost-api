@@ -25,6 +25,7 @@ package_list = [
 package_list.each do |package|
   Package.new(name: package[0],
               price_unit: package[1],
+              quota_apikeys: 1,
               enabled: package[2],
               user: User.first(login: package[3])).save
 end

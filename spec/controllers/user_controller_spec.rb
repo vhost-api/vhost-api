@@ -14,6 +14,15 @@ describe 'VHost-API User Controller' do
         let!(:testgroup) { create(:group) }
         let!(:testuser) { create(:user, name: 'Test', login: 'user') }
         let!(:testadmin) { create(:admin, password: 'secret') }
+        let!(:default_pkg) do
+          create(
+            :package,
+            name: 'default',
+            quota_apikeys: 1,
+            enabled: true,
+            user_id: testadmin.id
+          )
+        end
 
         describe 'GET all' do
           it 'authorizes (policies) and returns an array of users' do

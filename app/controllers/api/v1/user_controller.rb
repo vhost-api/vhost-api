@@ -21,8 +21,11 @@ namespace '/api/v1/users' do
       @_params = JSON.parse(request.body.read)
       @_params = symbolize_params_hash(@_params)
 
-      # has to be an array if provided
-      unless @_params[:packages].nil?
+      if @_params[:packages].nil?
+        # assign default packages which only has apikey quota
+        @_params[:packages] = [Package.first(name: 'default').id]
+      else
+        # has to be an array if provided
         return_api_error(
           ApiErrors.[](:invalid_packages)
         ) unless @_params[:packages].is_a?(Array)
