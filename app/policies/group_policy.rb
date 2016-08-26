@@ -65,6 +65,7 @@ class GroupPolicy < ApplicationPolicy
     private
 
     def groups
+      return scope.all(name: 'user') if user.reseller?
       scope.all(id: 0)
     end
   end
