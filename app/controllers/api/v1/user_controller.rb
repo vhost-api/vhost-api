@@ -256,5 +256,41 @@ namespace '/api/v1/users' do
         ApiResponseSuccess.new(data: { object: settings.api_modules })
       )
     end
+
+    get '/quota_stats' do
+      quota_props = %w(apikeys)
+      settings.api_modules.map(&:upcase).each do |apimod|
+        case apimod
+        when 'EMAIL' then quota_props.push(
+          %w(domains mail_accounts mail_aliases mail_sources mail_forwardings
+             mail_storage)
+        )
+        when 'VHOST' then quota_props.push(
+          %w(domains vhosts vhost_storage sftp_users shell_users ssh_pubkeys)
+        )
+        when 'DNS' then quota_props.push(
+          %w(domains dns_zones dns_records)
+        )
+        when 'DATABASE' then quota_props.push(
+          %w(databases database_users)
+        )
+        end
+      end
+
+      quota_stats = {}
+      quota_props.flatten.uniq.each do |prop|
+        used = send("allocated_#{prop}", @_user)
+        prop = "quota_#{prop}".to_sym
+        total = @_user.packages.map(&prop).reduce(0, :+)
+        quota_stats[prop] = {
+          used: used,
+          total: total
+        }
+      end
+
+      return_apiresponse(
+        ApiResponseSuccess.new(data: { object: quota_stats })
+      )
+    end
   end
 end
