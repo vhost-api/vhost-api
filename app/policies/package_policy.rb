@@ -115,7 +115,7 @@ class PackagePolicy < ApplicationPolicy
       next unless k.to_s =~ %r{^quota_}
       remaining = check_quota_prop(k)
       mult = record.users.size
-      return false unless remaining >= ((v - record.send(k).to_i) * mult)
+      return false unless remaining >= ((v.to_i - record.send(k)) * mult)
     end
     true
   end
