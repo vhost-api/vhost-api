@@ -12,11 +12,13 @@ class PackagePolicy < ApplicationPolicy
   # Checks if current user is allowed to show the record
   #
   # @return [Boolean]
+  # rubocop:disable Metrics/AbcSize
   def show?
     if record.is_a?(DataMapper::Resource)
       return false if record.destroyed?
     end
     return true if user.admin?
+    return true if record.owner == user
     return true if user.packages.map(&:id).include?(record.id)
     false
   end
