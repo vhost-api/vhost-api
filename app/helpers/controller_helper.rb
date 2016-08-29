@@ -80,11 +80,11 @@ end
 
 def search_collection(collection: nil, query: nil)
   return collection if query.nil?
-
   query.keys.each do |key|
-    # booleans need to be searched differently
     search_query = if key.to_s =~ %r{enabled$}
                      { key => string_to_bool(query[key]) }
+                   elsif key.to_s =~ %r{_id$}
+                     { key => query[key].to_i }
                    else
                      { key.like => "%#{query[key]}%" }
                    end

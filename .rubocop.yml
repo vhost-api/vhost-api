@@ -16,6 +16,11 @@ Style/RegexpLiteral:
   EnforcedStyle: percent_r
   Enabled: true
 
+# increase the limit a bit
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 12
+
 # RSpec
 
 # We don't use rspec in this way
