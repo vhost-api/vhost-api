@@ -76,7 +76,7 @@ class MailForwarding
     lpart = email.split('@')[0]
     # allow catchall
     return true if lpart.empty?
-    return false unless lpart =~ %r{^[a-z]+[a-z0-9._-]*$}
+    return false unless lpart =~ %r{^[a-z0-9]+[a-z0-9._-]*$}
     return false if lpart =~ %r{\.\.{1,}}
     return false if %w(. _ -).include?(lpart[-1, 1])
     true
