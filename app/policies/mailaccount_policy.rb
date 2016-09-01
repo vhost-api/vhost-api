@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+# rubocop:disable Metrics/ClassLength, Metrics/MethodLength
+# rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 require File.expand_path '../application_policy.rb', __FILE__
 
 # Policy for MailAccount
@@ -108,6 +110,8 @@ class MailAccountPolicy < ApplicationPolicy
   # @retun [Boolean]
   def check_create_params(params)
     return false unless check_domain_id(params[:domain_id])
+    return false unless check_mailalias_set(params[:aliases])
+    return false unless check_mailsource_set(params[:sources])
     return quotacheck(params[:quota]) if params.key?(:quota)
     true
   end
@@ -119,6 +123,12 @@ class MailAccountPolicy < ApplicationPolicy
     end
     if params.key?(:domain_id)
       return false unless check_domain_id(params[:domain_id])
+    end
+    if params.key?(:aliases)
+      return false unless check_mailalias_set(params[:aliases])
+    end
+    if params.key?(:sources)
+      return false unless check_mailsource_set(params[:sources])
     end
     return quotacheck(params[:quota] - record.quota) if params.key?(:quota)
     true
@@ -135,5 +145,51 @@ class MailAccountPolicy < ApplicationPolicy
       domain_id
     )
     false
+  end
+
+  def check_mailalias_set(param)
+    return true if param.nil?
+    return true if mailalias_set.superset?(param.to_set)
+    false
+  end
+
+  def mailalias_set
+    return user_mailalias_set unless user.reseller?
+    reseller_mailalias_set
+  end
+
+  def user_mailalias_set
+    return user.domains.mail_aliases.map(&:id).to_set unless user.reseller?
+    [].to_set
+  end
+
+  def reseller_mailalias_set
+    return user.domains.mail_aliases.map(&:id).concat(
+      user.customers.domains.mail_aliases.map(&:id)
+    ).to_set if user.reseller?
+    [].to_Set
+  end
+
+  def check_mailsource_set(param)
+    return true if param.nil?
+    return true if mailsource_set.superset?(param.to_set)
+    false
+  end
+
+  def mailsource_set
+    return user_mailsource_set unless user.reseller?
+    reseller_mailsource_set
+  end
+
+  def user_mailsource_set
+    return user.domains.mail_sources.map(&:id).to_set unless user.reseller?
+    [].to_set
+  end
+
+  def reseller_mailsource_set
+    return user.domains.mail_sources.map(&:id).concat(
+      user.customers.domains.mail_sources.map(&:id)
+    ).to_set if user.reseller?
+    [].to_Set
   end
 end

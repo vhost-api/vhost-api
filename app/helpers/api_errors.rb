@@ -119,6 +119,12 @@ module ApiErrors
     sieve_redirects_quota:
       ['1609', 422, 'sieve redirects exceed quota for this mailaccount'],
 
+    invalid_account_aliases:
+      ['1610', 422, 'invalid aliases'],
+
+    invalid_account_sources:
+      ['1611', 422, 'invalid sources'],
+
     # mailalias controller specific 17xx
     invalid_alias_destinations:
       ['1700', 422, 'invalid destinations'],

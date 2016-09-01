@@ -41,6 +41,45 @@ namespace '/api/v1/mailaccounts' do
         @_params[:password].to_s
       ) unless @_params[:password].nil?
 
+      unless @_params[:aliases].nil?
+        # aliases must be an array
+        return_api_error(
+          ApiErrors.[](:invalid_account_aliases)
+        ) unless @_params[:aliases].is_a?(Array)
+      end
+
+      unless @_params[:sources].nil?
+        # sources must be an array
+        return_api_error(
+          ApiErrors.[](:invalid_account_sources)
+        ) unless @_params[:sources].is_a?(Array)
+      end
+
+      # check permissions for parameters
+      raise Pundit::NotAuthorizedError unless policy(MailAccount).create_with?(
+        @_params
+      )
+
+      # fetch aliases as an array of MailAlias
+      unless @_params[:aliases].nil?
+        aliases = MailAlias.all(id: 0)
+        mailalias_ids = @_params.delete(:aliases)
+        mailalias_ids.each do |alias_id|
+          aliases.push(MailAlias.get(alias_id))
+        end
+        @_params[:mail_aliases] = aliases
+      end
+
+      # fetch sources as an array of MailSource
+      unless @_params[:sourcees].nil?
+        sources = MailSource.all(id: 0)
+        mailsource_ids = @_params.delete(:sources)
+        mailsource_ids.each do |source_id|
+          sources.push(MailSource.get(source_id))
+        end
+        @_params[:mail_sources] = sources
+      end
+
       # perform validations
       @mailaccount = MailAccount.new(@_params)
       unless @mailaccount.valid?
@@ -53,11 +92,6 @@ namespace '/api/v1/mailaccounts' do
           return_api_error(ApiErrors.[](:invalid_request))
         end
       end
-
-      # check permissions for parameters
-      raise Pundit::NotAuthorizedError unless policy(MailAccount).create_with?(
-        @_params
-      )
 
       # perform sanity checks
       check_email_address_for_domain(
@@ -179,6 +213,47 @@ namespace '/api/v1/mailaccounts' do
           @_params.delete(key) if @_params[key] == @mailaccount.send(key)
         end
 
+        unless @_params[:aliases].nil?
+          # aliases must be an array
+          return_api_error(
+            ApiErrors.[](:invalid_account_aliases)
+          ) unless @_params[:aliases].is_a?(Array)
+        end
+
+        unless @_params[:sources].nil?
+          # sources must be an array
+          return_api_error(
+            ApiErrors.[](:invalid_account_sources)
+          ) unless @_params[:sources].is_a?(Array)
+        end
+
+        # check permissions for parameters
+        raise Pundit::NotAuthorizedError unless policy(
+          @mailaccount
+        ).update_with?(
+          @_params
+        )
+
+        # fetch aliases as an array of MailAlias
+        unless @_params[:aliases].nil?
+          aliases = MailAlias.all(id: 0)
+          mailalias_ids = @_params.delete(:aliases)
+          mailalias_ids.each do |alias_id|
+            aliases.push(MailAlias.get(alias_id))
+          end
+          @_params[:mail_aliases] = aliases
+        end
+
+        # fetch sources as an array of MailSource
+        unless @_params[:sourcees].nil?
+          sources = MailSource.all(id: 0)
+          mailsource_ids = @_params.delete(:sources)
+          mailsource_ids.each do |source_id|
+            sources.push(MailSource.get(source_id))
+          end
+          @_params[:mail_sources] = sources
+        end
+
         # perform validations on a dummy object, check only supplied attributes
         dummy = MailAccount.new(@_params)
         unless dummy.valid?
@@ -218,13 +293,6 @@ namespace '/api/v1/mailaccounts' do
             end
           end
         end
-
-        # check permissions for parameters
-        raise Pundit::NotAuthorizedError unless policy(
-          @mailaccount
-        ).update_with?(
-          @_params
-        )
 
         # remember old values for log message
         old_attributes = @mailaccount.as_json
