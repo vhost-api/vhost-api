@@ -71,7 +71,7 @@ namespace '/api/v1/mailaccounts' do
       end
 
       # fetch sources as an array of MailSource
-      unless @_params[:sourcees].nil?
+      unless @_params[:sources].nil?
         sources = MailSource.all(id: 0)
         mailsource_ids = @_params.delete(:sources)
         mailsource_ids.each do |source_id|
@@ -245,7 +245,7 @@ namespace '/api/v1/mailaccounts' do
         end
 
         # fetch sources as an array of MailSource
-        unless @_params[:sourcees].nil?
+        unless @_params[:sources].nil?
           sources = MailSource.all(id: 0)
           mailsource_ids = @_params.delete(:sources)
           mailsource_ids.each do |source_id|
