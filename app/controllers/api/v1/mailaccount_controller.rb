@@ -65,7 +65,12 @@ namespace '/api/v1/mailaccounts' do
         aliases = MailAlias.all(id: 0)
         mailalias_ids = @_params.delete(:aliases)
         mailalias_ids.each do |alias_id|
-          aliases.push(MailAlias.get(alias_id))
+          a = MailAlias.get(alias_id)
+          # alias must belong to the same domain
+          return_api_error(
+            ApiErrors.[](:invalid_alias_for_account)
+          ) unless a.domain_id == @_params[:domain_id]
+          aliases.push(a)
         end
         @_params[:mail_aliases] = aliases
       end
@@ -75,7 +80,12 @@ namespace '/api/v1/mailaccounts' do
         sources = MailSource.all(id: 0)
         mailsource_ids = @_params.delete(:sources)
         mailsource_ids.each do |source_id|
-          sources.push(MailSource.get(source_id))
+          s = MailSource.get(source_id)
+          # source must belong to the same domain
+          return_api_error(
+            ApiErrors.[](:invalid_source_for_account)
+          ) unless s.domain_id == @_params[:domain_id]
+          sources.push(s)
         end
         @_params[:mail_sources] = sources
       end
@@ -239,7 +249,12 @@ namespace '/api/v1/mailaccounts' do
           aliases = MailAlias.all(id: 0)
           mailalias_ids = @_params.delete(:aliases)
           mailalias_ids.each do |alias_id|
-            aliases.push(MailAlias.get(alias_id))
+            a = MailAlias.get(alias_id)
+            # alias must belong to the same domain
+            return_api_error(
+              ApiErrors.[](:invalid_alias_for_account)
+            ) unless a.domain_id == @_params[:domain_id]
+            aliases.push(a)
           end
           @_params[:mail_aliases] = aliases
         end
@@ -249,7 +264,12 @@ namespace '/api/v1/mailaccounts' do
           sources = MailSource.all(id: 0)
           mailsource_ids = @_params.delete(:sources)
           mailsource_ids.each do |source_id|
-            sources.push(MailSource.get(source_id))
+            s = MailSource.get(source_id)
+            # source must belong to the same domain
+            return_api_error(
+              ApiErrors.[](:invalid_source_for_account)
+            ) unless s.domain_id == @_params[:domain_id]
+            sources.push(s)
           end
           @_params[:mail_sources] = sources
         end

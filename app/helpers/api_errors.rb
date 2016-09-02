@@ -125,6 +125,12 @@ module ApiErrors
     invalid_account_sources:
       ['1611', 422, 'invalid sources'],
 
+    invalid_aliases_for_account:
+      ['1612', 422, 'cannot use provided aliases for this account'],
+
+    invalid_sources_for_account:
+      ['1613', 422, 'cannot use provided sources for this account'],
+
     # mailalias controller specific 17xx
     invalid_alias_destinations:
       ['1700', 422, 'invalid destinations'],
