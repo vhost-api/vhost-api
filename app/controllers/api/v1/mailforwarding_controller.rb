@@ -25,6 +25,9 @@ namespace '/api/v1/mailforwardings' do
       @_params[:address].downcase! unless @_params[:address].nil?
       @_params[:destinations].downcase! unless @_params[:destinations].nil?
 
+      # remove any '\r', we only want '\n'
+      @_params[:destinations].delete!("\r") unless @_params[:destinations].nil?
+
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(
         MailForwarding
@@ -154,6 +157,11 @@ namespace '/api/v1/mailforwardings' do
         # force lowercase on email addr
         @_params[:address].downcase! unless @_params[:address].nil?
         @_params[:destinations].downcase! unless @_params[:destinations].nil?
+
+        # remove any '\r', we only want '\n'
+        @_params[:destinations].delete!(
+          "\r"
+        ) unless @_params[:destinations].nil?
 
         # prevent any action being performed on a detroyed resource
         return_api_error(
