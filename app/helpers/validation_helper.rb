@@ -12,7 +12,7 @@ def check_email_localpart(email: nil, domain: nil)
   lpart = email.chomp("@#{domain}")
   # allow catchall addresses
   return true if lpart.empty?
-  return_api_error(localpart_error) unless lpart =~ %r{^[a-z]+[a-z0-9._-]*$}
+  return_api_error(localpart_error) unless lpart =~ %r{^[a-z0-9]+[a-z0-9._-]*$}
   return_api_error(localpart_error) if lpart =~ %r{\.\.{1,}}
   return_api_error(localpart_error) if %w(. _ -).include?(lpart[-1, 1])
   true
