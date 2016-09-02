@@ -10,7 +10,7 @@ class MailAccount
 
   property :id, Serial, key: true
   property :email, String, required: true, unique: true, length: 3..255
-  property :realname, String, length: 1..255
+  property :realname, String, length: 255
   property :password, String, required: true, length: 255
   property :quota, Integer, required: true, min: 0, max: (2**63 - 1), default: 10_485_760 # 10MiB default
   property :quota_sieve_script, Integer, required: true, min: 0, max: (2**63 - 1), default: 10_240 # 10KiB default
