@@ -244,6 +244,10 @@ namespace '/api/v1/mailaccounts' do
           @_params
         )
 
+        # we need domain_id for following checks
+        d_id = @mailaccount.domain_id
+        @_params[:domain_id] = d_id if @_params[:domain_id].nil?
+
         # fetch aliases as an array of MailAlias
         unless @_params[:aliases].nil?
           aliases = MailAlias.all(id: 0)
