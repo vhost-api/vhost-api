@@ -35,7 +35,7 @@ class DkimSigningPolicy < ApplicationPolicy
     private
 
     def dkimsignings
-      result = user.domains.dkims.dkim_signings.all
+      result = DkimSigning.all(dkim_id: user.domains.dkims.map(&:id))
       if user.reseller?
         result.concat(user.customers.domains.dkims.dkim_signings)
       end

@@ -19,7 +19,7 @@ class Ipv4AddressPolicy < ApplicationPolicy
     private
 
     def ipv4addresses
-      result = user.ipv4_addresses.all
+      result = Ipv4Address.all(user_id: user.id)
       result.concat(user.customers.ipv4_addresses) if user.reseller?
       result
     end

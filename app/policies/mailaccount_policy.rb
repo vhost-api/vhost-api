@@ -47,7 +47,7 @@ class MailAccountPolicy < ApplicationPolicy
     private
 
     def mailaccounts
-      result = user.domains.mail_accounts.all
+      result = MailAccount.all(domain_id: user.domains.map(&:id))
       result.concat(user.customers.domains.mail_accounts) if user.reseller?
       result
     end

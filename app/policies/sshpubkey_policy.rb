@@ -19,7 +19,7 @@ class SshPubkeyPolicy < ApplicationPolicy
     private
 
     def sshpubkeys
-      result = user.ssh_pubkeys.all
+      result = SshPubkey.all(user_id: user.id)
       result.concat(user.customers.ssh_pubkeys) if user.reseller?
       result
     end

@@ -19,7 +19,7 @@ class Ipv6AddressPolicy < ApplicationPolicy
     private
 
     def ipv6addresses
-      result = user.ipv6_addresses.all
+      result = Ipv6Address.all(user_id: user.id)
       result.concat(user.customers.ipv6_addresses) if user.reseller?
       result
     end

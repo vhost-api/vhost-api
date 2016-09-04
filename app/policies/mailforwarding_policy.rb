@@ -35,7 +35,7 @@ class MailForwardingPolicy < ApplicationPolicy
     private
 
     def mailforwardings
-      result = user.domains.mail_forwardings.all
+      result = MailForwarding.all(domain_id: user.domains.map(&:id))
       result.concat(user.customers.domains.mail_forwardings) if user.reseller?
       result
     end

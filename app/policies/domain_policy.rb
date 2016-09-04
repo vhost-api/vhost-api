@@ -45,7 +45,7 @@ class DomainPolicy < ApplicationPolicy
 
     # @return [Array(Domain)]
     def domains
-      result = user.domains.all
+      result = Domain.all(user_id: user.id)
       result.concat(user.customers.domains) if user.reseller?
       result
     end

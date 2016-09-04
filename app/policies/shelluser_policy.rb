@@ -19,7 +19,7 @@ class ShellUserPolicy < ApplicationPolicy
     private
 
     def shellusers
-      result = user.vhosts.shell_users.all
+      result = ShellUser.all(vhost_id: user.vhosts.map(&:id))
       result.concat(user.customers.vhosts.shell_users) if user.reseller?
       result
     end

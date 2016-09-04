@@ -35,7 +35,7 @@ class DkimPolicy < ApplicationPolicy
     private
 
     def dkims
-      result = user.domains.dkims.all
+      result = Dkim.all(domain_id: user.domains.map(&:id))
       result.concat(user.customers.domains.dkims) if user.reseller?
       result
     end

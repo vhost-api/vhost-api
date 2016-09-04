@@ -35,7 +35,7 @@ class MailAliasPolicy < ApplicationPolicy
     private
 
     def mailaliases
-      result = user.domains.mail_aliases.all
+      result = MailAlias.all(domain_id: user.domains.map(&:id))
       result.concat(user.customers.domains.mail_aliases) if user.reseller?
       result
     end

@@ -27,7 +27,7 @@ class VhostPolicy < ApplicationPolicy
     private
 
     def vhosts
-      result = user.vhosts.all
+      result = Vhost.all(user_id: user.id)
       result.concat(user.customers.vhosts) if user.reseller?
       result
     end

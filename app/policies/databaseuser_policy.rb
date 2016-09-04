@@ -19,7 +19,7 @@ class DatabaseUserPolicy < ApplicationPolicy
     private
 
     def databaseusers
-      result = user.database_users.all
+      result = DatabaseUser.all(user_id: user.id)
       result.concat(user.customers.database_users) if user.reseller?
       result
     end

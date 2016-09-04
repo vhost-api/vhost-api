@@ -20,7 +20,7 @@ class SftpUserPolicy < ApplicationPolicy
 
     # @return [Array(SftpUser)]
     def sftpusers
-      result = user.vhosts.sftp_users.all
+      result = SftpUser.all(vhost_id: user.vhosts.map(&:id))
       result.concat(user.customers.vhosts.sftp_users) if user.reseller?
       result
     end

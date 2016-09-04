@@ -35,7 +35,7 @@ class MailSourcePolicy < ApplicationPolicy
     private
 
     def mailsources
-      result = user.domains.mail_sources.all
+      result = MailSource.all(domain_id: user.domains.map(&:id))
       result.concat(user.customers.domains.mail_sources) if user.reseller?
       result
     end

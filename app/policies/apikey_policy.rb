@@ -44,7 +44,7 @@ class ApikeyPolicy < ApplicationPolicy
 
     # @return [Array(Apikey)]
     def apikeys
-      result = user.apikeys.all
+      result = Apikey.all(user_id: user.id)
       result.concat(user.customers.apikeys) if user.reseller?
       result
     end

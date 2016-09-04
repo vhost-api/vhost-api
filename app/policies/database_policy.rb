@@ -19,7 +19,7 @@ class DatabasePolicy < ApplicationPolicy
     private
 
     def databases
-      result = user.databases.all
+      result = Database.all(user_id: user.id)
       result.concat(user.customers.databases) if user.reseller?
       result
     end
