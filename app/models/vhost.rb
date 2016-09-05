@@ -21,6 +21,8 @@ class Vhost
   property :quota, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default
   property :auto_subdomain, String, length: 15, default: 'none'
   property :php_enabled, Boolean, default: false
+  property :apache_directives, Text, lazy: false
+  property :nginx_directives, Text, lazy: false
   property :ssl_enabled, Boolean, default: false
   property :ssl_letsencrypt, Boolean, default: false
   property :force_ssl, Boolean, default: false
