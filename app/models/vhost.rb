@@ -36,8 +36,9 @@ class Vhost
   property :enabled, Boolean, default: false
 
   FQDN = %r{(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)}
+  URL = %r{^http(|s)://(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)}
   validates_format_of :fqdn, with: FQDN
-  validates_format_of :redirect_target, with: FQDN, unless: ->(t) { t.redirect_type == 'none' }
+  validates_format_of :redirect_target, with: URL, unless: ->(t) { t.redirect_type == 'none' }
 
   validates_within :type, set: VHOST_TYPES
   validates_within :redirect_type, set: REDIRECT_TYPES
