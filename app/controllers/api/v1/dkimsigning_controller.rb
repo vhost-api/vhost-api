@@ -180,7 +180,7 @@ namespace '/api/v1/dkimsignings' do
         check_dkim_author_for_dkim(
           author: @_params[:author],
           dkim_id: @dkimsigning.dkim_id
-        )
+        ) unless @_params[:author].nil?
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(
