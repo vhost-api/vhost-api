@@ -47,6 +47,21 @@ when 'POSTGRES'
           ON "dkims"."domain_id"="domains"."id"
           AND "domains"."enabled" = TRUE)
       WHERE "dkims"."enabled" = TRUE;')
+  # dkim_signing_lookup
+  adapter.execute('CREATE OR REPLACE VIEW "dkim_lookup_signing"
+    AS
+      SELECT
+        "dkim_signings"."id" AS "id",
+        "dkim_signings"."author" AS "author",
+        "dkim_signings"."dkim_id" AS "dkim_id"
+      FROM ("dkims"
+        LEFT JOIN "dkim_signings"
+          ON "dkim_signings"."dkim_id"="dkims"."id"
+          AND "dkims"."enabled" = TRUE
+        LEFT JOIN "domains"
+          ON "dkims"."domain_id"="domains"."id"
+          AND "domains"."enabled" = TRUE)
+      WHERE "dkim_signings"."enabled" = TRUE;')
   # mail_alias_maps
   adapter.execute('CREATE OR REPLACE VIEW "mail_alias_maps"
     AS
@@ -147,6 +162,22 @@ when 'MYSQL'
           ON `dkims`.`domain_id`=`domains`.`id`
           AND `domains`.`enabled` = 1
       WHERE `dkims`.`enabled` = 1;')
+  # dkim_signing_lookup
+  adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
+  VIEW `dkim_lookup_signing`
+    AS
+      SELECT
+        `dkim_signings`.`id` AS `id`,
+        `dkim_signings`.`author` AS `author`,
+        `dkim_signings`.`dkim_id` AS `dkim_id`
+      FROM (`dkims`
+        LEFT JOIN `dkim_signings`
+          ON `dkim_signings`.`dkim_id`=`dkims`.`id`
+          AND `dkims`.`enabled` = TRUE
+        LEFT JOIN `domains`
+          ON `dkims`.`domain_id`=`domains`.`id`
+          AND `domains`.`enabled` = TRUE)
+      WHERE `dkim_signings`.`enabled` = TRUE;')
   # mail_alias_maps
   adapter.execute('CREATE OR REPLACE ALGORITHM = TEMPTABLE
   VIEW `mail_alias_maps`
