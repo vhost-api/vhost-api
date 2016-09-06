@@ -27,7 +27,7 @@ configure do
   set :start_time, Time.now
   set :logging, false
   @appconfig = YAML.load(
-    File.read('config/appconfig.yml')
+    File.read("#{settings.root}/config/appconfig.yml")
   )[settings.environment.to_s]
   @appconfig.keys.each do |key|
     set key, @appconfig[key]
@@ -37,7 +37,8 @@ end
 # setup logging
 case settings.log_method
 when 'internal' then
-  vhost_api_logfile_name = "log/vhost-api_#{settings.environment}.log"
+  my_env = settings.environment
+  vhost_api_logfile_name = "#{settings.root}/log/vhost-api_#{my_env}.log"
   vhost_api_logfile = ::File.new(vhost_api_logfile_name, 'a+')
   vhost_api_logfile.sync = true
   vhost_api_logger = Logger.new(vhost_api_logfile)
@@ -52,7 +53,7 @@ vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 # -- load only activated modules/controllers --
 # core modules
 %w(group user package apikey auth).each do |f|
-  require './app/controllers/api/v1/' + f.to_s + '_controller.rb'
+  require "#{settings.root}/app/controllers/api/v1/" + f.to_s + '_controller.rb'
 end
 
 # optional modules
@@ -72,14 +73,14 @@ settings.api_modules.map(&:upcase).each do |apimod|
   end
 
   optional_modules.flatten.uniq.each do |f|
-    require './app/controllers/api/v1/' + f.to_s + '_controller.rb'
+    require "#{settings.root}/app/controllers/api/v1/#{f}_controller.rb"
   end
 end
 
 # setup access logging for dev/test purporses
-access_log = 'log/' + settings.environment.to_s + '_access.log'
+access_log = settings.root + '/log/' + settings.environment.to_s + '_access.log'
 access_logger = ::Logger.new(access_log)
-error_log = 'log/' + settings.environment.to_s + '_error.log'
+error_log = settings.root + '/log/' + settings.environment.to_s + '_error.log'
 error_logger = ::File.new(error_log, 'a+')
 error_logger.sync = true
 
@@ -105,7 +106,10 @@ configure :production do
 end
 
 # setup database connection
-DataMapper::Logger.new("log/datamapper_#{settings.environment}", :info)
+DataMapper::Logger.new(
+  "#{settings.root}/log/datamapper_#{settings.environment}",
+  :info
+)
 DataMapper::Property::String.length(255)
 DataMapper::Model.raise_on_save_failure = true
 DataMapper.setup(:default,

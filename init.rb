@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 require 'yaml'
 
+lp = File.expand_path('../', __FILE__)
+
 @environment = ENV['RACK_ENV'] || 'development'
-@dbconfig = YAML.load(File.read('config/database.yml'))[@environment]
+@dbconfig = YAML.load(File.read("#{lp}/config/database.yml"))[@environment]
 
 require 'bundler/setup'
 
@@ -51,8 +53,8 @@ require_relative 'app/helpers/classes/apiresponse'
 require_relative 'app/helpers/classes/apiresponse_error'
 require_relative 'app/helpers/classes/apiresponse_success'
 
-Dir.glob('./app/policies/*.rb').each { |file| require file }
-require './app/helpers/generic_helper.rb'
+Dir.glob("#{lp}/app/policies/*.rb").each { |file| require file }
+require "#{lp}/app/helpers/generic_helper.rb"
 
 # finalize db layout when all models have been loaded
 DataMapper.finalize
