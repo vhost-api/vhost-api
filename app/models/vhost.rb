@@ -23,6 +23,7 @@ class Vhost
   property :php_enabled, Boolean, default: false
   property :apache_directives, Text, lazy: false
   property :nginx_directives, Text, lazy: false
+  property :php_ini_settings, Text, lazy: false
   property :ssl_enabled, Boolean, default: false
   property :ssl_letsencrypt, Boolean, default: false
   property :force_ssl, Boolean, default: false
