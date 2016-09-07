@@ -66,10 +66,6 @@ namespace '/api/v1/mailaccounts' do
         mailalias_ids = @_params.delete(:aliases)
         mailalias_ids.each do |alias_id|
           a = MailAlias.get(alias_id)
-          # alias must belong to the same domain
-          return_api_error(
-            ApiErrors.[](:invalid_aliases_for_account)
-          ) unless a.domain_id == @_params[:domain_id]
           aliases.push(a)
         end
         @_params[:mail_aliases] = aliases
@@ -81,10 +77,6 @@ namespace '/api/v1/mailaccounts' do
         mailsource_ids = @_params.delete(:sources)
         mailsource_ids.each do |source_id|
           s = MailSource.get(source_id)
-          # source must belong to the same domain
-          return_api_error(
-            ApiErrors.[](:invalid_sources_for_account)
-          ) unless s.domain_id == @_params[:domain_id]
           sources.push(s)
         end
         @_params[:mail_sources] = sources
@@ -254,10 +246,6 @@ namespace '/api/v1/mailaccounts' do
           mailalias_ids = @_params.delete(:aliases)
           mailalias_ids.each do |alias_id|
             a = MailAlias.get(alias_id)
-            # alias must belong to the same domain
-            return_api_error(
-              ApiErrors.[](:invalid_aliases_for_account)
-            ) unless a.domain_id == @_params[:domain_id]
             aliases.push(a)
           end
           @_params[:mail_aliases] = aliases
@@ -269,10 +257,6 @@ namespace '/api/v1/mailaccounts' do
           mailsource_ids = @_params.delete(:sources)
           mailsource_ids.each do |source_id|
             s = MailSource.get(source_id)
-            # source must belong to the same domain
-            return_api_error(
-              ApiErrors.[](:invalid_sources_for_account)
-            ) unless s.domain_id == @_params[:domain_id]
             sources.push(s)
           end
           @_params[:mail_sources] = sources
