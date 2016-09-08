@@ -83,15 +83,20 @@ class MailAccountPolicy < ApplicationPolicy
 
   # rubocop:disable Metrics/AbcSize
   # @return [Boolean]
-  def quotacheck(*requested_quota)
+  def quotacheck(*requested_quota, update: false)
     unless requested_quota.blank?
       return false if requested_quota[0].zero?
       return false unless (storage_remaining - requested_quota[0]) >= 0
     end
     available_accounts = user.packages.map(&:quota_mail_accounts).reduce(0, :+)
     available_storage = user.packages.map(&:quota_mail_storage).reduce(0, :+)
-    return true if check_account_num < available_accounts &&
-                   check_account_storage < available_storage
+    if update
+      return true if check_account_num <= available_accounts &&
+                     check_account_storage <= available_storage
+    elsif check_account_num < available_accounts &&
+          check_account_storage < available_storage
+      return true
+    end
     false
   end
 
@@ -131,7 +136,9 @@ class MailAccountPolicy < ApplicationPolicy
     if params.key?(:sources)
       return false unless check_mailsource_set(params[:sources])
     end
-    return quotacheck(params[:quota] - record.quota) if params.key?(:quota)
+    return quotacheck(
+      params[:quota] - record.quota, update: true
+    ) if params.key?(:quota)
     true
   end
 
