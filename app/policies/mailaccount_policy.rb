@@ -86,7 +86,7 @@ class MailAccountPolicy < ApplicationPolicy
   def quotacheck(*requested_quota)
     unless requested_quota.blank?
       return false if requested_quota[0].zero?
-      return false if storage_remaining < requested_quota[0]
+      return false unless (storage_remaining - requested_quota[0]) >= 0
     end
     available_accounts = user.packages.map(&:quota_mail_accounts).reduce(0, :+)
     available_storage = user.packages.map(&:quota_mail_storage).reduce(0, :+)
