@@ -142,7 +142,7 @@ when 'POSTGRES'
         "vhosts"."os_uid" AS "uid",
         "vhosts"."os_gid" AS "gid",
         "sftp_users"."homedir" AS "homedir",
-        \'/bin/false\'::text AS "shell"
+        \'/bin/nologin\'::text AS "shell"
       FROM "sftp_users"
         RIGHT JOIN "vhosts"
           ON "sftp_users"."vhost_id"="vhosts"."id"
@@ -261,7 +261,7 @@ when 'MYSQL'
         `vhosts`.`os_uid` AS uid,
         `vhosts`.`os_gid` AS gid,
         `sftp_users`.`homedir` AS homedir,
-        \'/bin/false\' AS shell
+        \'/bin/nologin\' AS shell
       FROM `sftp_users`
         RIGHT JOIN `vhosts`
           ON `sftp_users`.`vhost_id`=`vhosts`.`id`
