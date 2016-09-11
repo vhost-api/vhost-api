@@ -23,11 +23,15 @@ class DkimSigning
     self.updated_at = Time.now.to_i
   end
 
+  def self.relationships
+    { dkim: { only: [:id] } }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:dkim_id],
-                 relationships: { dkim: { only: [:id] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
