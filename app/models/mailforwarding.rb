@@ -51,7 +51,7 @@ class MailForwarding
   def self.relationships
     { domain: { only: [:id, :name] } }
   end
-  
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})

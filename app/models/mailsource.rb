@@ -31,7 +31,7 @@ class MailSource
     { domain: { only: [:id, :name] },
       mail_accounts: { only: [:id, :email] } }
   end
-  
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
