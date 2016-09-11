@@ -27,12 +27,16 @@ class MailSource
     self.updated_at = Time.now.to_i
   end
 
+  def self.relationships
+    { domain: { only: [:id, :name] },
+      mail_accounts: { only: [:id, :email] } }
+  end
+  
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:domain_id],
-                 relationships: { domain: { only: [:id, :name] },
-                                  mail_accounts: { only: [:id, :email] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
