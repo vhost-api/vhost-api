@@ -28,12 +28,18 @@ class DatabaseUser
 
   has n, :databases, constraint: :protect
 
+  def self.relationships
+    {
+      user: { only: [:id, :name, :login] },
+      databases: { only: [:id, :name] }
+    }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password],
-                 relationships: { user: { only: [:id, :name, :login] },
-                                  databases: { only: [:id, :name] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
