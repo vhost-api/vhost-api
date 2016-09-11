@@ -27,11 +27,15 @@ class SftpUser
 
   belongs_to :vhost
 
+  def self.relationships
+    { vhost: { only: [:id, :fqdn] } }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password],
-                 relationships: { vhost: { only: [:id, :fqdn] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
