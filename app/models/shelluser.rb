@@ -29,12 +29,16 @@ class ShellUser
   belongs_to :vhost
   belongs_to :shell
 
+  def self.relationships
+    { vhost: { only: [:id, :fqdn] },
+      shell: { only: [:id, :shell] } }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password],
-                 relationships: { vhost: { only: [:id, :fqdn] },
-                                  shell: { only: [:id, :shell] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
