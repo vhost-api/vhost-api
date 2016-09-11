@@ -27,12 +27,16 @@ class Dkim
     self.updated_at = Time.now.to_i
   end
 
+  def self.relationships
+    { domain: { only: [:id, :name] },
+      dkim_signings: { only: [:id, :author] } }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:private_key, :domain_id],
-                 relationships: { domain: { only: [:id, :name] },
-                                  dkim_signings: { only: [:id, :author] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
