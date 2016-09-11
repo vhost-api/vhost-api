@@ -44,6 +44,12 @@ class MailAccount
     self.updated_at = Time.now.to_i
   end
 
+  def self.relationships
+    { domain: { only: [:id, :name] },
+      mail_aliases: { only: [:id, :address] },
+      mail_sources: { only: [:id, :address] } }
+  end
+
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
@@ -52,9 +58,7 @@ class MailAccount
                            :quotausage_rel,
                            :sieveusage,
                            :sieveusage_rel],
-                 relationships: { domain: { only: [:id, :name] },
-                                  mail_aliases: { only: [:id, :address] },
-                                  mail_sources: { only: [:id, :address] } } }
+                 relationships: relationships }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
