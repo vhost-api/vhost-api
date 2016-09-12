@@ -1,5 +1,5 @@
+# coding: utf-8
 # frozen_string_literal: true
-# rubocop:disable Lint/Eval
 require 'bundler/setup'
 require 'data_mapper'
 require 'dm-migrations'
@@ -173,7 +173,6 @@ paths['/auth/login'] = {
 modules.each do |_, module_value|
   ns = module_value[:namespace]
   class_name = module_value[:class_name]
-  filename = module_value[:filename]
 
   clazz = Object.const_get(class_name)
 
@@ -333,42 +332,32 @@ modules.each do |_, module_value|
       next
     end
 
+    next unless defined? clazz.relationship_options
+
+    next unless clazz.relationship_options.key?(relation.name)
+
     parent_model_info = modules[relation.parent_model_name]
 
-    File.open("#{lp}app/models/#{filename}") do |file|
-      regex = 'relationships:\s*\{\s*' +
-              relation.name.to_s +
-              ':\s*\{([a-z:_,\[\] ]*)\}'
+    relation_hash = {
+      type: 'object',
+      properties: {}
+    }
 
-      match = file.read.match(regex)
+    only_array = clazz.relationship_options[relation.name][:only]
 
-      only = match.captures[0].to_s if match
+    only_array.each do |field|
+      parent_clazz = Object.const_get(parent_model_info[:class_name])
 
-      if only
-        only_hash = eval("{ #{only} }")
+      parent_property = parent_clazz.properties[field]
+      sub_type = get_type_from_primitive(parent_property.primitive)
 
-        relation_hash = {
-          type: 'object',
-          properties: {}
-        }
-
-        only_hash.each do |_, value|
-          value.each do |field|
-            parent_clazz = Object.const_get(parent_model_info[:class_name])
-
-            parent_property = parent_clazz.properties[field]
-            sub_type = get_type_from_primitive(parent_property.primitive)
-
-            relation_hash[:properties][field] = {
-              type: sub_type,
-              description: "#{field} of #{relation.parent_model_name}"
-            }
-          end
-        end
-
-        definitions[class_name][:properties][relation.name] = relation_hash
-      end
+      relation_hash[:properties][field] = {
+        type: sub_type,
+        description: "#{field} of #{relation.parent_model_name}"
+      }
     end
+
+    definitions[class_name][:properties][relation.name] = relation_hash
   end
 end
 
