@@ -34,7 +34,7 @@ class Domain
     self.updated_at = Time.now.to_i
   end
 
-  def self.relationships
+  def self.relationship_options
     { user: { only: [:id, :name, :login] } }
   end
 
@@ -42,7 +42,7 @@ class Domain
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:user_id],
-                 relationships: relationships }
+                 relationships: relationship_options }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

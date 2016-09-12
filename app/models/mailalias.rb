@@ -39,7 +39,7 @@ class MailAlias
     self.updated_at = Time.now.to_i
   end
 
-  def self.relationships
+  def self.relationship_options
     { domain: { only: [:id, :name] },
       mail_accounts: { only: [:id, :email] } }
   end
@@ -48,7 +48,7 @@ class MailAlias
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:domain_id],
-                 relationships: relationships }
+                 relationships: relationship_options }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

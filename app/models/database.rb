@@ -29,7 +29,7 @@ class Database
 
   has n, :database_users, constraint: :protect
 
-  def self.relationships
+  def self.relationship_options
     {
       user: { only: [:id, :name, :login] },
       database_user: { only: [:id, :username] }
@@ -39,7 +39,7 @@ class Database
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { relationships: relationships }
+    defaults = { relationships: relationship_options }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

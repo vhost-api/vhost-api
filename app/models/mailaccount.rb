@@ -44,7 +44,7 @@ class MailAccount
     self.updated_at = Time.now.to_i
   end
 
-  def self.relationships
+  def self.relationship_options
     { domain: { only: [:id, :name] },
       mail_aliases: { only: [:id, :address] },
       mail_sources: { only: [:id, :address] } }
@@ -58,7 +58,7 @@ class MailAccount
                            :quotausage_rel,
                            :sieveusage,
                            :sieveusage_rel],
-                 relationships: relationships }
+                 relationships: relationship_options }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

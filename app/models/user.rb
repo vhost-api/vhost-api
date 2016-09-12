@@ -57,7 +57,7 @@ class User
     end
   end
 
-  def self.relationships(is_user)
+  def self.relationship_options(is_user)
     relationships = { group: { only: [:id, :name] },
                       packages: { only: [:id, :name] } }
 
@@ -70,7 +70,7 @@ class User
   # @return [Hash]
   def as_json(options = {})
     defaults = { exclude: [:password, :group_id, :reseller_id],
-                 relationships: relationships(reseller.is_a?(User)) }
+                 relationships: relationship_options(reseller.is_a?(User)) }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
