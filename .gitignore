@@ -42,6 +42,9 @@ coverage.vim
 
 .\#**
 
+# not needed, versions are specified in Gemfile
+/Gemfile.lock
+
 # local development gemfiles
 /Gemfile.local*
 
