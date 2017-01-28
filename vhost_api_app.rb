@@ -11,7 +11,7 @@ require_relative './app/helpers/format_helper'
 class VhostApi
   # VhostApi application class
   class App < Sinatra::Base
-    helpers Sinatra::Format
+    helpers VhostApi::Helpers::Format
 
     configure do
       set :app_version, '0.2.0-alpha'
