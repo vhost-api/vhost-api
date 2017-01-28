@@ -8,7 +8,7 @@ require 'logger'
 
 # load files
 Dir.glob(
-  './app/{models,controllers,policies,helpers}/*.rb'
+  './app/{models,policies,helpers}/*.rb'
 ).each { |f| require f }
 
 # VhostApi base class
@@ -100,7 +100,7 @@ class VhostApi
 
     before do
       # enforce authentication everywhere except for login endpoint and home
-      authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
+      # authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
 
       content_type :json, charset: 'utf-8'
       cache_control :public, :must_revalidate
