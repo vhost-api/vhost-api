@@ -26,7 +26,7 @@ configure do
   set :root, File.expand_path('../', __FILE__)
   set :start_time, Time.now
   set :logging, false
-  @appconfig = YAML.safe_load(
+  @appconfig = YAML.load(
     File.read("#{settings.root}/config/appconfig.yml")
   )[settings.environment.to_s]
   @appconfig.keys.each do |key|
