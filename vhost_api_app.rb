@@ -5,7 +5,11 @@ require 'sequel'
 require 'yaml'
 require 'safe_yaml'
 require 'logger'
-require_relative './app/helpers/format_helper'
+
+# load files
+Dir.glob(
+  './app/{models,controllers,policies,helpers}/*.rb'
+).each { |f| require f }
 
 # VhostApi base class
 class VhostApi
