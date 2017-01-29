@@ -8,7 +8,7 @@ require 'logger'
 
 # load files
 Dir.glob(
-  './app/{models,lib,policies,helpers}/*.rb'
+  './app/{policies,helpers}/*.rb'
 ).each { |f| require f }
 
 # VhostApi base class
@@ -90,13 +90,16 @@ class VhostApi
       @dbconfig['db_adapter'] = 'mysql2'
     end
 
-    DB = Sequel.connect(
+    @db = Sequel.connect(
       adapter:  @dbconfig['db_adapter'],
       host:     @dbconfig['db_host'],
       database: @dbconfig['db_name'],
       user:     @dbconfig['db_user'],
       password: @dbconfig['db_pass']
     )
+
+    # we can load the models only after the db connection has been setup
+    Dir.glob('./app/models/*.rb').each { |f| require f }
 
     before do
       # enforce authentication everywhere except for login endpoint and home

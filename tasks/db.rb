@@ -60,9 +60,9 @@ begin
         end
 
         after = db.from(:schema_migrations).all
-        migrations = (after - before).collect { |x| x[:filename] }.join(', ')
+        migrations = (after - before).collect { |x| x[:filename] }.join("\n")
 
-        puts "Migrated #{migrations}"
+        puts "Applied migrations:\n#{migrations}"
       end
       printf "<= %s done in %.2fs\n", t.name, time
     end
