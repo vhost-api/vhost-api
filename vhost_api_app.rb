@@ -8,7 +8,7 @@ require 'logger'
 
 # load files
 Dir.glob(
-  './app/{models,policies,helpers}/*.rb'
+  './app/{models,lib,policies,helpers}/*.rb'
 ).each { |f| require f }
 
 # VhostApi base class
@@ -49,7 +49,7 @@ class VhostApi
     end
     vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 
-    # setup access logging for dev/test purporses
+    # setup access and error logging
     access_log = "#{settings.root}/log/#{settings.environment}_access.log"
     access_logger = ::Logger.new(access_log)
     err_log = "#{settings.root}/log/#{settings.environment}_error.log"
@@ -100,7 +100,9 @@ class VhostApi
 
     before do
       # enforce authentication everywhere except for login endpoint and home
-      # authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
+      # unless request.path_infolla =~ %r{/(|api/v[0-9\.]+/auth/login)}
+      #   authenticate!
+      # end
 
       content_type :json, charset: 'utf-8'
       cache_control :public, :must_revalidate
