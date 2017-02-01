@@ -10,6 +10,7 @@ end
 gem 'bcrypt', '~> 3.1.11'
 gem 'multi_json', '~> 1.12.1'
 gem 'safe_yaml', '~> 1.0.4'
+gem 'activesupport', '~> 5.0.1'
 gem 'sinatra', github: 'sinatra/sinatra'
 
 # tools

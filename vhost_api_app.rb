@@ -8,13 +8,15 @@ require 'logger'
 
 # load files
 Dir.glob(
-  './app/{policies,helpers}/*.rb'
+  './app/{policies,helpers,lib/middleware}/*.rb'
 ).each { |f| require f }
 
 # VhostApi base class
 class VhostApi
   # VhostApi application class
   class App < Sinatra::Base
+    use VhostApi::Middleware::ErrorHandler
+    use VhostApi::Middleware::JsonParams
     helpers VhostApi::Helpers::Format
 
     configure do

@@ -16,7 +16,7 @@ class VhostApi
         example ? example.to_json : {}.to_json
       end
 
-      def create(_params: nil)
+      def create(*)
         example = VhostApi::Models::Example.create(name: SecureRandom.hex(16))
         example ? example.to_json : {}.to_json
       end
