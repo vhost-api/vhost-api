@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require 'sequel'
-require_relative '../../vhost_api_app'
+require 'vhost_api_app'
 
 module VhostApi
   class Models

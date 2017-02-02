@@ -1,6 +1,8 @@
 # frozen_string_literal: true
-require './vhost_api_app.rb'
-Dir.glob('./app/controllers/*.rb').each { |f| require f }
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__))
+
+require 'vhost_api_app'
+Dir.glob('./api/controllers/*.rb').each { |f| require f }
 
 # run VhostApi::App
 

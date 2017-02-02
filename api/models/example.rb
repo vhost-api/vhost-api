@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative './base'
+require 'api/models/base'
 
 module VhostApi
   class Models

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'sinatra/base'
 require 'multi_json'
-require_relative '../../vhost_api_app'
+require 'vhost_api_app'
 
 module VhostApi
   class Controllers
