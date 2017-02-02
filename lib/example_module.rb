@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require 'json'
-require 'api/models/example'
+require 'lib/models/example'
 require 'securerandom'
 
 module VhostApi

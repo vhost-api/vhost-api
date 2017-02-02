@@ -10,6 +10,9 @@ require 'logger'
 Dir.glob(
   './api/{policies,helpers,lib/middleware}/*.rb'
 ).each { |f| require f }
+Dir.glob(
+  './lib/middleware/*.rb'
+).each { |f| require f }
 
 # top-level namespace
 module VhostApi
@@ -101,7 +104,7 @@ module VhostApi
     )
 
     # we can load the models only after the db connection has been setup
-    Dir.glob('./api/models/*.rb').each { |f| require f }
+    Dir.glob('./lib/models/*.rb').each { |f| require f }
 
     before do
       # enforce authentication everywhere except for login endpoint and home

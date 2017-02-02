@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'sinatra/base'
 require 'api/controllers/application_controller'
-require 'api/lib/example_module'
+require 'lib/example_module'
 
 module VhostApi
   class Controllers

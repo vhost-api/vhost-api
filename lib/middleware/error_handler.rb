@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'api/lib/error'
+require 'lib/error'
 
 module VhostApi
   class Middleware

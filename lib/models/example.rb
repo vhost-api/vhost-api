@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'api/models/base'
+require 'lib/models/base'
 
 module VhostApi
   class Models
