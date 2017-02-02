@@ -1,5 +1,6 @@
 # project gems (can be installed with bundler from Gemfile)
 /vendor/**
+/.vendor/**
 
 # logfiles and tempfiles
 /log/*
@@ -59,5 +60,3 @@ coverage/**
 _coverage/**
 
 .edit.sh
-
-testdata/cookies/*
