@@ -18,7 +18,7 @@ begin
       #   actually breaks the manipulated nodes, but it seems to work somehow.
       sed_cmd = 'sed s/\.self//g'
 
-      dot_cmd = 'dot -Tjpg -o ./doc/yardoc/yard_graph.jpg'
+      dot_cmd = 'dot -Tsvg -o ./doc/yardoc/yard_graph.svg'
 
       `#{yard_cmd} | #{sed_cmd} | #{dot_cmd}`
       puts 'done.'
