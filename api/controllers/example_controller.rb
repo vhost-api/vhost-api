@@ -5,7 +5,7 @@ require 'lib/logic/example'
 require 'api/presenters/example'
 
 module VhostApi
-  class Controllers
+  module Controllers
     # VhostApi Example controller
     class ExampleController < VhostApi::Controllers::Application
       get '/' do
