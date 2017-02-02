@@ -8,10 +8,7 @@ require 'logger'
 
 # load files
 Dir.glob(
-  './api/{policies,helpers,lib/middleware}/*.rb'
-).each { |f| require f }
-Dir.glob(
-  './lib/middleware/*.rb'
+  './api/{helpers,middleware}/*.rb'
 ).each { |f| require f }
 
 # top-level namespace

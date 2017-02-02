@@ -1,8 +1,8 @@
 # frozen_string_literal: true
-require 'lib/error'
+require 'lib/serializable_error'
 
 module VhostApi
-  class Middleware
+  module Middleware
     # This class handles our errors.
     class ErrorHandler
       def initialize(app)
@@ -15,10 +15,10 @@ module VhostApi
       # @return nil
       def call(env)
         @app.call(env)
-      rescue Errors::SerializableError => error
+      rescue ::Errors::SerializableError => error
         Rack::Response.new(error.to_json, error.status, error.headers).finish
       rescue
-        body = Error::SerializableError.new.to_json
+        body = ::Error::SerializableError.new.to_json
         Rack::Response.new(body, 500).finish
       end
     end
