@@ -3,7 +3,7 @@ require 'sinatra/base'
 require_relative './application_controller'
 require_relative '../lib/example_module'
 
-class VhostApi
+module VhostApi
   class Controllers
     # VhostApi Example controller
     class ExampleController < VhostApi::Controllers::Application

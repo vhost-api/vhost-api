@@ -3,7 +3,7 @@ require 'sinatra/base'
 require 'multi_json'
 require_relative '../../vhost_api_app'
 
-class VhostApi
+module VhostApi
   class Controllers
     # VhostApi Application controller
     class Application < VhostApi::App

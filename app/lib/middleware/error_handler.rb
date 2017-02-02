@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require_relative '../error'
 
-class VhostApi
+module VhostApi
   class Middleware
     # This class handles our errors.
     class ErrorHandler

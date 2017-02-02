@@ -2,7 +2,7 @@
 require 'sequel'
 require_relative '../../vhost_api_app'
 
-class VhostApi
+module VhostApi
   class Models
     Base = Class.new(Sequel::Model)
     # Base model

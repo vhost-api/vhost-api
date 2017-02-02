@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'json'
 
-class VhostApi
+module VhostApi
   module Helpers
     # Format module including various output/formatting helpers
     module Format

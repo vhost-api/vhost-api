@@ -11,8 +11,8 @@ Dir.glob(
   './app/{policies,helpers,lib/middleware}/*.rb'
 ).each { |f| require f }
 
-# VhostApi base class
-class VhostApi
+# top-level namespace
+module VhostApi
   # VhostApi application class
   class App < Sinatra::Base
     use VhostApi::Middleware::ErrorHandler

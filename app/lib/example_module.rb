@@ -3,7 +3,7 @@ require 'json'
 require_relative '../models/example'
 require 'securerandom'
 
-class VhostApi
+module VhostApi
   module Modules
     # Example module for handling Example objects/models
     module ExampleModule

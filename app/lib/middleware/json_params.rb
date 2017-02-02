@@ -2,7 +2,7 @@
 require 'active_support/core_ext/hash'
 require_relative '../error'
 
-class VhostApi
+module VhostApi
   class Middleware
     # This class parses and merges json request bodies into to sinatra
     # params variable, when the content_type is :json.
