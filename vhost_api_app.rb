@@ -121,6 +121,8 @@ DataMapper.setup(:default,
                    @dbconfig[:db_pass],
                    '@',
                    @dbconfig[:db_host],
+                   ':',
+                   @dbconfig[:db_port],
                    '/',
                    @dbconfig[:db_name]
                  ].join)

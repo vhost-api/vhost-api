@@ -13,7 +13,8 @@ begin
     DataMapper.setup(:default,
                      [@dbconfig[:db_adapter], '://',
                       @dbconfig[:db_user], ':', @dbconfig[:db_pass], '@',
-                      @dbconfig[:db_host], '/', @dbconfig[:db_name]].join)
+                      @dbconfig[:db_host], ':', @dbconfig[:db_port], '/',
+                      @dbconfig[:db_name]].join)
   end
 
   namespace :db do

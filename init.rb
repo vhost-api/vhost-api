@@ -15,12 +15,15 @@ require 'dm-migrations'
 require 'dm-constraints'
 require 'dm-timestamps'
 require 'dm-serializer'
+require 'securerandom'
 
 case @dbconfig[:db_adapter].upcase
 when 'POSTGRES'
   require 'dm-postgres-adapter'
+  @dbconfig[:db_port] = 5432 if @dbconfig[:db_port].nil?
 when 'MYSQL'
   require 'dm-mysql-adapter'
+  @dbconfig[:db_port] = 3306 if @dbconfig[:db_port].nil?
 end
 
 require 'bcrypt'
