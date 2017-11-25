@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe GroupPolicy do
@@ -9,27 +10,27 @@ describe GroupPolicy do
   context 'for a user' do
     let(:user) { FactoryGirl.create(:user) }
 
-    it { should_not permit(:show)    }
-    it { should_not permit(:create)  }
-    it { should_not permit(:update)  }
-    it { should_not permit(:destroy) }
+    it { is_expected.not_to permit(:show)    }
+    it { is_expected.not_to permit(:create)  }
+    it { is_expected.not_to permit(:update)  }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for a reseller' do
     let(:user) { FactoryGirl.create(:reseller) }
 
-    it { should_not permit(:show)    }
-    it { should_not permit(:create)  }
-    it { should_not permit(:update)  }
-    it { should_not permit(:destroy) }
+    it { is_expected.not_to permit(:show)    }
+    it { is_expected.not_to permit(:create)  }
+    it { is_expected.not_to permit(:update)  }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for an admin' do
     let(:user) { FactoryGirl.create(:admin) }
 
-    it { should permit(:show)    }
-    it { should permit(:create)  }
-    it { should permit(:update)  }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show)    }
+    it { is_expected.to permit(:create)  }
+    it { is_expected.to permit(:update)  }
+    it { is_expected.to permit(:destroy) }
   end
 end

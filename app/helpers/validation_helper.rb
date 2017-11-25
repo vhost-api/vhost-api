@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 def check_email_address(email: nil)
   # check if requested email is "valid"
   return_api_error(ApiErrors.[](:invalid_email)) unless email.count('@') == 1
@@ -14,7 +15,7 @@ def check_email_localpart(email: nil, domain: nil)
   return true if lpart.empty?
   return_api_error(localpart_error) unless lpart =~ %r{^[a-z0-9]+[a-z0-9._-]*$}
   return_api_error(localpart_error) if lpart =~ %r{\.\.{1,}}
-  return_api_error(localpart_error) if %w(. _ -).include?(lpart[-1, 1])
+  return_api_error(localpart_error) if %w[. _ -].include?(lpart[-1, 1])
   true
 end
 

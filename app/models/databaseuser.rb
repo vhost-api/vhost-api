@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -31,9 +32,9 @@ class DatabaseUser
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password],
-                 relationships: { user: { only: [:id, :name, :login] },
-                                  databases: { only: [:id, :name] } } }
+    defaults = { exclude: %i[password],
+                 relationships: { user: { only: %i[id name login] },
+                                  databases: { only: %i[id name] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

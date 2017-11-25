@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # rubocop:disable Metrics/LineLength
 require 'dm-core'
 require 'dm-migrations'
@@ -47,14 +48,14 @@ class MailAccount
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password, :domain_id],
-                 methods: [:quotausage,
-                           :quotausage_rel,
-                           :sieveusage,
-                           :sieveusage_rel],
-                 relationships: { domain: { only: [:id, :name] },
-                                  mail_aliases: { only: [:id, :address] },
-                                  mail_sources: { only: [:id, :address] } } }
+    defaults = { exclude: %i[password domain_id],
+                 methods: %i[quotausage
+                             quotausage_rel
+                             sieveusage
+                             sieveusage_rel],
+                 relationships: { domain: { only: %i[id name] },
+                                  mail_aliases: { only: %i[id address] },
+                                  mail_sources: { only: %i[id address] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

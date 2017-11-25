@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -26,8 +27,8 @@ class DkimSigning
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:dkim_id],
-                 relationships: { dkim: { only: [:id] } } }
+    defaults = { exclude: %i[dkim_id],
+                 relationships: { dkim: { only: %i[id] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

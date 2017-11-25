@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/packages' do
   get do
     @packages = policy_scope(Package)

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/users' do
   get do
     @users = policy_scope(User)
@@ -26,9 +27,11 @@ namespace '/api/v1/users' do
         @_params[:packages] = [Package.first(name: 'default').id]
       else
         # has to be an array if provided
-        return_api_error(
-          ApiErrors.[](:invalid_packages)
-        ) unless @_params[:packages].is_a?(Array)
+        unless @_params[:packages].is_a?(Array)
+          return_api_error(
+            ApiErrors.[](:invalid_packages)
+          )
+        end
       end
 
       # check permissions for parameters
@@ -160,9 +163,11 @@ namespace '/api/v1/users' do
 
         # has to be an array if provided
         unless @_params[:packages].nil?
-          return_api_error(
-            ApiErrors.[](:invalid_packages)
-          ) unless @_params[:packages].is_a?(Array)
+          unless @_params[:packages].is_a?(Array)
+            return_api_error(
+              ApiErrors.[](:invalid_packages)
+            )
+          end
         end
 
         # check permissions for parameters
@@ -258,21 +263,21 @@ namespace '/api/v1/users' do
     end
 
     get '/quota_stats' do
-      quota_props = %w(apikeys)
+      quota_props = %w[apikeys]
       settings.api_modules.map(&:upcase).each do |apimod|
         case apimod
         when 'EMAIL' then quota_props.push(
-          %w(domains mail_accounts mail_aliases mail_sources mail_forwardings
-             mail_storage)
+          %w[domains mail_accounts mail_aliases mail_sources mail_forwardings
+             mail_storage]
         )
         when 'VHOST' then quota_props.push(
-          %w(domains vhosts vhost_storage sftp_users shell_users ssh_pubkeys)
+          %w[domains vhosts vhost_storage sftp_users shell_users ssh_pubkeys]
         )
         when 'DNS' then quota_props.push(
-          %w(domains dns_zones dns_records)
+          %w[domains dns_zones dns_records]
         )
         when 'DATABASE' then quota_props.push(
-          %w(databases database_users)
+          %w[databases database_users]
         )
         end
       end

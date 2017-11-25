@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/domains' do
   get do
     @domains = policy_scope(Domain)
@@ -22,7 +23,7 @@ namespace '/api/v1/domains' do
       @_params = symbolize_params_hash(@_params)
 
       # force lowercase on domain name
-      @_params[:name].downcase! unless @_params[:name].nil?
+      @_params[:name]&.downcase!
 
       # perform validations
       @domain = Domain.new(@_params)
@@ -148,7 +149,7 @@ namespace '/api/v1/domains' do
         end
 
         # force lowercase on domain name
-        @_params[:name].downcase! unless @_params[:name].nil?
+        @_params[:name]&.downcase!
 
         # perform validations on a dummy object, check only supplied attributes
         dummy = Domain.new(@_params)

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -51,8 +52,8 @@ class MailForwarding
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:domain_id],
-                 relationships: { domain: { only: [:id, :name] } } }
+    defaults = { exclude: %i[domain_id],
+                 relationships: { domain: { only: %i[id name] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end
@@ -78,7 +79,7 @@ class MailForwarding
     return true if lpart.empty?
     return false unless lpart =~ %r{^[a-z0-9]+[a-z0-9._-]*$}
     return false if lpart =~ %r{\.\.{1,}}
-    return false if %w(. _ -).include?(lpart[-1, 1])
+    return false if %w[. _ -].include?(lpart[-1, 1])
     true
   end
 end

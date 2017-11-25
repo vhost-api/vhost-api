@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/mailaliases' do
   get do
     @mailaliases = policy_scope(MailAlias)
@@ -23,13 +24,15 @@ namespace '/api/v1/mailaliases' do
 
       # destinations must be an array if provided
       unless @_params[:dest].nil?
-        return_api_error(
-          ApiErrors.[](:invalid_alias_destinations)
-        ) unless @_params[:dest].is_a?(Array)
+        unless @_params[:dest].is_a?(Array)
+          return_api_error(
+            ApiErrors.[](:invalid_alias_destinations)
+          )
+        end
       end
 
       # force lowercase on email addr
-      @_params[:address].downcase! unless @_params[:address].nil?
+      @_params[:address]&.downcase!
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(MailAlias).create_with?(
@@ -169,9 +172,11 @@ namespace '/api/v1/mailaliases' do
 
         unless @_params[:dest].nil?
           # destinations must be an array
-          return_api_error(
-            ApiErrors.[](:invalid_alias_destinations)
-          ) unless @_params[:dest].is_a?(Array)
+          unless @_params[:dest].is_a?(Array)
+            return_api_error(
+              ApiErrors.[](:invalid_alias_destinations)
+            )
+          end
         end
 
         # check permissions for parameters

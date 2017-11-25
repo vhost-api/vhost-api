@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/mailforwardings' do
   get do
     @mailforwardings = policy_scope(MailForwarding)
@@ -22,11 +23,11 @@ namespace '/api/v1/mailforwardings' do
       @_params = symbolize_params_hash(@_params)
 
       # force lowercase on email addr
-      @_params[:address].downcase! unless @_params[:address].nil?
-      @_params[:destinations].downcase! unless @_params[:destinations].nil?
+      @_params[:address]&.downcase!
+      @_params[:destinations]&.downcase!
 
       # remove any '\r', we only want '\n'
-      @_params[:destinations].delete!("\r") unless @_params[:destinations].nil?
+      @_params[:destinations]&.delete!("\r")
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(
@@ -155,18 +156,18 @@ namespace '/api/v1/mailforwardings' do
         @_params = symbolize_params_hash(@_params)
 
         # force lowercase on email addr
-        @_params[:address].downcase! unless @_params[:address].nil?
-        @_params[:destinations].downcase! unless @_params[:destinations].nil?
+        @_params[:address]&.downcase!
+        @_params[:destinations]&.downcase!
 
         # remove any '\r', we only want '\n'
-        @_params[:destinations].delete!(
-          "\r"
-        ) unless @_params[:destinations].nil?
+        @_params[:destinations]&.delete!("\r")
 
         # prevent any action being performed on a detroyed resource
-        return_api_error(
-          ApiErrors.[](:failed_update)
-        ) if @mailforwarding.destroyed?
+        if @mailforwarding.destroyed?
+          return_api_error(
+            ApiErrors.[](:failed_update)
+          )
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(

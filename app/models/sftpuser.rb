@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -30,8 +31,8 @@ class SftpUser
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password],
-                 relationships: { vhost: { only: [:id, :fqdn] } } }
+    defaults = { exclude: %i[password],
+                 relationships: { vhost: { only: %i[id fqdn] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

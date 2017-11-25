@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/mailaccounts' do
   helpers do
     # @return [String]
@@ -34,25 +35,31 @@ namespace '/api/v1/mailaccounts' do
       @_params = symbolize_params_hash(@_params)
 
       # force lowercase on email addr
-      @_params[:email].downcase! unless @_params[:email].nil?
+      @_params[:email]&.downcase!
 
       # generate dovecot password hash from plaintex
-      @_params[:password] = gen_doveadm_pwhash(
-        @_params[:password].to_s
-      ) unless @_params[:password].nil?
+      unless @_params[:password].nil?
+        @_params[:password] = gen_doveadm_pwhash(
+          @_params[:password].to_s
+        )
+      end
 
       unless @_params[:aliases].nil?
         # aliases must be an array
-        return_api_error(
-          ApiErrors.[](:invalid_account_aliases)
-        ) unless @_params[:aliases].is_a?(Array)
+        unless @_params[:aliases].is_a?(Array)
+          return_api_error(
+            ApiErrors.[](:invalid_account_aliases)
+          )
+        end
       end
 
       unless @_params[:sources].nil?
         # sources must be an array
-        return_api_error(
-          ApiErrors.[](:invalid_account_sources)
-        ) unless @_params[:sources].is_a?(Array)
+        unless @_params[:sources].is_a?(Array)
+          return_api_error(
+            ApiErrors.[](:invalid_account_sources)
+          )
+        end
       end
 
       # check permissions for parameters
@@ -202,12 +209,14 @@ namespace '/api/v1/mailaccounts' do
         @_params = symbolize_params_hash(@_params)
 
         # force lowercase on email addr
-        @_params[:email].downcase! unless @_params[:email].nil?
+        @_params[:email]&.downcase!
 
         # generate dovecot password hash from plaintex
-        @_params[:password] = gen_doveadm_pwhash(
-          @_params[:password].to_s
-        ) unless @_params[:password].nil?
+        unless @_params[:password].nil?
+          @_params[:password] = gen_doveadm_pwhash(
+            @_params[:password].to_s
+          )
+        end
 
         # remove unmodified values from input params
         @_params.each_key do |key|
@@ -217,16 +226,20 @@ namespace '/api/v1/mailaccounts' do
 
         unless @_params[:aliases].nil?
           # aliases must be an array
-          return_api_error(
-            ApiErrors.[](:invalid_account_aliases)
-          ) unless @_params[:aliases].is_a?(Array)
+          unless @_params[:aliases].is_a?(Array)
+            return_api_error(
+              ApiErrors.[](:invalid_account_aliases)
+            )
+          end
         end
 
         unless @_params[:sources].nil?
           # sources must be an array
-          return_api_error(
-            ApiErrors.[](:invalid_account_sources)
-          ) unless @_params[:sources].is_a?(Array)
+          unless @_params[:sources].is_a?(Array)
+            return_api_error(
+              ApiErrors.[](:invalid_account_sources)
+            )
+          end
         end
 
         # check permissions for parameters
@@ -380,23 +393,29 @@ namespace '/api/v1/mailaccounts' do
       f_length = request.env['HTTP_CONTENT_LENGTH'] ||= input_file.length
 
       # global limit for sieve filesize
-      return_api_error(
-        ApiErrors.[](:sieve_script_size)
-      ) if f_length > settings.sieve_max_size
+      if f_length > settings.sieve_max_size
+        return_api_error(
+          ApiErrors.[](:sieve_script_size)
+        )
+      end
 
       # curl uploads seem to be always of type application/octet-stream?
-      return_api_error(
-        ApiErrors.[](:sieve_script_type)
-      ) unless %w(application/octet-stream text/plain).include?(f_type)
+      unless %w[application/octet-stream text/plain].include?(f_type)
+        return_api_error(
+          ApiErrors.[](:sieve_script_type)
+        )
+      end
 
       begin
         file = Tempfile.new('vhost-api_svscript')
         file.write(input_file.read)
 
         # filesize quota check
-        return_api_error(
-          ApiErrors.[](:sieve_script_size_quota)
-        ) if file.size.to_i > @mailaccount.quota_sieve_script
+        if file.size.to_i > @mailaccount.quota_sieve_script
+          return_api_error(
+            ApiErrors.[](:sieve_script_size_quota)
+          )
+        end
 
         # compile + parse svbin
         svbin = compile_sieve_script(file.path) if check_sieve_script(file.path)
@@ -404,13 +423,17 @@ namespace '/api/v1/mailaccounts' do
         sieve_redirects = count_sieve_redirects(svbin)
 
         # check quota settings
-        return_api_error(
-          ApiErrors.[](:sieve_actions_quota)
-        ) if sieve_actions > @mailaccount.quota_sieve_actions
+        if sieve_actions > @mailaccount.quota_sieve_actions
+          return_api_error(
+            ApiErrors.[](:sieve_actions_quota)
+          )
+        end
 
-        return_api_error(
-          ApiErrors.[](:sieve_redirects_quota)
-        ) if sieve_redirects > @mailaccount.quota_sieve_redirects
+        if sieve_redirects > @mailaccount.quota_sieve_redirects
+          return_api_error(
+            ApiErrors.[](:sieve_redirects_quota)
+          )
+        end
 
         # write to target destination
         File.open(sieve_filename, 'w') do |f|

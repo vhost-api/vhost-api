@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 error AuthenticationError do
   headers['WWW-Authenticate'] = 'Basic realm="Vhost-API"'
   return_api_error(ApiErrors.[](:authentication_failed))

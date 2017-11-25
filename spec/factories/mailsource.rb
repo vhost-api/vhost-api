@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 FactoryGirl.define do
   sequence :source_email do |n|
     "source#{n}@example.com"

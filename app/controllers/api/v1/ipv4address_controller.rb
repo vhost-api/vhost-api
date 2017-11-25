@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/ipv4addresses' do
   get do
     @ipv4addresses = policy_scope(Ipv4Address)

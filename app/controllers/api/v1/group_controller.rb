@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/groups' do
   get do
     @groups = policy_scope(Group)

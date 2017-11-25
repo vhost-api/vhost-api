@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 begin
   unless ENV['RACK_ENV'] == 'production'
     require 'rubocop/rake_task'

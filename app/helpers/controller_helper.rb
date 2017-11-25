@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 def symbolize_params_hash(params)
   return {} if params.nil?
   params.reduce({}) do |memo, (k, v)|
@@ -16,9 +17,11 @@ def return_json_pretty(json)
 end
 
 def return_authorized_resource(object: nil)
-  return return_apiresponse(
-    ApiResponseSuccess.new(data: { object: nil })
-  ) if object.nil?
+  if object.nil?
+    return return_apiresponse(
+      ApiResponseSuccess.new(data: { object: nil })
+    )
+  end
 
   permitted_attributes = Pundit.policy(@user, object).permitted_attributes
   object = object.as_json(only: permitted_attributes)
@@ -40,9 +43,11 @@ end
 def limited_collection(collection: nil, params: { fields: nil })
   return {} if collection.nil? || collection.empty?
 
-  collection = prepare_collection(
-    collection: collection, params: params
-  ) unless (params.keys - [:fields]).empty?
+  unless (params.keys - [:fields]).empty?
+    collection = prepare_collection(
+      collection: collection, params: params
+    )
+  end
 
   fields = field_list(
     permitted: Pundit.policy(@user, collection).permitted_attributes,
@@ -61,13 +66,15 @@ def prepare_collection(collection: nil, params: { fields: nil })
 
   # return only requested fields
   filter_params = { limit: params[:limit], offset: params[:offset] }
-  collection = filter_collection(collection: collection,
-                                 params: filter_params) unless params.empty?
+  unless params.empty?
+    collection = filter_collection(collection: collection,
+                                   params: filter_params)
+  end
 
   # halt with empty response if search/filter returns nil/empty
-  halt 200, return_apiresponse(
-    ApiResponseSuccess.new(data: { objects: {} })
-  ) if collection.nil? || collection.empty?
+  if collection.nil? || collection.empty?
+    halt 200, return_apiresponse(ApiResponseSuccess.new(data: { objects: {} }))
+  end
 
   collection
 end

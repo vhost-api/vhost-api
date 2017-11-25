@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/shellusers' do
   get do
     @shellusers = policy_scope(ShellUser)

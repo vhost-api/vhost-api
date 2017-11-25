@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -29,8 +30,8 @@ class Apikey
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:user_id, :apikey],
-                 relationships: { user: { only: [:id, :name, :login] } } }
+    defaults = { exclude: %i[user_id apikey],
+                 relationships: { user: { only: %i[id name login] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

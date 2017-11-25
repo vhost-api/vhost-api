@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+
 require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe 'VHost-API Compression gzip/deflate' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
@@ -19,7 +20,7 @@ describe 'VHost-API Compression gzip/deflate' do
 
       context 'client supports compression' do
         it 'responds with compressed data' do
-          %w(deflate gzip deflate,gzip gzip,deflate).each do |method|
+          %w[deflate gzip deflate,gzip gzip,deflate].each do |method|
             req_headers = auth_headers_apikey(testadmin.id)
             req_headers['HTTP_ACCEPT_ENCODING'] = method
             get(

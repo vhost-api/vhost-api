@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/sftpusers' do
   get do
     @sftpusers = policy_scope(SftpUser)
