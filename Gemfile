@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 # core
+gem 'bcrypt'
 gem 'sinatra'
 gem 'sinatra-contrib'
-gem 'bcrypt'
 gem 'sshkey'
 # tools
 gem 'rake', require: false
@@ -29,22 +30,22 @@ gem 'activesupport'
 gem 'filesize'
 
 group :development do
-  gem 'shotgun', require: false
-  gem 'pry'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'guard', require: false
   gem 'guard-rspec', require: false
+  gem 'pry'
+  gem 'shotgun', require: false
 end
 
 group :test, :development do
-  gem 'yard', require: false
-  gem 'simplecov', require: false
+  gem 'astrolabe', require: false
+  gem 'faker', require: false
   gem 'rspec', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
-  gem 'astrolabe', require: false
-  gem 'faker', require: false
+  gem 'simplecov', require: false
+  gem 'yard', require: false
 end
 
 group :test do
