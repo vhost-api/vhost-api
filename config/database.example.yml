@@ -2,6 +2,7 @@ production:
   :db_adapter: postgres
   :db_encoding: unicode
   :db_host: db.example.com
+  :db_port: 5432
   :db_user: foo
   :db_pass: bar
   :db_name: vhost_api_prod
@@ -17,6 +18,7 @@ test:
 development:
   :db_adapter: mysql
   :db_host: localhost
+  :db_port: 3306
   :db_user: foo
   :db_pass: bar
   :db_name: vhost_api_dev
