@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/mailsources' do
   get do
     @mailsources = policy_scope(MailSource)
@@ -23,13 +24,15 @@ namespace '/api/v1/mailsources' do
 
       # sources must be an array if provided
       unless @_params[:src].nil?
-        return_api_error(
-          ApiErrors.[](:invalid_sources)
-        ) unless @_params[:src].is_a?(Array)
+        unless @_params[:src].is_a?(Array)
+          return_api_error(
+            ApiErrors.[](:invalid_sources)
+          )
+        end
       end
 
       # force lowercase on email addr
-      @_params[:address].downcase! unless @_params[:address].nil?
+      @_params[:address]&.downcase!
 
       # check permissions for parameters
       raise Pundit::NotAuthorizedError unless policy(MailSource).create_with?(
@@ -170,9 +173,11 @@ namespace '/api/v1/mailsources' do
 
         unless @_params[:src].nil?
           # sources must be an array
-          return_api_error(
-            ApiErrors.[](:invalid_sources)
-          ) unless @_params[:src].is_a?(Array)
+          unless @_params[:src].is_a?(Array)
+            return_api_error(
+              ApiErrors.[](:invalid_sources)
+            )
+          end
         end
 
         # check permissions for parameters

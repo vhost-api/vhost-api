@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe MailForwardingPolicy do
@@ -14,7 +15,7 @@ describe MailForwardingPolicy do
     let(:otheruser) { create(:user_with_domains) }
 
     context 'with available quota' do
-      it { should permit(:create) }
+      it { is_expected.to permit(:create) }
     end
 
     context 'with exhausted quota' do
@@ -23,15 +24,16 @@ describe MailForwardingPolicy do
       end
       let(:mailforwarding) { user.domains.mail_forwardings.first }
 
-      it { should_not permit(:create) }
+      it { is_expected.not_to permit(:create) }
     end
 
     context 'assigning to another unauthorized domain' do
       let(:params) do
         attributes_for(:mailforwarding, domain_id: otheruser.domains.first.id)
       end
-      it { should_not permit_args(:update_with, params) }
-      it { should_not permit_args(:create_with, params) }
+
+      it { is_expected.not_to permit_args(:update_with, params) }
+      it { is_expected.not_to permit_args(:create_with, params) }
     end
 
     context 'changing attributes w/o changing the owner' do
@@ -40,12 +42,13 @@ describe MailForwardingPolicy do
                        id: mailforwarding.id,
                        domain_id: user.domains.first.id)
       end
-      it { should permit(:update) }
-      it { should permit_args(:update_with, params) }
+
+      it { is_expected.to permit(:update) }
+      it { is_expected.to permit_args(:update_with, params) }
     end
 
-    it { should permit(:show) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:destroy) }
   end
 
   context 'changing the id as an unauthorized user' do
@@ -53,7 +56,7 @@ describe MailForwardingPolicy do
     let(:mailforwarding) { user.domains.first.mail_forwardings.first }
     let(:params) { attributes_for(:mailforwarding, id: 1234) }
 
-    it { should_not permit_args(:update_with, params) }
+    it { is_expected.not_to permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged user' do
@@ -62,7 +65,7 @@ describe MailForwardingPolicy do
     let(:mailforwarding) { owner.domains.mail_forwardings.first }
 
     context 'with available quota' do
-      it { should permit(:create) }
+      it { is_expected.to permit(:create) }
     end
 
     context 'with exhausted quota' do
@@ -72,12 +75,12 @@ describe MailForwardingPolicy do
       let(:user) { create(:user_with_exhausted_mailforwarding_quota) }
       let(:mailforwarding) { owner.domains.mail_forwardings.first }
 
-      it { should_not permit(:create) }
+      it { is_expected.not_to permit(:create) }
     end
 
-    it { should_not permit(:show) }
-    it { should_not permit(:update) }
-    it { should_not permit(:destroy) }
+    it { is_expected.not_to permit(:show) }
+    it { is_expected.not_to permit(:update) }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for the reseller of the user' do
@@ -89,10 +92,10 @@ describe MailForwardingPolicy do
       attributes_for(:mailforwarding, domain_id: owner.domains.first.id)
     end
 
-    it { should permit_args(:create_with, params) }
+    it { is_expected.to permit_args(:create_with, params) }
 
     context 'with available quota' do
-      it { should permit(:create) }
+      it { is_expected.to permit(:create) }
     end
 
     context 'with exhausted quota' do
@@ -103,12 +106,12 @@ describe MailForwardingPolicy do
       let(:owner) { user.customers.first }
       let(:mailforwarding) { owner.domains.mail_forwardings.first }
 
-      it { should_not permit(:create) }
+      it { is_expected.not_to permit(:create) }
     end
 
-    it { should permit(:show) }
-    it { should permit(:update) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:update) }
+    it { is_expected.to permit(:destroy) }
   end
 
   context 'for another unprivileged reseller' do
@@ -119,7 +122,7 @@ describe MailForwardingPolicy do
     end
 
     context 'with available quota' do
-      it { should permit(:create) }
+      it { is_expected.to permit(:create) }
     end
 
     context 'with exhausted quota' do
@@ -127,20 +130,20 @@ describe MailForwardingPolicy do
       let(:user) { create(:reseller_with_exhausted_mailforwarding_quota) }
       let(:mailforwarding) { owner.domains.mail_forwardings.first }
 
-      it { should_not permit(:create) }
+      it { is_expected.not_to permit(:create) }
     end
 
-    it { should_not permit(:show) }
-    it { should_not permit(:update) }
-    it { should_not permit(:destroy) }
+    it { is_expected.not_to permit(:show) }
+    it { is_expected.not_to permit(:update) }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for an admin' do
     let(:user) { create(:admin) }
 
-    it { should permit(:show) }
-    it { should permit(:create) }
-    it { should permit(:update) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:create) }
+    it { is_expected.to permit(:update) }
+    it { is_expected.to permit(:destroy) }
   end
 end

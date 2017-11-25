@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 begin
   require 'data_mapper'
   require 'dm-migrations'
@@ -13,7 +14,8 @@ begin
     DataMapper.setup(:default,
                      [@dbconfig[:db_adapter], '://',
                       @dbconfig[:db_user], ':', @dbconfig[:db_pass], '@',
-                      @dbconfig[:db_host], '/', @dbconfig[:db_name]].join)
+                      @dbconfig[:db_host], ':', @dbconfig[:db_port], '/',
+                      @dbconfig[:db_name]].join)
   end
 
   namespace :db do
@@ -67,7 +69,7 @@ begin
           query = [
             'mysql', '-B', '--skip-pager', '--user=' + user.to_s,
             (password.empty? ? '' : '--password=' + password.to_s),
-            (%w(127.0.0.1 localhost).include?(host) ? '-e' : '--host=' +
+            (%w[127.0.0.1 localhost].include?(host) ? '-e' : '--host=' +
             host.to_s + ' -e'),
             'CREATE DATABASE ' + database.to_s + ' DEFAULT CHARACTER SET ' +
               charset.to_s + ' DEFAULT COLLATE ' + collation.to_s
@@ -98,7 +100,7 @@ begin
           query = [
             'mysql', '-B', '--skip-pager', '--user=' + user.to_s,
             (password.empty? ? '' : '--password=' + password.to_s),
-            (%w(127.0.0.1 localhost).include?(host) ? '-e' : '--host=' +
+            (%w[127.0.0.1 localhost].include?(host) ? '-e' : '--host=' +
             host.to_s + ' -e'),
             'DROP DATABASE IF EXISTS ' + database.to_s
           ]
@@ -120,6 +122,6 @@ begin
     end
 
     desc 'Create the database, migrate and init with the seed data'
-    task setup: [:create, :migrate, :seed]
+    task setup: %i[create migrate seed]
   end
 end

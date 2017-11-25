@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -60,12 +61,14 @@ class User
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password, :group_id, :reseller_id],
-                 relationships: { group: { only: [:id, :name] },
-                                  packages: { only: [:id, :name] } } }
-    defaults[:relationships][:reseller] = {
-      only: [:id, :name, :login]
-    } if reseller.is_a?(User)
+    defaults = { exclude: %i[password group_id reseller_id],
+                 relationships: { group: { only: %i[id name] },
+                                  packages: { only: %i[id name] } } }
+    if reseller.is_a?(User)
+      defaults[:relationships][:reseller] = {
+        only: %i[id name login]
+      }
+    end
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

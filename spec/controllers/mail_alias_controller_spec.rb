@@ -1,10 +1,11 @@
 # frozen_string_literal: true
+
 require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe 'VHost-API MailAlias Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
@@ -358,7 +359,7 @@ describe 'VHost-API MailAlias Controller' do
                        domain_id: domain.id)
               end
 
-              before(:each) do
+              before do
                 create(:mailalias,
                        address: 'existing@mailalias.org',
                        domain_id: domain.id)
@@ -438,6 +439,7 @@ describe 'VHost-API MailAlias Controller' do
                 dest: destinations
               )
             end
+
             it 'updates an existing mailalias with new values' do
               prev_tstamp = testmailalias.updated_at
 
@@ -693,7 +695,7 @@ describe 'VHost-API MailAlias Controller' do
                                address: 'existing@mailalias.org',
                                domain_id: domain.id)
               end
-              before(:each) do
+              before do
                 create(:mailalias,
                        address: 'existing@mailalias.org',
                        domain_id: domain.id)
@@ -943,6 +945,7 @@ describe 'VHost-API MailAlias Controller' do
         describe 'POST' do
           context 'with exhausted quota' do
             let(:testuser) { create(:user_with_exhausted_mailalias_quota) }
+
             it 'does not authorize the request' do
               expect do
                 Pundit.authorize(testuser, MailAlias, :create?)
@@ -1198,7 +1201,7 @@ describe 'VHost-API MailAlias Controller' do
       context 'by an unauthenticated user' do
         let!(:testmailalias) { create(:mailalias) }
 
-        before(:each) do
+        before do
           create(:user, name: 'admin')
           create(:user, name: 'reseller')
         end

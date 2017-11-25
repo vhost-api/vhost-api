@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # rubocop:disable Metrics/ClassLength
 require File.expand_path '../application_policy.rb', __FILE__
 

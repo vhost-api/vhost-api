@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 FactoryGirl.define do
   sequence :random_fqdn do |n|
     "example#{n}.org"

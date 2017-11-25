@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module FormatHelpers
   def spec_json_pretty(json)
     JSON.pretty_generate(JSON.parse(json)) + "\n"
@@ -29,9 +30,11 @@ module FormatHelpers
   end
 
   def spec_limited_collection(collection: nil, params: { fiels: nil })
-    collection = spec_prepare_collection(
-      collection: collection, params: params
-    ) unless (params.keys - [:fields]).empty?
+    unless (params.keys - [:fields]).empty?
+      collection = spec_prepare_collection(
+        collection: collection, params: params
+      )
+    end
 
     fields = field_list(
       permitted: Pundit.policy(@user, collection).permitted_attributes,
@@ -51,8 +54,10 @@ module FormatHelpers
 
     # return only requested fields
     filter_params = { limit: params[:limit], offset: params[:offset] }
-    collection = filter_collection(collection: collection,
-                                   params: filter_params) unless params.empty?
+    unless params.empty?
+      collection = filter_collection(collection: collection,
+                                     params: filter_params)
+    end
 
     # halt with empty response if search/filter returns nil/empty
     return spec_json_pretty({}.to_json) if collection.nil? ||

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/dkimsignings' do
   get do
     @dkimsignings = policy_scope(DkimSigning)
@@ -22,7 +23,7 @@ namespace '/api/v1/dkimsignings' do
       @_params = symbolize_params_hash(@_params)
 
       # force lowercase on author
-      @_params[:author].downcase! unless @_params[:author].nil?
+      @_params[:author]&.downcase!
 
       # perform validations
       @dkimsigning = DkimSigning.new(@_params)
@@ -149,7 +150,7 @@ namespace '/api/v1/dkimsignings' do
         @_params = symbolize_params_hash(@_params)
 
         # force lowercase on author
-        @_params[:author].downcase! unless @_params[:author].nil?
+        @_params[:author]&.downcase!
 
         # remove unmodified values from input params
         @_params.each_key do |key|
@@ -177,10 +178,12 @@ namespace '/api/v1/dkimsignings' do
         end
 
         # perform sanity checks
-        check_dkim_author_for_dkim(
-          author: @_params[:author],
-          dkim_id: @dkimsigning.dkim_id
-        ) unless @_params[:author].nil?
+        unless @_params[:author].nil?
+          check_dkim_author_for_dkim(
+            author: @_params[:author],
+            dkim_id: @dkimsigning.dkim_id
+          )
+        end
 
         # check permissions for parameters
         raise Pundit::NotAuthorizedError unless policy(

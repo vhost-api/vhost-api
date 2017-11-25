@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'

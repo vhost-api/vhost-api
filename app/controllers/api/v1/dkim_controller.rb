@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/dkims' do
   helpers do
     # @return [String, String]
@@ -34,7 +35,7 @@ namespace '/api/v1/dkims' do
       @_params = symbolize_params_hash(@_params)
 
       # force lowercase on selector
-      @_params[:selector].downcase! unless @_params[:selector].nil?
+      @_params[:selector]&.downcase!
 
       # require both or none of the keys (XOR)
       if @_params[:private_key].nil? ^ @_params[:public_key].nil?
@@ -168,7 +169,7 @@ namespace '/api/v1/dkims' do
         @_params = symbolize_params_hash(@_params)
 
         # force lowercase on selector
-        @_params[:selector].downcase! unless @_params[:selector].nil?
+        @_params[:selector]&.downcase!
 
         # require both or none of the keys (XOR)
         if @_params[:private_key].nil? ^ @_params[:public_key].nil?
@@ -182,8 +183,8 @@ namespace '/api/v1/dkims' do
         end
 
         # remove trailing newlines, which cause the keys to be invalid
-        @_params[:private_key].chomp!("\n") unless @_params[:private_key].nil?
-        @_params[:public_key].chomp!("\n") unless @_params[:public_key].nil?
+        @_params[:private_key]&.chomp!("\n")
+        @_params[:public_key]&.chomp!("\n")
 
         # perform validations on a dummy object, check only supplied attributes
         dummy = Dkim.new(@_params)

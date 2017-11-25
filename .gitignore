@@ -1,5 +1,6 @@
 # project gems (can be installed with bundler from Gemfile)
-/vendor/**
+vendor/**
+.vendor/**
 
 # logfiles and tempfiles
 /log/*

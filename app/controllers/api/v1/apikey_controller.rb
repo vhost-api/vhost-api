@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/apikeys' do
   get do
     @apikeys = policy_scope(Apikey)
@@ -158,13 +159,17 @@ namespace '/api/v1/apikeys' do
 
         # if apikey was provided it has to be 64 characters long
         if @_params.key?(:apikey)
-          return_api_error(
-            ApiErrors.[](:invalid_apikey)
-          ) if @_params[:apikey].nil?
+          if @_params[:apikey].nil?
+            return_api_error(
+              ApiErrors.[](:invalid_apikey)
+            )
+          end
 
-          return_api_error(
-            ApiErrors.[](:apikey_length)
-          ) if @_params[:apikey].length < 64
+          if @_params[:apikey].length < 64
+            return_api_error(
+              ApiErrors.[](:apikey_length)
+            )
+          end
 
           # hash the input plain text
           @_params[:apikey] = Digest::SHA512.hexdigest(@_params[:apikey])

@@ -12,8 +12,10 @@ end
 
 # @return [Fixnum]
 def allocated_customers(user)
-  result = user.packages.map(&:quota_customers)
-               .reduce(0, :+) unless user.reseller?
+  unless user.reseller?
+    result = user.packages.map(&:quota_customers)
+                 .reduce(0, :+)
+  end
   result = user.customers.size if user.reseller?
   result
 end
@@ -36,8 +38,10 @@ end
 def allocated_mail_forwardings(user)
   result = user.domains.mail_forwardings.map(&:destinations)
                .join("\n").split("\n").size
-  result += user.customers.domains.mail_forwardings.map(&:destinations)
-                .join("\n").split("\n").size if user.reseller?
+  if user.reseller?
+    result += user.customers.domains.mail_forwardings.map(&:destinations)
+                  .join("\n").split("\n").size
+  end
   result
 end
 
@@ -58,8 +62,10 @@ end
 # @return [Fixnum]
 def allocated_mail_storage(user)
   result = user.domains.mail_accounts.map(&:quota).reduce(0, :+)
-  result += user.customers.domains.mail_accounts
-                .map(&:quota).reduce(0, :+) if user.reseller?
+  if user.reseller?
+    result += user.customers.domains.mail_accounts
+                  .map(&:quota).reduce(0, :+)
+  end
   result
 end
 

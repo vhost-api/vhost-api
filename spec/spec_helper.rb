@@ -1,16 +1,18 @@
 # frozen_string_literal: true
-require 'simplecov'
-SimpleCov.profiles.define 'vhost-api' do
-  add_filter 'vendor'
 
-  add_group 'RSpec', './spec'
-  add_group 'App', './(vhost_api_app.rb|init.rb)'
-  add_group 'Controllers', './app/controllers/'
-  add_group 'Models', './app/models/'
-  add_group 'Helpers', './app/helpers/'
-  add_group 'Policies', './app/policies/'
-end
-SimpleCov.start 'vhost-api'
+require 'simplecov'
+
+# SimpleCov.profiles.define 'vhost-api' do
+#   add_filter 'vendor'
+#
+#   add_group 'RSpec', './spec'
+#   add_group 'App', './(vhost_api_app.rb|init.rb)'
+#   add_group 'Controllers', './app/controllers/'
+#   add_group 'Models', './app/models/'
+#   add_group 'Helpers', './app/helpers/'
+#   add_group 'Policies', './app/policies/'
+# end
+# SimpleCov.start 'vhost-api'
 
 require File.expand_path '../../vhost_api_app.rb', __FILE__
 require 'rspec'
@@ -42,7 +44,7 @@ RSpec.configure do |c|
     DatabaseCleaner.clean_with(:truncation)
   end
 
-  c.around(:each) do |example|
+  c.around do |example|
     DatabaseCleaner.cleaning do
       example.run
     end

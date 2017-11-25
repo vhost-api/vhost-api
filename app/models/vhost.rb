@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # rubocop:disable Metrics/LineLength
 require 'dm-core'
 require 'dm-migrations'
@@ -8,9 +9,9 @@ require 'dm-constraints'
 class Vhost
   include DataMapper::Resource
 
-  VHOST_TYPES = %w(vhost alias).freeze
-  REDIRECT_TYPES = %w(none temporary permanent).freeze
-  SUBDOMAIN_TYPES = %w(none www wildcard).freeze
+  VHOST_TYPES = %w[vhost alias].freeze
+  REDIRECT_TYPES = %w[none temporary permanent].freeze
+  SUBDOMAIN_TYPES = %w[none www wildcard].freeze
 
   property :id, Serial, key: true
   property :fqdn, String, required: true, unique: true, length: 3..255

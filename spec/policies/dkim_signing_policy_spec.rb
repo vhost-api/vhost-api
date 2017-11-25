@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require File.expand_path '../../spec_helper.rb', __FILE__
 
 describe DkimSigningPolicy do
@@ -13,15 +14,16 @@ describe DkimSigningPolicy do
     let(:dkimsigning) { user.domains.first.dkims.first.dkim_signings.first }
     let(:otheruser) { create(:user_with_dkims) }
 
-    it { should permit(:create) }
+    it { is_expected.to permit(:create) }
 
     context 'assigning to another unauthorized domain' do
       let(:params) do
         attributes_for(:dkimsigning,
                        dkim_id: otheruser.domains.first.dkims.first.id)
       end
-      it { should_not permit_args(:update_with, params) }
-      it { should_not permit_args(:create_with, params) }
+
+      it { is_expected.not_to permit_args(:update_with, params) }
+      it { is_expected.not_to permit_args(:create_with, params) }
     end
 
     context 'changing attributes w/o changing the owner' do
@@ -30,12 +32,13 @@ describe DkimSigningPolicy do
                        id: dkimsigning.id,
                        dkim_id: user.domains.first.dkims.first.id)
       end
-      it { should permit(:update) }
-      it { should permit_args(:update_with, params) }
+
+      it { is_expected.to permit(:update) }
+      it { is_expected.to permit_args(:update_with, params) }
     end
 
-    it { should permit(:show) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:destroy) }
   end
 
   context 'for another unprivileged user' do
@@ -43,10 +46,10 @@ describe DkimSigningPolicy do
     let(:user) { create(:user) }
     let(:dkimsigning) { owner.domains.first.dkims.first.dkim_signings.first }
 
-    it { should permit(:create) }
-    it { should_not permit(:show) }
-    it { should_not permit(:update) }
-    it { should_not permit(:destroy) }
+    it { is_expected.to permit(:create) }
+    it { is_expected.not_to permit(:show) }
+    it { is_expected.not_to permit(:update) }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for the reseller of the user' do
@@ -54,10 +57,10 @@ describe DkimSigningPolicy do
     let(:owner) { user.customers.first }
     let(:dkimsigning) { owner.domains.first.dkims.first.dkim_signings.first }
 
-    it { should permit(:create) }
-    it { should permit(:show) }
-    it { should permit(:update) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:create) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:update) }
+    it { is_expected.to permit(:destroy) }
   end
 
   context 'changing the id as an unauthorized user' do
@@ -65,7 +68,7 @@ describe DkimSigningPolicy do
     let(:dkimsigning) { user.domains.first.dkims.first.dkim_signings.first }
     let(:params) { attributes_for(:dkimsigning, id: 1234) }
 
-    it { should_not permit_args(:update_with, params) }
+    it { is_expected.not_to permit_args(:update_with, params) }
   end
 
   context 'for another unprivileged reseller' do
@@ -75,18 +78,18 @@ describe DkimSigningPolicy do
       owner.customers.first.domains.first.dkims.first.dkim_signings.first
     end
 
-    it { should permit(:create) }
-    it { should_not permit(:show) }
-    it { should_not permit(:update) }
-    it { should_not permit(:destroy) }
+    it { is_expected.to permit(:create) }
+    it { is_expected.not_to permit(:show) }
+    it { is_expected.not_to permit(:update) }
+    it { is_expected.not_to permit(:destroy) }
   end
 
   context 'for an admin' do
     let(:user) { create(:admin) }
 
-    it { should permit(:show) }
-    it { should permit(:create) }
-    it { should permit(:update) }
-    it { should permit(:destroy) }
+    it { is_expected.to permit(:show) }
+    it { is_expected.to permit(:create) }
+    it { is_expected.to permit(:update) }
+    it { is_expected.to permit(:destroy) }
   end
 end

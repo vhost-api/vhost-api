@@ -1,9 +1,12 @@
 # frozen_string_literal: true
+
 namespace '/api/v1/auth' do
   post '/login' do
-    return_api_error(
-      ApiErrors.[](:invalid_request)
-    ) unless params['user'] && params['password'] && params['apikey_comment']
+    unless params['user'] && params['password'] && params['apikey_comment']
+      return_api_error(
+        ApiErrors.[](:invalid_request)
+      )
+    end
 
     @user = User.first(login: params['user'])
 

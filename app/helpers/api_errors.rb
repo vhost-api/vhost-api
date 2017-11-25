@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # Helper module for error lookups
 module ApiErrors
   LOOKUP_TABLE = {

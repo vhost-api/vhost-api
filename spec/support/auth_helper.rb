@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module AuthHelpers
   def auth_login_params(login, password)
     { 'user' => login, 'password' => password, 'apikey_comment' => 'rspec' }

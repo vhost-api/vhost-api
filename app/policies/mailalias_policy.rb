@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require File.expand_path '../application_policy.rb', __FILE__
 
 # Policy for MailAlias
@@ -121,9 +122,11 @@ class MailAliasPolicy < ApplicationPolicy
   end
 
   def reseller_mailaccount_set
-    return user.domains.mail_accounts.map(&:id).concat(
-      user.customers.domains.mail_accounts.map(&:id)
-    ).to_set if user.reseller?
+    if user.reseller?
+      return user.domains.mail_accounts.map(&:id).concat(
+        user.customers.domains.mail_accounts.map(&:id)
+      ).to_set
+    end
     [].to_Set
   end
 end

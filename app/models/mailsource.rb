@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -30,9 +31,9 @@ class MailSource
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:domain_id],
-                 relationships: { domain: { only: [:id, :name] },
-                                  mail_accounts: { only: [:id, :email] } } }
+    defaults = { exclude: %i[domain_id],
+                 relationships: { domain: { only: %i[id name] },
+                                  mail_accounts: { only: %i[id email] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-constraints'
@@ -32,9 +33,9 @@ class ShellUser
   # @param options [Hash]
   # @return [Hash]
   def as_json(options = {})
-    defaults = { exclude: [:password],
-                 relationships: { vhost: { only: [:id, :fqdn] },
-                                  shell: { only: [:id, :shell] } } }
+    defaults = { exclude: %i[password],
+                 relationships: { vhost: { only: %i[id fqdn] },
+                                  shell: { only: %i[id shell] } } }
 
     super(model_serialization_opts(defaults: defaults, options: options))
   end

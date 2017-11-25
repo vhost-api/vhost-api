@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # rubocop:disable Metrics/ClassLength, Metrics/MethodLength
 # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 require File.expand_path '../application_policy.rb', __FILE__
@@ -136,9 +137,11 @@ class MailAccountPolicy < ApplicationPolicy
     if params.key?(:sources)
       return false unless check_mailsource_set(params[:sources])
     end
-    return quotacheck(
-      params[:quota] - record.quota, update: true
-    ) if params.key?(:quota)
+    if params.key?(:quota)
+      return quotacheck(
+        params[:quota] - record.quota, update: true
+      )
+    end
     true
   end
 
@@ -172,9 +175,11 @@ class MailAccountPolicy < ApplicationPolicy
   end
 
   def reseller_mailalias_set
-    return user.domains.mail_aliases.map(&:id).concat(
-      user.customers.domains.mail_aliases.map(&:id)
-    ).to_set if user.reseller?
+    if user.reseller?
+      return user.domains.mail_aliases.map(&:id).concat(
+        user.customers.domains.mail_aliases.map(&:id)
+      ).to_set
+    end
     [].to_Set
   end
 
@@ -195,9 +200,11 @@ class MailAccountPolicy < ApplicationPolicy
   end
 
   def reseller_mailsource_set
-    return user.domains.mail_sources.map(&:id).concat(
-      user.customers.domains.mail_sources.map(&:id)
-    ).to_set if user.reseller?
+    if user.reseller?
+      return user.domains.mail_sources.map(&:id).concat(
+        user.customers.domains.mail_sources.map(&:id)
+      ).to_set
+    end
     [].to_Set
   end
 end

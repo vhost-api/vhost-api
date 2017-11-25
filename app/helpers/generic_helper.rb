@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 def gen_doveadm_pwhash(password)
   '{SHA512-CRYPT}' + password.crypt('$6$' + SecureRandom.hex(16))
 end
@@ -12,9 +13,9 @@ def extract_destroy_errors(object: nil)
   preventing = []
   object.send(:relationships).each do |relationship|
     next unless relationship.respond_to?(:enforce_destroy_constraint)
-    preventing.push(
-      relationship.name
-    ) unless relationship.enforce_destroy_constraint(object)
+    unless relationship.enforce_destroy_constraint(object)
+      preventing.push(relationship.name)
+    end
   end
   preventing
 end

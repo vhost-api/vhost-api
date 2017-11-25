@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'bundler/setup'
 
 require 'sinatra'
@@ -52,7 +53,7 @@ vhost_api_logger.level = Logger.const_get(settings.log_level.upcase)
 
 # -- load only activated modules/controllers --
 # core modules
-%w(group user package apikey auth).each do |f|
+%w[group user package apikey auth].each do |f|
   require "#{settings.root}/app/controllers/api/v1/" + f.to_s + '_controller.rb'
 end
 
@@ -61,13 +62,13 @@ settings.api_modules.map(&:upcase).each do |apimod|
   optional_modules = []
   case apimod
   when 'EMAIL' then optional_modules.push(
-    %w(domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding)
+    %w[domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding]
   )
   when 'VHOST' then optional_modules.push(
-    %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
+    %w[domain ipv4address ipv6address phpruntime sftpuser shelluser vhost]
   )
   # TODO: no dns controllers exist yet
-  when 'DNS' then optional_modules.push(%w(domain))
+  when 'DNS' then optional_modules.push(%w[domain])
   # TODO: no database/databaseuser controllers exist yet
   when 'DATABASE' then nil
   end
@@ -121,13 +122,15 @@ DataMapper.setup(:default,
                    @dbconfig[:db_pass],
                    '@',
                    @dbconfig[:db_host],
+                   ':',
+                   @dbconfig[:db_port],
                    '/',
                    @dbconfig[:db_name]
                  ].join)
 
 before do
   # enforce authentication everywhere except for login endpoint and home
-  authenticate! unless %w(/api/v1/auth/login /).include?(request.path_info)
+  authenticate! unless %w[/api/v1/auth/login /].include?(request.path_info)
 
   content_type :json, charset: 'utf-8'
   cache_control :public, :must_revalidate
