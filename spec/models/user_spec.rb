@@ -53,8 +53,8 @@ describe 'VHost-API User Model' do
   it 'checks ownership of a given object against itself' do
     testadmin = create(:admin)
     testuser = create(:user)
-    expect(testadmin.owner?(testuser)).to be_truthy
-    expect(testuser.owner?(testadmin)).not_to be_truthy
+    expect(testadmin.owner_of?(testuser)).to be_truthy
+    expect(testuser.owner_of?(testadmin)).not_to be_truthy
   end
 
   it 'allows checking of admin privileges' do
