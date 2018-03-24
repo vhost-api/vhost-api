@@ -90,7 +90,7 @@ def search_collection(collection: nil, query: nil)
   query.keys.each do |key|
     search_query = if key.match?('enabled')
                      { key => string_to_bool(query[key]) }
-                   elsif key.ends_with?('_id')
+                   elsif key.to_s.end_with?('_id')
                      { key => query[key].to_i }
                    else
                      { key.like => "%#{query[key]}%" }
