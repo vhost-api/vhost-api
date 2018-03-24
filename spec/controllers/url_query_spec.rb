@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API URL Query' do
+  # rubocop:disable Security/YAMLLoad
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  # rubocop:enable Security/YAMLLoad
+
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
@@ -27,7 +31,7 @@ describe 'VHost-API URL Query' do
         create(:domain, name: 'www.test2.com', enabled: true)
       end
 
-      context 'Searching' do
+      context 'when Searching' do
         it 'Search for strings' do
           get("/api/v#{api_version}/domains?q[name]=example.", nil,
               auth_headers_apikey(testadmin.id))
@@ -64,6 +68,7 @@ describe 'VHost-API URL Query' do
           expect(last_response.body).to eq(result)
         end
 
+        # rubocop:disable RSpec/MultipleExpectations
         it 'Search for non-existing field' do
           get("/api/v#{api_version}/domains?q[non_existing_field]=true", nil,
               auth_headers_apikey(testadmin.id))
@@ -75,9 +80,10 @@ describe 'VHost-API URL Query' do
             )
           )
         end
+        # rubocop:enable RSpec/MultipleExpectations
       end
 
-      context 'Filtering' do
+      context 'when Filtering' do
         it 'limits the return objects' do
           get("/api/v#{api_version}/domains?limit=3", nil,
               auth_headers_apikey(testadmin.id))
@@ -116,7 +122,7 @@ describe 'VHost-API URL Query' do
         end
       end
 
-      context 'Sorting' do
+      context 'when Sorting' do
         it 'Sort by name ascending' do
           get("/api/v#{api_version}/domains?sort=name", nil,
               auth_headers_apikey(testadmin.id))
@@ -158,7 +164,7 @@ describe 'VHost-API URL Query' do
         end
       end
 
-      context 'Fields' do
+      context 'when Fields' do
         it 'Only get name and id field' do
           get("/api/v#{api_version}/domains?fields=id,name", nil,
               auth_headers_apikey(testadmin.id))
@@ -217,6 +223,7 @@ describe 'VHost-API URL Query' do
           expect(last_response.body).to eq(result)
         end
 
+        # rubocop:disable RSpec/MultipleExpectations
         it 'Get non-existing field' do
           get("/api/v#{api_version}/domains?fields=id,non_existing_field", nil,
               auth_headers_apikey(testadmin.id))
@@ -228,7 +235,9 @@ describe 'VHost-API URL Query' do
             )
           )
         end
+        # rubocop:enable RSpec/MultipleExpectations
       end
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

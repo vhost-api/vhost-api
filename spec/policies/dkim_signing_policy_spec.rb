@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe DkimSigningPolicy do
   subject { described_class.new(user, dkimsigning) }
 
@@ -9,14 +10,14 @@ describe DkimSigningPolicy do
     FactoryGirl.create(:dkimsigning)
   end
 
-  context 'for the owner' do
+  context 'when being the owner' do
     let(:user) { create(:user_with_dkimsignings) }
     let(:dkimsigning) { user.domains.first.dkims.first.dkim_signings.first }
     let(:otheruser) { create(:user_with_dkims) }
 
     it { is_expected.to permit(:create) }
 
-    context 'assigning to another unauthorized domain' do
+    context 'when assigning to another unauthorized domain' do
       let(:params) do
         attributes_for(:dkimsigning,
                        dkim_id: otheruser.domains.first.dkims.first.id)
@@ -26,7 +27,7 @@ describe DkimSigningPolicy do
       it { is_expected.not_to permit_args(:create_with, params) }
     end
 
-    context 'changing attributes w/o changing the owner' do
+    context 'when changing attributes w/o changing the owner' do
       let(:params) do
         attributes_for(:dkimsigning,
                        id: dkimsigning.id,
@@ -41,7 +42,7 @@ describe DkimSigningPolicy do
     it { is_expected.to permit(:destroy) }
   end
 
-  context 'for another unprivileged user' do
+  context 'when being another unprivileged user' do
     let(:owner) { create(:user_with_dkimsignings) }
     let(:user) { create(:user) }
     let(:dkimsigning) { owner.domains.first.dkims.first.dkim_signings.first }
@@ -52,7 +53,7 @@ describe DkimSigningPolicy do
     it { is_expected.not_to permit(:destroy) }
   end
 
-  context 'for the reseller of the user' do
+  context 'when being the reseller of the user' do
     let(:user) { create(:reseller_with_customers_and_dkimsignings) }
     let(:owner) { user.customers.first }
     let(:dkimsigning) { owner.domains.first.dkims.first.dkim_signings.first }
@@ -63,7 +64,7 @@ describe DkimSigningPolicy do
     it { is_expected.to permit(:destroy) }
   end
 
-  context 'changing the id as an unauthorized user' do
+  context 'when changing the id as an unauthorized user' do
     let(:user) { create(:user_with_dkimsignings) }
     let(:dkimsigning) { user.domains.first.dkims.first.dkim_signings.first }
     let(:params) { attributes_for(:dkimsigning, id: 1234) }
@@ -71,7 +72,7 @@ describe DkimSigningPolicy do
     it { is_expected.not_to permit_args(:update_with, params) }
   end
 
-  context 'for another unprivileged reseller' do
+  context 'when being another unprivileged reseller' do
     let(:owner) { create(:reseller_with_customers_and_dkimsignings) }
     let(:user) { create(:reseller) }
     let(:dkimsigning) do
@@ -84,7 +85,7 @@ describe DkimSigningPolicy do
     it { is_expected.not_to permit(:destroy) }
   end
 
-  context 'for an admin' do
+  context 'when being an admin' do
     let(:user) { create(:admin) }
 
     it { is_expected.to permit(:show) }
@@ -93,3 +94,4 @@ describe DkimSigningPolicy do
     it { is_expected.to permit(:destroy) }
   end
 end
+# rubocop:enable Metrics/BlockLength

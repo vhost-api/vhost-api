@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 namespace '/api/v1/mailaccounts' do
   helpers do
     # @return [String]
@@ -135,7 +136,7 @@ namespace '/api/v1/mailaccounts' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue => err
+    rescue Error => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
       log_user('error', err.backtrace.join("\n"))
@@ -354,7 +355,7 @@ namespace '/api/v1/mailaccounts' do
                   else
                     api_error(ApiErrors.[](:malformed_request))
                   end
-      rescue => err
+      rescue Error => err
         # unhandled error, always log backtrace
         log_user('error', err.message)
         log_user('error', err.backtrace.join("\n"))
@@ -381,7 +382,7 @@ namespace '/api/v1/mailaccounts' do
       file = sieve_filename
       content_type 'application/octet-stream'
       send_file(file,
-                disposition: 'attachment'.dup,
+                disposition: +'attachment',
                 filename: File.basename(file))
     end
 
@@ -446,7 +447,7 @@ namespace '/api/v1/mailaccounts' do
         file.close!
 
         return_apiresponse(ApiResponseSuccess.new)
-      rescue => err
+      rescue Error => err
         # cleanup tempfile
         file.unlink
         file.close!
@@ -464,3 +465,4 @@ namespace '/api/v1/mailaccounts' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

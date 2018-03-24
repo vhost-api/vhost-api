@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 FactoryGirl.define do
   sequence :random_fqdn do |n|
     "example#{n}.org"
@@ -45,3 +46,4 @@ FactoryGirl.define do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

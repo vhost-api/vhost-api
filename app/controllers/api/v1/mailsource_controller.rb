@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 namespace '/api/v1/mailsources' do
   get do
     @mailsources = policy_scope(MailSource)
@@ -95,7 +96,7 @@ namespace '/api/v1/mailsources' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue => err
+    rescue Error => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
       log_user('error', err.backtrace.join("\n"))
@@ -265,7 +266,7 @@ namespace '/api/v1/mailsources' do
                   else
                     api_error(ApiErrors.[](:malformed_request))
                   end
-      rescue => err
+      rescue Error => err
         # unhandled error, always log backtrace
         log_user('error', err.message)
         log_user('error', err.backtrace.join("\n"))
@@ -286,3 +287,4 @@ namespace '/api/v1/mailsources' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

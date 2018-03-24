@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path '../application_policy.rb', __FILE__
+require File.expand_path('application_policy.rb', __dir__)
 
 # Policy for MailForwarding
 class MailForwardingPolicy < ApplicationPolicy

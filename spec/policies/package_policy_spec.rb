@@ -1,22 +1,23 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength, RSpec/NestedGroups
 describe PackagePolicy do
   subject { described_class.new(user, package) }
 
   let(:package) { FactoryGirl.create(:package, name: 'testpackage') }
 
-  context 'for a user' do
+  context 'when being a user' do
     let(:user) { FactoryGirl.create(:user) }
 
-    context 'user has booked this package' do
+    context 'when user has booked this package' do
       let(:package) { user.packages.first }
 
       it { is_expected.to permit(:show) }
     end
 
-    context 'user has not booked this package' do
+    context 'when user has not booked this package' do
       it { is_expected.not_to permit(:show) }
     end
 
@@ -25,20 +26,20 @@ describe PackagePolicy do
     it { is_expected.not_to permit(:destroy) }
   end
 
-  context 'for a reseller' do
+  context 'when being a reseller' do
     let(:user) { FactoryGirl.create(:reseller) }
 
-    context 'user has booked this package' do
+    context 'when user has booked this package' do
       let(:package) { user.packages.first }
 
       it { is_expected.to permit(:show) }
     end
 
-    context 'user has not booked this package' do
+    context 'when user has not booked this package' do
       it { is_expected.not_to permit(:show) }
     end
 
-    context 'with remaining custom_packages quota' do
+    context 'when with remaining custom_packages quota' do
       let(:params) { attributes_for(:package, user_id: user.id) }
 
       it { is_expected.to permit(:create) }
@@ -52,20 +53,20 @@ describe PackagePolicy do
       it { is_expected.not_to permit_args(:create_with, params) }
     end
 
-    context 'with exhausted custom_packages quota' do
+    context 'when with exhausted custom_packages quota' do
       let(:user) { create(:reseller_with_exhausted_custom_packages_quota) }
 
       it { is_expected.not_to permit(:create) }
     end
 
-    context 'modifying their own custom packages' do
-      context 'with trying to allocate less than available quotas' do
+    context 'when modifying their own custom packages' do
+      context 'when with trying to allocate less than available quotas' do
         let(:package) { create(:package, user_id: user.id) }
 
         it { is_expected.to permit(:update) }
       end
 
-      context 'with trying to allocate more than available quotas' do
+      context 'when with trying to allocate more than available quotas' do
         let(:package) { create(:package, user_id: user.id) }
         let(:testcustomer) { create(:user, reseller_id: user.id) }
         let(:params) do
@@ -83,7 +84,7 @@ describe PackagePolicy do
         it { is_expected.not_to permit_args(:update_with, params) }
       end
 
-      context 'package is used by customers' do
+      context 'when package is used by customers' do
         let(:package) { create(:package, user_id: user.id) }
         let(:testcustomer) { create(:user, reseller_id: user.id) }
         let(:params) do
@@ -102,14 +103,14 @@ describe PackagePolicy do
         it { is_expected.to permit_args(:update_with, params) }
       end
 
-      context 'package is not used' do
+      context 'when package is not used' do
         let(:package) { create(:package, user_id: user.id) }
 
         it { is_expected.to permit(:destroy) }
       end
     end
 
-    context 'modyfing their assigned package' do
+    context 'when modyfing their assigned package' do
       let(:package) { user.packages.first }
 
       it { is_expected.not_to permit(:update)  }
@@ -117,7 +118,7 @@ describe PackagePolicy do
     end
   end
 
-  context 'for an admin' do
+  context 'when being an admin' do
     let(:user) { FactoryGirl.create(:admin) }
 
     it { is_expected.to permit(:show)    }
@@ -126,3 +127,4 @@ describe PackagePolicy do
     it { is_expected.to permit(:destroy) }
   end
 end
+# rubocop:enable Metrics/BlockLength, RSpec/NestedGroups

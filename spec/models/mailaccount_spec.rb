@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API MailAccount Model' do
   it 'has a valid factory' do
     expect(create(:mailaccount)).to be_valid
@@ -95,3 +96,4 @@ describe 'VHost-API MailAccount Model' do
     )
   end
 end
+# rubocop:enable Metrics/BlockLength

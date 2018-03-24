@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:disable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:disable RSpec/EmptyExampleGroup, RSpec/EmptyLineAfterFinalLet
+# rubocop:disable RSpec/HookArgument
 describe 'VHost-API Group Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an authenticated and authorized user' do
+      context 'when by an authenticated and authorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testgroup) { create(:group) }
@@ -83,7 +87,7 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'POST' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(Pundit.authorize(testadmin, Group, :create?)).to be_truthy
             end
@@ -143,8 +147,8 @@ describe 'VHost-API Group Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{ , name: \'foo, enabled: true }' }
 
               it 'does not create a new group' do
@@ -203,7 +207,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_group_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not create a new group' do
@@ -261,7 +265,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_group) }
 
               it 'does not create a new group' do
@@ -329,7 +333,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'with a resource conflict' do
+            context 'when with a resource conflict' do
               let(:resource_conflict) { attributes_for(:group) }
 
               it 'does not create a new group' do
@@ -373,7 +377,7 @@ describe 'VHost-API Group Controller' do
         end
 
         describe 'PATCH' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(Pundit.authorize(testadmin, Group, :create?)).to be_truthy
             end
@@ -425,8 +429,8 @@ describe 'VHost-API Group Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{ , name: \'foo, enabled: true }' }
 
               it 'does not update the group' do
@@ -486,7 +490,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_group_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the group' do
@@ -545,7 +549,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_group) }
 
               it 'does not update the group' do
@@ -614,7 +618,7 @@ describe 'VHost-API Group Controller' do
               end
             end
 
-            context 'with a resource conflict' do
+            context 'when with a resource conflict' do
               let(:resource_conflict) { attributes_for(:group, name: 'admin') }
 
               it 'does not update the group' do
@@ -656,7 +660,7 @@ describe 'VHost-API Group Controller' do
             end
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             # it 'returns an API Error' do
             #   invinciblegroup = create(:group, name: 'invincible')
             #   allow(Group).to receive(
@@ -726,7 +730,7 @@ describe 'VHost-API Group Controller' do
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             it 'returns an API Error' do
               invinciblegroup = create(:group, name: 'invincible')
               allow(Group).to receive(
@@ -766,7 +770,7 @@ describe 'VHost-API Group Controller' do
         end
       end
 
-      context 'by an authenticated but unauthorized user' do
+      context 'when by an authenticated but unauthorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testgroup) { create(:group) }
@@ -990,7 +994,7 @@ describe 'VHost-API Group Controller' do
         end
       end
 
-      context 'by an unauthenticated user' do
+      context 'when by an unauthenticated user' do
         before(:each) do
           create(:group, name: 'admin')
           create(:group, name: 'reseller')
@@ -1082,3 +1086,7 @@ describe 'VHost-API Group Controller' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:enable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:enable RSpec/EmptyExampleGroup, RSpec/EmptyLineAfterFinalLet
+# rubocop:enable RSpec/HookArgument

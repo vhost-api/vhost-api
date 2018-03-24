@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:disable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:disable RSpec/EmptyExampleGroup
+# rubocop:disable RSpec/PredicateMatcher, RSpec/HookArgument, RSpec/ScatteredLet
 describe 'VHost-API Dkim Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an admin user' do
+      context 'when by an admin user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testdkim) { create(:dkim) }
@@ -130,7 +134,7 @@ describe 'VHost-API Dkim Controller' do
                            domain_id: domain.id)
           end
 
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
                 Pundit.authorize(testadmin, Dkim, :create?)
@@ -192,8 +196,8 @@ describe 'VHost-API Dkim Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
 
               it 'does not create a new dkim' do
@@ -252,7 +256,7 @@ describe 'VHost-API Dkim Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not create a new dkim' do
@@ -310,7 +314,7 @@ describe 'VHost-API Dkim Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkim) }
 
               it 'does not create a new dkim' do
@@ -377,7 +381,7 @@ describe 'VHost-API Dkim Controller' do
         end
 
         describe 'PATCH' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
                 Pundit.authorize(testadmin, Dkim, :create?)
@@ -441,8 +445,8 @@ describe 'VHost-API Dkim Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{, selector: \'foo, enabled:true}' }
 
               it 'does not update the dkim' do
@@ -506,7 +510,7 @@ describe 'VHost-API Dkim Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_dkim_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the dkim' do
@@ -569,7 +573,7 @@ describe 'VHost-API Dkim Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_dkim) }
 
               it 'does not update the dkim' do
@@ -639,7 +643,7 @@ describe 'VHost-API Dkim Controller' do
             end
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             let(:domain) { create(:domain, name: 'invincible.de') }
 
             # it 'returns an API Error' do
@@ -706,7 +710,7 @@ describe 'VHost-API Dkim Controller' do
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             it 'returns an API Error' do
               invincible = create(:dkim,
                                   selector: 'invincible')
@@ -739,7 +743,7 @@ describe 'VHost-API Dkim Controller' do
         end
       end
 
-      context 'by an authenticated but unauthorized user' do
+      context 'when by an authenticated but unauthorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:usergroup) { create(:group) }
@@ -891,7 +895,7 @@ describe 'VHost-API Dkim Controller' do
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
-          context 'with using different user_id in attributes' do
+          context 'when with using different user_id in attributes' do
             let(:testuser) { create(:user_with_dkims) }
             let(:anotheruser) { create(:user_with_domains) }
 
@@ -1035,7 +1039,7 @@ describe 'VHost-API Dkim Controller' do
         end
       end
 
-      context 'by an unauthenticated user' do
+      context 'when by an unauthenticated user' do
         let!(:testdkim) { create(:dkim) }
 
         before(:each) do
@@ -1129,3 +1133,7 @@ describe 'VHost-API Dkim Controller' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:enable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:enable RSpec/EmptyExampleGroup
+# rubocop:enable RSpec/PredicateMatcher, RSpec/HookArgument, RSpec/ScatteredLet

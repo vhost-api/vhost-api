@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 FactoryGirl.define do
   sequence :account_email do |n|
     "test#{n}@example.org"
@@ -45,3 +46,4 @@ FactoryGirl.define do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

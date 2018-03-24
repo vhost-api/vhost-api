@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:disable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:disable RSpec/PredicateMatcher, RSpec/ScatteredLet
 describe 'VHost-API MailAlias Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
@@ -9,7 +12,7 @@ describe 'VHost-API MailAlias Controller' do
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an admin' do
+      context 'when by an admin' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testmailalias) { create(:mailalias) }
@@ -105,7 +108,7 @@ describe 'VHost-API MailAlias Controller' do
                            dest: [mailaccount.id])
           end
 
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(
                 Pundit.authorize(testadmin, MailAlias, :create?)
@@ -167,8 +170,8 @@ describe 'VHost-API MailAlias Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{ , address: \'foo, enabled:true}' }
 
               it 'does not create a new mailalias' do
@@ -227,7 +230,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_mailalias_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not create a new mailalias' do
@@ -286,7 +289,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_mailalias) }
 
               it 'does not create a new mailalias' do
@@ -351,7 +354,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'with a resource conflict' do
+            context 'when with a resource conflict' do
               let(:domain) { create(:domain, name: 'mailalias.org') }
               let(:mailaccount) do
                 create(:mailaccount,
@@ -412,7 +415,7 @@ describe 'VHost-API MailAlias Controller' do
         end
 
         describe 'PATCH' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             let(:domain) { testmailalias.domain }
             let(:mailaccount) do
               create(:mailaccount,
@@ -486,8 +489,8 @@ describe 'VHost-API MailAlias Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{ , address: \'foo, enabled:true}' }
 
               it 'does not update the mailalias' do
@@ -552,7 +555,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_mailalias_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the mailalias' do
@@ -617,7 +620,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_mailalias) }
 
               it 'does not update the mailalias' do
@@ -688,7 +691,7 @@ describe 'VHost-API MailAlias Controller' do
               end
             end
 
-            context 'with a resource conflict' do
+            context 'when with a resource conflict' do
               let(:domain) { create(:domain, name: 'mailalias.org') }
               let(:resource_conflict) do
                 attributes_for(:mailalias,
@@ -750,7 +753,7 @@ describe 'VHost-API MailAlias Controller' do
             end
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             let(:domain) { create(:domain, name: 'invincible.de') }
 
             it 'returns an API Error' do
@@ -815,7 +818,7 @@ describe 'VHost-API MailAlias Controller' do
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             it 'returns an API Error' do
               invincible = create(:mailalias,
                                   address: 'foo@invincible.org')
@@ -848,7 +851,7 @@ describe 'VHost-API MailAlias Controller' do
         end
       end
 
-      context 'by an authenticated but unauthorized user' do
+      context 'when by an authenticated but unauthorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:usergroup) { create(:group) }
@@ -943,7 +946,7 @@ describe 'VHost-API MailAlias Controller' do
         end
 
         describe 'POST' do
-          context 'with exhausted quota' do
+          context 'when with exhausted quota' do
             let(:testuser) { create(:user_with_exhausted_mailalias_quota) }
 
             it 'does not authorize the request' do
@@ -990,7 +993,7 @@ describe 'VHost-API MailAlias Controller' do
             end
           end
 
-          context 'with available quota' do
+          context 'when with available quota' do
             let(:testuser) { create(:user_with_mailaliases) }
             let(:domain) { testuser.domains.first }
             let(:mailaccount) { domain.mail_accounts.first }
@@ -1051,7 +1054,7 @@ describe 'VHost-API MailAlias Controller' do
             end
           end
 
-          context 'with using different user_id in attributes' do
+          context 'when with using different user_id in attributes' do
             let(:testuser) { create(:user_with_mailaliases) }
             let(:anotheruser) { create(:user_with_mailaccounts) }
             let(:new_attrs) do
@@ -1198,7 +1201,7 @@ describe 'VHost-API MailAlias Controller' do
         end
       end
 
-      context 'by an unauthenticated user' do
+      context 'when by an unauthenticated user' do
         let!(:testmailalias) { create(:mailalias) }
 
         before do
@@ -1292,3 +1295,6 @@ describe 'VHost-API MailAlias Controller' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:enable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:enable RSpec/PredicateMatcher, RSpec/ScatteredLet

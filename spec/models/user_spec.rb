@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API User Model' do
+  # rubocop:disable RSpec/MultipleExpectations
   it 'has a valid factory' do
     admin_group = create(:group, name: 'admin')
     expect(create(:admin, group: admin_group)).to be_valid
@@ -51,24 +53,24 @@ describe 'VHost-API User Model' do
   it 'checks ownership of a given object against itself' do
     testadmin = create(:admin)
     testuser = create(:user)
-    expect(testadmin.owner_of?(testuser)).to be_truthy
-    expect(testuser.owner_of?(testadmin)).not_to be_truthy
+    expect(testadmin.be_owner_of(testuser)).to be_truthy
+    expect(testuser.be_owner_of(testadmin)).not_to be_truthy
   end
 
   it 'allows checking of admin privileges' do
     testadmin = build(:admin)
     testreseller = build(:reseller)
     testuser = build(:user)
-    expect(testadmin.admin?).to be_truthy
-    expect(testreseller.admin?).not_to be_truthy
-    expect(testuser.admin?).not_to be_truthy
+    expect(testadmin.be_admin).to be_truthy
+    expect(testreseller.be_admin).not_to be_truthy
+    expect(testuser.be_admin).not_to be_truthy
   end
 
   it 'allows checking of reseller privileges' do
     testreseller = build(:reseller)
     testuser = build(:user)
-    expect(testreseller.reseller?).to be_truthy
-    expect(testuser.reseller?).not_to be_truthy
+    expect(testreseller.be_reseller).to be_truthy
+    expect(testuser.be_reseller).not_to be_truthy
   end
 
   it 'returns the owner as a User object' do
@@ -76,4 +78,6 @@ describe 'VHost-API User Model' do
     testuser = create(:user)
     expect(testuser.owner).to be_an_instance_of(User)
   end
+  # rubocop:enable RSpec/MultipleExpectations
 end
+# rubocop:enable Metrics/BlockLength

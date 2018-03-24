@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
 describe 'VHost-API DkimSigning Model' do
   it 'has a valid factory' do

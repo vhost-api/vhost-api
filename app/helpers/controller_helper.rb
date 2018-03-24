@@ -33,7 +33,7 @@ def return_authorized_collection(object: nil, params: { fields: nil })
     object = limited_collection(collection: object, params: params)
   rescue DataObjects::DataError, ArgumentError
     return_api_error(ApiErrors.[](:invalid_query))
-  rescue => err
+  rescue Error => err
     log_app('error', "#{err.message}\n#{err.backtrace}")
     return_api_error(ApiErrors.[](:invalid_request))
   end
@@ -88,9 +88,9 @@ end
 def search_collection(collection: nil, query: nil)
   return collection if query.nil?
   query.keys.each do |key|
-    search_query = if key.to_s =~ %r{enabled$}
+    search_query = if key.match?('enabled')
                      { key => string_to_bool(query[key]) }
-                   elsif key.to_s =~ %r{_id$}
+                   elsif key.ends_with?('_id')
                      { key => query[key].to_i }
                    else
                      { key.like => "%#{query[key]}%" }

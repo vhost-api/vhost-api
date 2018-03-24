@@ -1,10 +1,13 @@
 # frozen_string_literal: true
+
 require 'yaml'
 
-lp = File.expand_path('../', __FILE__)
+lp = File.expand_path(__dir__)
 
 @environment = ENV['RACK_ENV'] || 'development'
+# rubocop:disable Security/YAMLLoad
 @dbconfig = YAML.load(File.read("#{lp}/config/database.yml"))[@environment]
+# rubocop:enable Security/YAMLLoad
 
 require 'bundler/setup'
 

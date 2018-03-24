@@ -14,14 +14,14 @@ require 'simplecov'
 # end
 # SimpleCov.start 'vhost-api'
 
-require File.expand_path '../../vhost_api_app.rb', __FILE__
+require File.expand_path('../vhost_api_app.rb', __dir__)
 require 'rspec'
 require 'rack/test'
 require 'factory_girl'
 require 'database_cleaner'
-require File.expand_path '../support/pundit_matcher.rb', __FILE__
-require File.expand_path '../support/auth_helper.rb', __FILE__
-require File.expand_path '../support/format_helper.rb', __FILE__
+require File.expand_path('support/pundit_matcher.rb', __dir__)
+require File.expand_path('support/auth_helper.rb', __dir__)
+require File.expand_path('support/format_helper.rb', __dir__)
 
 ENV['RACK_ENV'] = 'test'
 

@@ -271,3 +271,4 @@ when 'MYSQL'
 else
   raise 'Error: unsupported database adapter!'
 end
+# rubocop:enable Metrics/LineLength

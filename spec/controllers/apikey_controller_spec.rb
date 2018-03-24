@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:disable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:disable RSpec/EmptyExampleGroup, RSpec/EmptyLineAfterFinalLet
+# rubocop:disable RSpec/PredicateMatcher, RSpec/HookArgument, RSpec/ScatteredLet
 describe 'VHost-API Apikey Controller' do
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
 
-  api_versions = %w(1)
+  api_versions = %w[1]
 
   api_versions.each do |api_version|
     context "API version #{api_version}" do
-      context 'by an admin user' do
+      context 'when by an admin user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:testapikey) { create(:apikey) }
@@ -111,7 +115,7 @@ describe 'VHost-API Apikey Controller' do
         end
 
         describe 'POST' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             let(:apikey_attrs) { attributes_for(:apikey) }
 
             it 'authorizes the request by using the policies' do
@@ -176,8 +180,8 @@ describe 'VHost-API Apikey Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{ , name: \'foo, enabled: true }' }
 
               it 'does not create a new apikey' do
@@ -238,7 +242,7 @@ describe 'VHost-API Apikey Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_apikey_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not create a new apikey' do
@@ -299,7 +303,7 @@ describe 'VHost-API Apikey Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_apikey) }
 
               it 'does not create a new apikey' do
@@ -369,7 +373,7 @@ describe 'VHost-API Apikey Controller' do
         end
 
         describe 'PATCH' do
-          context 'with valid attributes' do
+          context 'when with valid attributes' do
             it 'authorizes the request by using the policies' do
               expect(Pundit.authorize(testadmin, Apikey, :create?)).to be_truthy
             end
@@ -423,8 +427,8 @@ describe 'VHost-API Apikey Controller' do
             end
           end
 
-          context 'with malformed request data' do
-            context 'invalid json' do
+          context 'when with malformed request data' do
+            context 'when invalid json' do
               let(:invalid_json) { '{, comment:\'foo, enabled: true }' }
 
               it 'does not update the apikey' do
@@ -486,7 +490,7 @@ describe 'VHost-API Apikey Controller' do
               end
             end
 
-            context 'invalid attributes' do
+            context 'when invalid attributes' do
               let(:invalid_apikey_attrs) { { foo: 'bar', disabled: 1234 } }
 
               it 'does not update the apikey' do
@@ -548,7 +552,7 @@ describe 'VHost-API Apikey Controller' do
               end
             end
 
-            context 'with invalid values' do
+            context 'when with invalid values' do
               let(:invalid_values) { attributes_for(:invalid_apikey) }
 
               it 'does not update the apikey' do
@@ -617,7 +621,7 @@ describe 'VHost-API Apikey Controller' do
             end
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             # it 'returns an API Error' do
             #   invincibleapikey = create(:apikey)
             #   allow(Apikey).to receive(
@@ -676,7 +680,7 @@ describe 'VHost-API Apikey Controller' do
             expect { JSON.parse(last_response.body) }.not_to raise_exception
           end
 
-          context 'operation failed' do
+          context 'when operation failed' do
             it 'returns an API Error' do
               invincibleapikey = create(:apikey)
               allow(Apikey).to receive(
@@ -708,7 +712,7 @@ describe 'VHost-API Apikey Controller' do
         end
       end
 
-      context 'by an authenticated but unauthorized user' do
+      context 'when by an authenticated but unauthorized user' do
         let!(:admingroup) { create(:group, name: 'admin') }
         let!(:resellergroup) { create(:group, name: 'reseller') }
         let!(:usergroup) { create(:group) }
@@ -801,7 +805,7 @@ describe 'VHost-API Apikey Controller' do
         end
 
         describe 'POST' do
-          context 'with exhausted quota' do
+          context 'when with exhausted quota' do
             let(:testuser) { create(:user_with_exhausted_apikey_quota) }
             it 'does not authorize the request' do
               expect do
@@ -849,7 +853,7 @@ describe 'VHost-API Apikey Controller' do
             end
           end
 
-          context 'with available quota' do
+          context 'when with available quota' do
             let!(:testuser) { create(:user_with_apikeys) }
             let!(:newapikey) do
               attributes_for(:apikey, user_id: testuser.id)
@@ -907,7 +911,7 @@ describe 'VHost-API Apikey Controller' do
             end
           end
 
-          context 'with using different user_id in attributes' do
+          context 'when with using different user_id in attributes' do
             let(:testuser) { create(:user_with_apikeys) }
             let(:anotheruser) { create(:user) }
             let(:unauthorized_attrs) do
@@ -1053,7 +1057,7 @@ describe 'VHost-API Apikey Controller' do
         end
       end
 
-      context 'by an unauthenticated user' do
+      context 'when by an unauthenticated user' do
         let!(:testapikey) { create(:apikey) }
 
         before(:each) do
@@ -1147,3 +1151,7 @@ describe 'VHost-API Apikey Controller' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength, RSpec/NestedGroups, RSpec/LetSetup
+# rubocop:enable RSpec/MultipleExpectations, Security/YAMLLoad
+# rubocop:enable RSpec/EmptyExampleGroup, RSpec/EmptyLineAfterFinalLet
+# rubocop:enable RSpec/PredicateMatcher, RSpec/HookArgument, RSpec/ScatteredLet

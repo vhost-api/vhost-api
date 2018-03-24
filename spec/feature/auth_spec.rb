@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API Authentication' do
+  # rubocop:disable Security/YAMLLoad
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
+
+  # rubocop:enable Security/YAMLLoad
 
   let(:password) { 'muster' }
   let(:testuser) do
@@ -29,6 +33,7 @@ describe 'VHost-API Authentication' do
       expect { JSON.parse(last_response.body) }.not_to raise_exception
     end
 
+    # rubocop:disable RSpec/MultipleExpectations
     it 'returns an apikey' do
       post '/api/v1/auth/login', auth_login_params(testuser.login, password)
 
@@ -40,6 +45,7 @@ describe 'VHost-API Authentication' do
         Apikey.first(user_id: testuser.id, comment: 'rspec').apikey
       )
     end
+    # rubocop:enable RSpec/MultipleExpectations
 
     it 'returns an API error if apikey quota exhausted' do
       params = auth_login_params(testuser.login, password)
@@ -78,3 +84,4 @@ describe 'VHost-API Authentication' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

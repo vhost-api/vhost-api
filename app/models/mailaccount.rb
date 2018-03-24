@@ -113,3 +113,4 @@ class MailAccount
      settings.sieve_file].join('/')
   end
 end
+# rubocop:enable Metrics/LineLength

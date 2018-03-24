@@ -51,11 +51,7 @@ class User
   def authenticate(attempted_password)
     # BCrypt automatically hashes the right side of ==
     # when comparing to self.password.
-    if password == attempted_password
-      true
-    else
-      false
-    end
+    password == attempted_password
   end
 
   # @param options [Hash]

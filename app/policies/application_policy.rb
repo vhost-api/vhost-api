@@ -94,6 +94,7 @@ class ApplicationPolicy
       @errors = []
     end
 
+    # rubocop:disable Lint/DuplicateMethods
     def attributes
       if record.is_a?(Array)
         record.properties.map(&:name)
@@ -101,6 +102,7 @@ class ApplicationPolicy
         record.class.properties.map(&:name)
       end
     end
+    # rubocop:enable Lint/DuplicateMethods
   end
 
   private
