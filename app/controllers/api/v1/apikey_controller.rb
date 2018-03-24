@@ -95,7 +95,7 @@ namespace '/api/v1/apikeys' do
     return_apiresponse @result
   end
 
-  before %r{\A/(?<id>\d+)/?.*} do
+  before %r{/(?<id>\d+)/?.*} do
     # namespace local before blocks are evaluate before global before blocks
     # thus we need to enforce authentication here
     authenticate! if @user.nil?

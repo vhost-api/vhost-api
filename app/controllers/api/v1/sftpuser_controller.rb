@@ -11,7 +11,7 @@ namespace '/api/v1/sftpusers' do
     return_resource object: @sftpuser
   end
 
-  before %r{\A/(?<id>\d+)/?.*} do
+  before %r{/(?<id>\d+)/?.*} do
     # namespace local before blocks are evaluate before global before blocks
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
