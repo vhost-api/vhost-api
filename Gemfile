@@ -49,6 +49,7 @@ end
 group :test, :development do
   gem 'astrolabe', '~> 1.3.1', require: false
   gem 'faker', '~> 1.8.7', require: false
+  gem 'rack-test', '~> 0.8.3', require: false
   gem 'rspec', '~> 3.7.0', require: false
   gem 'rubocop', '~> 0.54.0', require: false
   gem 'rubocop-rspec', '~> 1.24.0', require: false
