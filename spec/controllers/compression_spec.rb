@@ -24,7 +24,8 @@ describe 'VHost-API Compression gzip/deflate' do
 
       context 'when client supports compression' do
         it 'responds with compressed data' do
-          %w[deflate gzip deflate,gzip gzip,deflate].each do |method|
+          # Rack::Deflate removed support for deflate, so it's just gzip for now
+          %w[gzip].each do |method|
             req_headers = auth_headers_apikey(testadmin.id)
             req_headers['HTTP_ACCEPT_ENCODING'] = method
             get(
