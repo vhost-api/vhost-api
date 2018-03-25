@@ -24,12 +24,14 @@ configure do
   set :api_version, 'v1'
   use Rack::TempfileReaper
   use Rack::Deflater
-  set :root, File.expand_path('../', __FILE__)
+  set :root, File.expand_path(__dir__)
   set :start_time, Time.now
   set :logging, false
+  # rubocop:disable Security/YAMLLoad
   @appconfig = YAML.load(
     File.read("#{settings.root}/config/appconfig.yml")
   )[settings.environment.to_s]
+  # rubocop:enable Security/YAMLLoad
   @appconfig.keys.each do |key|
     set key, @appconfig[key]
   end

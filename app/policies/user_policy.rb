@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/ClassLength
-require File.expand_path '../application_policy.rb', __FILE__
+require File.expand_path('application_policy.rb', __dir__)
 
 # Policy for User
 class UserPolicy < ApplicationPolicy
@@ -183,3 +183,4 @@ class UserPolicy < ApplicationPolicy
     false
   end
 end
+# rubocop:enable Metrics/ClassLength

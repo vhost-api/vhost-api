@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-# rubocop:disable Lint/Eval
+
+# rubocop:disable Security/Eval
 require 'bundler/setup'
 require 'data_mapper'
 require 'dm-migrations'
@@ -35,13 +36,15 @@ require_relative "#{lp}app/models/sshpubkey"
 require_relative "#{lp}app/models/databaseuser"
 require_relative "#{lp}app/models/database"
 
+# rubocop:disable Security/YAMLLoad
 appconfig = YAML.load(File.read("#{lp}config/appconfig.yml"))['production']
+# rubocop:enable Security/YAMLLoad
 
 api_modules = appconfig[:api_modules]
 enabled_modules = []
 
 # core modules
-%w(group user apikey package).each do |f|
+%w[group user apikey package].each do |f|
   enabled_modules.push(f)
 end
 
@@ -50,13 +53,13 @@ optional_modules = []
 api_modules.map(&:upcase).each do |apimod|
   case apimod
   when 'EMAIL' then optional_modules.push(
-    %w(domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding)
+    %w[domain dkim dkimsigning mailaccount mailalias mailsource mailforwarding]
   )
   when 'VHOST' then optional_modules.push(
-    %w(domain ipv4address ipv6address phpruntime sftpuser shelluser vhost)
+    %w[domain ipv4address ipv6address phpruntime sftpuser shelluser vhost]
   )
   # TODO: no dns controllers exist yet
-  when 'DNS' then optional_modules.push(%w(domain))
+  when 'DNS' then optional_modules.push(%w[domain])
   # TODO: no database/databaseuser controllers exist yet
   when 'DATABASE' then nil
   end
@@ -170,6 +173,7 @@ paths['/auth/login'] = {
   }
 }
 
+# rubocop:disable Metrics/BlockLength
 modules.each do |_, module_value|
   ns = module_value[:namespace]
   class_name = module_value[:class_name]
@@ -345,7 +349,9 @@ modules.each do |_, module_value|
       only = match.captures[0].to_s if match
 
       if only
+        # rubocop:disable Style/EvalWithLocation
         only_hash = eval("{ #{only} }")
+        # rubocop:enable Style/EvalWithLocation
 
         relation_hash = {
           type: 'object',
@@ -371,6 +377,7 @@ modules.each do |_, module_value|
     end
   end
 end
+# rubocop:enable Metrics/BlockLength
 
 definitions['Error'] = {
   type: 'object',
@@ -422,3 +429,4 @@ result[:definitions] = definitions
 output = JSON.pretty_generate(JSON.parse(result.to_json)) + "\n"
 
 puts output
+# rubocop:enable Security/Eval

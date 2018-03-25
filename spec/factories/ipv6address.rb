@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :ipv6address, class: Ipv6Address do
-    address IPAddr.new('fe80::1')
+    address do
+      IPAddr.new('fe80::1')
+    end
+
     enabled true
 
     factory :invalid_ipv6address do

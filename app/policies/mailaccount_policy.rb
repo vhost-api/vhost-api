@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength, Metrics/MethodLength
-# rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-require File.expand_path '../application_policy.rb', __FILE__
+# rubocop:disable Metrics/ClassLength
+require File.expand_path('application_policy.rb', __dir__)
 
 # Policy for MailAccount
 class MailAccountPolicy < ApplicationPolicy
@@ -82,7 +81,8 @@ class MailAccountPolicy < ApplicationPolicy
 
   private
 
-  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
   # @return [Boolean]
   def quotacheck(*requested_quota, update: false)
     unless requested_quota.blank?
@@ -100,6 +100,8 @@ class MailAccountPolicy < ApplicationPolicy
     end
     false
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength, Metrics/PerceivedComplexity
 
   # @return [Fixnum]
   def check_account_num
@@ -124,6 +126,8 @@ class MailAccountPolicy < ApplicationPolicy
   end
 
   # @retun [Boolean]
+  # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
   def check_update_params(params)
     if params.key?(:id)
       return false unless check_id(params[:id])
@@ -144,6 +148,8 @@ class MailAccountPolicy < ApplicationPolicy
     end
     true
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength, Metrics/PerceivedComplexity
 
   def check_id(id)
     return true if id == record.id
@@ -208,3 +214,4 @@ class MailAccountPolicy < ApplicationPolicy
     [].to_Set
   end
 end
+# rubocop:enable Metrics/ClassLength

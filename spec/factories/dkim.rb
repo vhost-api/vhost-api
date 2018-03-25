@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
-FactoryGirl.define do
-  keypair = SSHKey.generate(
-    type: 'RSA',
-    bits: 4096,
-    comment: nil,
-    passphrase: nil
-  )
+FactoryBot.define do
+  keypair = SSHKey.generate(type: 'RSA', bits: 4096, comment: nil,
+                            passphrase: nil)
 
   factory :dkim, class: Dkim do
     selector 'mail'
 
-    private_key keypair.private_key
-    public_key keypair.public_key
+    private_key do
+      keypair.private_key
+    end
+    public_key do
+      keypair.public_key
+    end
+
     enabled true
 
     transient do

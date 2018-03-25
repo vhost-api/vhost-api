@@ -22,7 +22,7 @@ module FormatHelpers
       result = spec_limited_collection(collection: object, params: params)
     rescue DataObjects::DataError, ArgumentError
       spec_api_error(ApiErrors.[](:invalid_query))
-    rescue
+    rescue Error
       spec_api_error(ApiErrors.[](:invalid_request))
     end
 

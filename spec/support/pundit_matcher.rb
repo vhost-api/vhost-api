@@ -18,7 +18,9 @@ end
 
 RSpec::Matchers.define :permit_args do |action, args|
   match do |policy|
+    # rubocop:disable Lint/UnneededSplatExpansion
     policy.public_send("#{action}?", *[args])
+    # rubocop:enable Lint/UnneededSplatExpansion
   end
 
   failure_message do |policy|

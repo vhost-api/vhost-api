@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/BlockLength
 namespace '/api/v1/dkims' do
   helpers do
     # @return [String, String]
@@ -96,7 +97,7 @@ namespace '/api/v1/dkims' do
                 else
                   api_error(ApiErrors.[](:malformed_request))
                 end
-    rescue => err
+    rescue Error => err
       # unhandled error, always log backtrace
       log_user('error', err.message)
       log_user('error', err.backtrace.join("\n"))
@@ -111,7 +112,7 @@ namespace '/api/v1/dkims' do
     return_apiresponse @result
   end
 
-  before %r{\A/(?<id>\d+)/?.*} do
+  before %r{/(?<id>\d+)/?.*} do
     # namespace local before blocks are evaluate before global before blocks
     # thus we need to enforce authentication here
     authenticate! if @user.nil?
@@ -237,7 +238,7 @@ namespace '/api/v1/dkims' do
                   else
                     api_error(ApiErrors.[](:malformed_request))
                   end
-      rescue => err
+      rescue Error => err
         # unhandled error, always log backtrace
         log_user('error', err.message)
         log_user('error', err.backtrace.join("\n"))
@@ -270,3 +271,4 @@ namespace '/api/v1/dkims' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

@@ -1,10 +1,13 @@
 # frozen_string_literal: true
+
 require 'yaml'
 
-lp = File.expand_path('../', __FILE__)
+lp = File.expand_path(__dir__)
 
 @environment = ENV['RACK_ENV'] || 'development'
+# rubocop:disable Security/YAMLLoad
 @dbconfig = YAML.load(File.read("#{lp}/config/database.yml"))[@environment]
+# rubocop:enable Security/YAMLLoad
 
 require 'bundler/setup'
 
@@ -28,6 +31,33 @@ end
 
 require 'bcrypt'
 require 'sshkey'
+
+# monkey patch to fix deprecation warning
+# rubocop:disable Style/Documentation, Style/RaiseArgs, Metrics/LineLength
+# rubocop:disable Style/CaseEquality
+module DataObjects
+  module Pooling
+    class Pool
+      attr_reader :available
+      attr_reader :used
+
+      def initialize(max_size, resource, args)
+        raise ArgumentError.new("+max_size+ should be an Integer but was #{max_size.inspect}") unless Integer === max_size
+        raise ArgumentError.new("+resource+ should be a Class but was #{resource.inspect}") unless Class === resource
+
+        @max_size = max_size
+        @resource = resource
+        @args = args
+
+        @available = []
+        @used      = {}
+        DataObjects::Pooling.append_pool(self)
+      end
+    end
+  end
+end
+# rubocop:enable Style/Documentation, Style/RaiseArgs, Metrics/LineLength
+# rubocop:enable Style/CaseEquality
 
 # load models and stuff
 require_relative 'app/models/group'

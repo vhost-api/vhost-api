@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path '../application_policy.rb', __FILE__
+require File.expand_path('application_policy.rb', __dir__)
 
 # Policy for Package
 class PackagePolicy < ApplicationPolicy
@@ -23,6 +23,7 @@ class PackagePolicy < ApplicationPolicy
     return true if user.packages.map(&:id).include?(record.id)
     false
   end
+  # rubocop:enable Metrics/AbcSize
 
   # Checks if current user is allowed to update the record
   #
@@ -110,6 +111,7 @@ class PackagePolicy < ApplicationPolicy
   end
 
   # check amount of all assigned customers to a package before permission
+  # rubocop:disable Metrics/AbcSize
   def check_update_params(params)
     return false unless user.reseller?
     params.each_pair do |k, v|
@@ -120,6 +122,7 @@ class PackagePolicy < ApplicationPolicy
     end
     true
   end
+  # rubocop:enable Metrics/AbcSize
 
   def check_quota_prop(key)
     # call helper methods from quota_helper.rb

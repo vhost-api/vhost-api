@@ -71,3 +71,4 @@ class Vhost
     user
   end
 end
+# rubocop:enable Metrics/LineLength

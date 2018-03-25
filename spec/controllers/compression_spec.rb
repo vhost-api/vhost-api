@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API Compression gzip/deflate' do
+  # rubocop:disable Security/YAMLLoad
   let(:appconfig) { YAML.load(File.read('config/appconfig.yml'))['test'] }
+
+  # rubocop:enable Security/YAMLLoad
 
   api_versions = %w[1]
 
@@ -18,9 +22,10 @@ describe 'VHost-API Compression gzip/deflate' do
       let(:user3) { create(:user) }
       let(:user4) { create(:user) }
 
-      context 'client supports compression' do
+      context 'when client supports compression' do
         it 'responds with compressed data' do
-          %w[deflate gzip deflate,gzip gzip,deflate].each do |method|
+          # Rack::Deflate removed support for deflate, so it's just gzip for now
+          %w[gzip].each do |method|
             req_headers = auth_headers_apikey(testadmin.id)
             req_headers['HTTP_ACCEPT_ENCODING'] = method
             get(
@@ -35,7 +40,7 @@ describe 'VHost-API Compression gzip/deflate' do
         end
       end
 
-      context 'client does not support compression' do
+      context 'when client does not support compression' do
         it 'responds with uncompressed data' do
           get(
             "/api/v#{api_version}/users", nil,
@@ -47,3 +52,4 @@ describe 'VHost-API Compression gzip/deflate' do
     end
   end
 end
+# rubocop:enable Metrics/BlockLength

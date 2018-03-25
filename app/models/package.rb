@@ -54,3 +54,4 @@ class Package
     { id: user.id, name: user.name, login: user.login }
   end
 end
+# rubocop:enable Metrics/LineLength

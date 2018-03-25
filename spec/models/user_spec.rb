@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require File.expand_path '../../spec_helper.rb', __FILE__
+require File.expand_path('../spec_helper.rb', __dir__)
 
+# rubocop:disable Metrics/BlockLength
 describe 'VHost-API User Model' do
+  # rubocop:disable RSpec/MultipleExpectations, RSpec/PredicateMatcher
   it 'has a valid factory' do
     admin_group = create(:group, name: 'admin')
     expect(create(:admin, group: admin_group)).to be_valid
@@ -76,4 +78,6 @@ describe 'VHost-API User Model' do
     testuser = create(:user)
     expect(testuser.owner).to be_an_instance_of(User)
   end
+  # rubocop:enable RSpec/MultipleExpectations, RSpec/PredicateMatcher
 end
+# rubocop:enable Metrics/BlockLength
