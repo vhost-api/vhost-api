@@ -17,7 +17,7 @@ describe 'VHost-API Application' do
       expect(last_response.body).to eq(
         spec_json_pretty(
           {
-            app_version: '0.1.2-alpha',
+            app_version: '0.1.3-alpha',
             api_version: 'v1'
           }.to_json
         )

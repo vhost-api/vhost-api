@@ -3,7 +3,7 @@
   <head>
     <title>vhost-api</title>
     <style type="text/css">
-      body { 
+      body {
 	font-family: Trebuchet MS, sans-serif;
 	font-size: 15px;
 	color: #444;
@@ -25,7 +25,6 @@ hr	{
 	border: 0;
 	color: #ddd;
 	background-color: #ddd;
-	display: none;
 }
 
 .app-desc {
@@ -176,6 +175,7 @@ font-style: italic;
   display: inline-block;
   text-decoration: none;
 }
+
     </style>
   </head>
   <body>
@@ -183,7 +183,7 @@ font-style: italic;
     <div class="app-desc">vhost-api</div>
     <div class="app-desc">More information: <a href="https://github.com/vhost-api/vhost-api/">https://github.com/vhost-api/vhost-api/</a></div>
     <div class="app-desc">Contact Info: <a href="me@foxxx0.de">me@foxxx0.de</a></div>
-    <div class="app-desc">Version: 0.1.2-alpha</div>
+    <div class="app-desc">Version: 0.1.3-alpha</div>
     <div class="app-desc">BasePath:/api/v1</div>
     <div class="license-info">AGPL v3</div>
     <div class="license-url">https://github.com/vhost-api/vhost-api/blob/master/LICENSE</div>
@@ -192,12 +192,19 @@ font-style: italic;
   <h2><a name="__Methods">Methods</a></h2>
   [ Jump to <a href="#__Models">Models</a> ]
 
-  <h2>Table of Contents </h2>
+  <h3>Table of Contents </h3>
   <div class="method-summary"></div>
-  <ol>
+  <h4><a href="#Apikey">Apikey</a></h4>
+  <ul>
   <li><a href="#apikeysGet"><code><span class="http-method">get</span> /apikeys</code></a></li>
   <li><a href="#apikeysPost"><code><span class="http-method">post</span> /apikeys</code></a></li>
+  </ul>
+  <h4><a href="#Auth">Auth</a></h4>
+  <ul>
   <li><a href="#authLoginPost"><code><span class="http-method">post</span> /auth/login</code></a></li>
+  </ul>
+  <h4><a href="#Default">Default</a></h4>
+  <ul>
   <li><a href="#apikeysApikeyIdDelete"><code><span class="http-method">delete</span> /apikeys/{apikeyId}</code></a></li>
   <li><a href="#apikeysApikeyIdPatch"><code><span class="http-method">patch</span> /apikeys/{apikeyId}</code></a></li>
   <li><a href="#dkimsDkimIdDelete"><code><span class="http-method">delete</span> /dkims/{dkimId}</code></a></li>
@@ -220,28 +227,59 @@ font-style: italic;
   <li><a href="#packagesPackageIdPatch"><code><span class="http-method">patch</span> /packages/{packageId}</code></a></li>
   <li><a href="#usersUserIdDelete"><code><span class="http-method">delete</span> /users/{userId}</code></a></li>
   <li><a href="#usersUserIdPatch"><code><span class="http-method">patch</span> /users/{userId}</code></a></li>
+  </ul>
+  <h4><a href="#Dkim">Dkim</a></h4>
+  <ul>
   <li><a href="#dkimsGet"><code><span class="http-method">get</span> /dkims</code></a></li>
   <li><a href="#dkimsPost"><code><span class="http-method">post</span> /dkims</code></a></li>
+  </ul>
+  <h4><a href="#DkimSigning">DkimSigning</a></h4>
+  <ul>
   <li><a href="#dkimsigningsGet"><code><span class="http-method">get</span> /dkimsignings</code></a></li>
   <li><a href="#dkimsigningsPost"><code><span class="http-method">post</span> /dkimsignings</code></a></li>
+  </ul>
+  <h4><a href="#Domain">Domain</a></h4>
+  <ul>
   <li><a href="#domainsGet"><code><span class="http-method">get</span> /domains</code></a></li>
   <li><a href="#domainsPost"><code><span class="http-method">post</span> /domains</code></a></li>
+  </ul>
+  <h4><a href="#Group">Group</a></h4>
+  <ul>
   <li><a href="#groupsGet"><code><span class="http-method">get</span> /groups</code></a></li>
   <li><a href="#groupsPost"><code><span class="http-method">post</span> /groups</code></a></li>
+  </ul>
+  <h4><a href="#MailAccount">MailAccount</a></h4>
+  <ul>
   <li><a href="#mailaccountsGet"><code><span class="http-method">get</span> /mailaccounts</code></a></li>
   <li><a href="#mailaccountsPost"><code><span class="http-method">post</span> /mailaccounts</code></a></li>
+  </ul>
+  <h4><a href="#MailAlias">MailAlias</a></h4>
+  <ul>
   <li><a href="#mailaliasesGet"><code><span class="http-method">get</span> /mailaliases</code></a></li>
   <li><a href="#mailaliasesPost"><code><span class="http-method">post</span> /mailaliases</code></a></li>
+  </ul>
+  <h4><a href="#MailForwarding">MailForwarding</a></h4>
+  <ul>
   <li><a href="#mailforwardingsGet"><code><span class="http-method">get</span> /mailforwardings</code></a></li>
   <li><a href="#mailforwardingsPost"><code><span class="http-method">post</span> /mailforwardings</code></a></li>
+  </ul>
+  <h4><a href="#MailSource">MailSource</a></h4>
+  <ul>
   <li><a href="#mailsourcesGet"><code><span class="http-method">get</span> /mailsources</code></a></li>
   <li><a href="#mailsourcesPost"><code><span class="http-method">post</span> /mailsources</code></a></li>
+  </ul>
+  <h4><a href="#Package">Package</a></h4>
+  <ul>
   <li><a href="#packagesGet"><code><span class="http-method">get</span> /packages</code></a></li>
   <li><a href="#packagesPost"><code><span class="http-method">post</span> /packages</code></a></li>
+  </ul>
+  <h4><a href="#User">User</a></h4>
+  <ul>
   <li><a href="#usersGet"><code><span class="http-method">get</span> /users</code></a></li>
   <li><a href="#usersPost"><code><span class="http-method">post</span> /users</code></a></li>
-  </ol>
+  </ul>
 
+  <h1><a name="Apikey">Apikey</a></h1>
   <div class="method"><a name="apikeysGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -281,13 +319,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "apikey" : "aeiou",
-  "updated_at" : "",
-  "created_at" : "",
+  "updated_at" : 1,
+  "created_at" : 6,
   "comment" : "aeiou",
-  "id" : "",
+  "id" : 0,
   "user" : {
     "name" : "aeiou",
-    "id" : "",
+    "id" : 5,
     "login" : "aeiou"
   },
   "enabled" : true
@@ -304,7 +342,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Apikeys
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -325,9 +363,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Apikey">Apikey</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Apikey object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -356,6 +395,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Auth">Auth</a></h1>
   <div class="method"><a name="authLoginPost"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -372,9 +412,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Auth">Auth</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Auth Data </div>
+
     </div>  <!-- field-items -->
 
 
@@ -392,7 +433,7 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "apikey" : "aeiou",
-  "user_id" : 123
+  "user_id" : 0
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -411,6 +452,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Default">Default</a></h1>
   <div class="method"><a name="apikeysApikeyIdDelete"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -472,9 +514,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Apikey">Apikey</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Apikey object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -570,9 +613,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Dkim">Dkim</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Dkim object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -668,9 +712,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#DkimSigning">DkimSigning</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the DkimSigning object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -766,9 +811,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Domain">Domain</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Domain object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -864,9 +910,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Group">Group</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Group object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -962,9 +1009,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailAccount">MailAccount</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailAccount object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1060,9 +1108,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailAlias">MailAlias</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailAlias object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1158,9 +1207,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailForwarding">MailForwarding</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailForwarding object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1256,9 +1306,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailSource">MailSource</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the MailSource object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1354,9 +1405,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Package">Package</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the Package object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1452,9 +1504,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#User">User</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The update fields of the User object </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1489,6 +1542,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Dkim">Dkim</a></h1>
   <div class="method"><a name="dkimsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1528,15 +1582,15 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "public_key" : "aeiou",
-  "updated_at" : "",
+  "updated_at" : 1,
   "domain" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 5
   },
-  "created_at" : "",
+  "created_at" : 6,
   "selector" : "aeiou",
   "private_key" : "aeiou",
-  "id" : "",
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -1551,7 +1605,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Dkims
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -1572,9 +1626,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Dkim">Dkim</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Dkim object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1603,6 +1658,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="DkimSigning">DkimSigning</a></h1>
   <div class="method"><a name="dkimsigningsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1641,13 +1697,13 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
-  "updated_at" : "",
+  "updated_at" : 1,
   "dkim" : {
-    "id" : ""
+    "id" : 5
   },
   "author" : "aeiou",
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -1662,7 +1718,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of DkimSignings
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -1683,9 +1739,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#DkimSigning">DkimSigning</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The DkimSigning object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1714,6 +1771,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Domain">Domain</a></h1>
   <div class="method"><a name="domainsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1753,14 +1811,14 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "mail_enabled" : true,
-  "updated_at" : "",
+  "updated_at" : 1,
   "name" : "aeiou",
-  "created_at" : "",
+  "created_at" : 6,
   "dns_enabled" : true,
-  "id" : "",
+  "id" : 0,
   "user" : {
     "name" : "aeiou",
-    "id" : "",
+    "id" : 5,
     "login" : "aeiou"
   },
   "enabled" : true
@@ -1777,7 +1835,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Domains
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -1798,9 +1856,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Domain">Domain</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Domain object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1829,6 +1888,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Group">Group</a></h1>
   <div class="method"><a name="groupsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1867,10 +1927,10 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
-  "updated_at" : "",
+  "updated_at" : 1,
   "name" : "aeiou",
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -1885,7 +1945,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Groups
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -1906,9 +1966,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Group">Group</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Group object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -1937,6 +1998,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="MailAccount">MailAccount</a></h1>
   <div class="method"><a name="mailaccountsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1975,21 +2037,21 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
-  "quota_sieve_redirects" : "",
-  "created_at" : "",
+  "quota_sieve_redirects" : 5,
+  "created_at" : 2,
   "receiving_enabled" : true,
   "enabled" : true,
   "realname" : "aeiou",
   "password" : "aeiou",
-  "quota_sieve_script" : "",
-  "updated_at" : "",
-  "quota" : "",
+  "quota_sieve_script" : 1,
+  "updated_at" : 7,
+  "quota" : 6,
   "domain" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 9
   },
-  "quota_sieve_actions" : "",
-  "id" : "",
+  "quota_sieve_actions" : 5,
+  "id" : 0,
   "email" : "aeiou"
 } ]</code></pre>
 
@@ -2004,7 +2066,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of MailAccounts
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2025,9 +2087,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailAccount">MailAccount</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailAccount object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2056,6 +2119,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="MailAlias">MailAlias</a></h1>
   <div class="method"><a name="mailaliasesGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2095,13 +2159,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "address" : "aeiou",
-  "updated_at" : "",
+  "updated_at" : 1,
   "domain" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 5
   },
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -2116,7 +2180,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of MailAliases
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2137,9 +2201,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailAlias">MailAlias</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailAlias object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2168,6 +2233,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="MailForwarding">MailForwarding</a></h1>
   <div class="method"><a name="mailforwardingsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2207,14 +2273,14 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "address" : "aeiou",
-  "updated_at" : "",
+  "updated_at" : 1,
   "destinations" : "aeiou",
   "domain" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 5
   },
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -2229,7 +2295,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of MailForwardings
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2250,9 +2316,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailForwarding">MailForwarding</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailForwarding object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2281,6 +2348,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="MailSource">MailSource</a></h1>
   <div class="method"><a name="mailsourcesGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2320,13 +2388,13 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "address" : "aeiou",
-  "updated_at" : "",
+  "updated_at" : 1,
   "domain" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 5
   },
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "enabled" : true
 } ]</code></pre>
 
@@ -2341,7 +2409,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of MailSources
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2362,9 +2430,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#MailSource">MailSource</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The MailSource object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2393,6 +2462,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Package">Package</a></h1>
   <div class="method"><a name="packagesGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2431,30 +2501,30 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
-  "quota_mail_sources" : "",
-  "quota_mail_forwardings" : "",
-  "quota_vhosts" : "",
-  "created_at" : "",
-  "quota_mail_aliases" : "",
-  "quota_apikeys" : "",
+  "quota_mail_sources" : 7,
+  "quota_mail_forwardings" : 1,
+  "quota_vhosts" : 7,
+  "created_at" : 9,
+  "quota_mail_aliases" : 6,
+  "quota_apikeys" : 1,
   "enabled" : true,
-  "quota_custom_packages" : "",
-  "price_unit" : "",
-  "quota_mail_accounts" : "",
-  "quota_customers" : "",
-  "quota_domains" : "",
-  "updated_at" : "",
-  "quota_dns_zones" : "",
-  "quota_databases" : "",
-  "quota_sftp_users" : "",
-  "quota_dns_records" : "",
+  "quota_custom_packages" : 5,
+  "price_unit" : 6,
+  "quota_mail_accounts" : 1,
+  "quota_customers" : 2,
+  "quota_domains" : 1,
+  "updated_at" : 9,
+  "quota_dns_zones" : 4,
+  "quota_databases" : 3,
+  "quota_sftp_users" : 4,
+  "quota_dns_records" : 7,
   "name" : "aeiou",
-  "quota_database_users" : "",
-  "id" : "",
-  "quota_ssh_pubkeys" : "",
-  "quota_shell_users" : "",
-  "quota_mail_storage" : "",
-  "quota_vhost_storage" : ""
+  "quota_database_users" : 2,
+  "id" : 0,
+  "quota_ssh_pubkeys" : 5,
+  "quota_shell_users" : 5,
+  "quota_mail_storage" : 1,
+  "quota_vhost_storage" : 9
 } ]</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -2468,7 +2538,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Packages
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2489,9 +2559,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#Package">Package</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The Package object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2520,6 +2591,7 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="User">User</a></h1>
   <div class="method"><a name="usersGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2559,16 +2631,16 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>[ {
   "password" : "aeiou",
-  "updated_at" : "",
+  "updated_at" : 1,
   "name" : "aeiou",
-  "created_at" : "",
-  "id" : "",
+  "created_at" : 6,
+  "id" : 0,
   "login" : "aeiou",
   "enabled" : true,
   "contact_email" : "aeiou",
   "group" : {
     "name" : "aeiou",
-    "id" : ""
+    "id" : 5
   }
 } ]</code></pre>
 
@@ -2583,7 +2655,7 @@ font-style: italic;
     <h4 class="field-label">200</h4>
     An array of Users
         
-    <h4 class="field-label">0</h4>
+    <h4 class="field-label">default</h4>
     Unexpected error
         <a href="#Error">Error</a>
   </div> <!-- method -->
@@ -2604,9 +2676,10 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">body (required)</div>
+      <div class="param">body <a href="#User">User</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; The User object without id </div>
+
     </div>  <!-- field-items -->
 
 
@@ -2636,34 +2709,34 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
 
-  <div class="up"><a href="#__Models">Up</a></div>
   <h2><a name="__Models">Models</a></h2>
   [ Jump to <a href="#__Methods">Methods</a> ]
 
-  <h2>Table of Contents</h2>
+  <h3>Table of Contents</h3>
   <ol>
-    <li><a href="#Apikey"><code>Apikey</code></a></li>
-    <li><a href="#Apikey_user"><code>Apikey_user</code></a></li>
-    <li><a href="#Auth"><code>Auth</code></a></li>
-    <li><a href="#AuthSuccess"><code>AuthSuccess</code></a></li>
-    <li><a href="#Dkim"><code>Dkim</code></a></li>
-    <li><a href="#DkimSigning"><code>DkimSigning</code></a></li>
-    <li><a href="#DkimSigning_dkim"><code>DkimSigning_dkim</code></a></li>
-    <li><a href="#Dkim_domain"><code>Dkim_domain</code></a></li>
-    <li><a href="#Domain"><code>Domain</code></a></li>
-    <li><a href="#Error"><code>Error</code></a></li>
-    <li><a href="#Group"><code>Group</code></a></li>
-    <li><a href="#MailAccount"><code>MailAccount</code></a></li>
-    <li><a href="#MailAlias"><code>MailAlias</code></a></li>
-    <li><a href="#MailForwarding"><code>MailForwarding</code></a></li>
-    <li><a href="#MailSource"><code>MailSource</code></a></li>
-    <li><a href="#Package"><code>Package</code></a></li>
-    <li><a href="#User"><code>User</code></a></li>
-    <li><a href="#User_group"><code>User_group</code></a></li>
+    <li><a href="#Apikey"><code>Apikey</code> - </a></li>
+    <li><a href="#Apikey_user"><code>Apikey_user</code> - </a></li>
+    <li><a href="#Auth"><code>Auth</code> - </a></li>
+    <li><a href="#AuthSuccess"><code>AuthSuccess</code> - </a></li>
+    <li><a href="#Dkim"><code>Dkim</code> - </a></li>
+    <li><a href="#DkimSigning"><code>DkimSigning</code> - </a></li>
+    <li><a href="#DkimSigning_dkim"><code>DkimSigning_dkim</code> - </a></li>
+    <li><a href="#Dkim_domain"><code>Dkim_domain</code> - </a></li>
+    <li><a href="#Domain"><code>Domain</code> - </a></li>
+    <li><a href="#Error"><code>Error</code> - </a></li>
+    <li><a href="#Group"><code>Group</code> - </a></li>
+    <li><a href="#MailAccount"><code>MailAccount</code> - </a></li>
+    <li><a href="#MailAlias"><code>MailAlias</code> - </a></li>
+    <li><a href="#MailForwarding"><code>MailForwarding</code> - </a></li>
+    <li><a href="#MailSource"><code>MailSource</code> - </a></li>
+    <li><a href="#Package"><code>Package</code> - </a></li>
+    <li><a href="#User"><code>User</code> - </a></li>
+    <li><a href="#User_group"><code>User_group</code> - </a></li>
   </ol>
 
   <div class="model">
-    <h3 class="field-label"><a name="Apikey">Apikey</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Apikey"><code>Apikey</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Apikey </div>
 <div class="param">apikey (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> apikey of Apikey </div>
@@ -2675,7 +2748,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Apikey_user">Apikey_user</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Apikey_user"><code>Apikey_user</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of User </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of User </div>
@@ -2683,7 +2757,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Auth">Auth</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Auth"><code>Auth</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">username (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
@@ -2691,14 +2766,16 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="AuthSuccess">AuthSuccess</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="AuthSuccess"><code>AuthSuccess</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">user_id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
 <div class="param">apikey (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Dkim">Dkim</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Dkim"><code>Dkim</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Dkim </div>
 <div class="param">selector (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> selector of Dkim </div>
@@ -2711,7 +2788,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="DkimSigning">DkimSigning</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="DkimSigning"><code>DkimSigning</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of DkimSigning </div>
 <div class="param">author (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> author of DkimSigning </div>
@@ -2722,20 +2800,23 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="DkimSigning_dkim">DkimSigning_dkim</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="DkimSigning_dkim"><code>DkimSigning_dkim</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Dkim </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Dkim_domain">Dkim_domain</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Dkim_domain"><code>Dkim_domain</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Domain </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Domain </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Domain">Domain</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Domain"><code>Domain</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Domain </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Domain </div>
@@ -2748,7 +2829,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Error">Error</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Error"><code>Error</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">code (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  format: int32</div>
 <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
@@ -2756,7 +2838,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Group">Group</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Group"><code>Group</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Group </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Group </div>
@@ -2766,7 +2849,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="MailAccount">MailAccount</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="MailAccount"><code>MailAccount</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailAccount </div>
 <div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> email of MailAccount </div>
@@ -2784,7 +2868,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="MailAlias">MailAlias</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="MailAlias"><code>MailAlias</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailAlias </div>
 <div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailAlias </div>
@@ -2795,7 +2880,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="MailForwarding">MailForwarding</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="MailForwarding"><code>MailForwarding</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailForwarding </div>
 <div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailForwarding </div>
@@ -2807,7 +2893,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="MailSource">MailSource</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="MailSource"><code>MailSource</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of MailSource </div>
 <div class="param">address (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> address of MailSource </div>
@@ -2818,7 +2905,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="Package">Package</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="Package"><code>Package</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Package </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Package </div>
@@ -2847,7 +2935,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="User">User</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="User"><code>User</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of User </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of User </div>
@@ -2861,7 +2950,8 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3 class="field-label"><a name="User_group">User_group</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="User_group"><code>User_group</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    
     <div class="field-items">
       <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> id of Group </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> name of Group </div>

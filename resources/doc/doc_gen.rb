@@ -134,7 +134,7 @@ result = {}
 result[:swagger] = '2.0'
 result[:info] = { title: 'vhost-api',
                   description: 'vhost-api',
-                  version: '0.1.2-alpha',
+                  version: '0.1.3-alpha',
                   contact: contact_info,
                   license: license_info }
 result[:schemes] = ['https']
