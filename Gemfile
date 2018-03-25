@@ -17,17 +17,14 @@ gem 'sinatra-pundit', git: 'https://github.com/vhost-api/sinatra-pundit.git'
 
 # database
 gem 'data_mapper', '~> 1.2.0'
-gem 'data_objects', git: 'https://github.com/vhost-api/do.git', submodules: true
 gem 'dm-constraints', '~> 1.2.0'
 
 group :mysql do
   gem 'dm-mysql-adapter', '~> 1.2.0'
-  gem 'do_mysql', '~> 0.10.17'
 end
 
 group :postgres do
   gem 'dm-postgres-adapter', '~> 1.2.0'
-  gem 'do_postgres', '~> 0.10.17'
 end
 
 # engine
@@ -59,5 +56,5 @@ end
 
 group :test do
   gem 'database_cleaner', '~> 1.6.2'
-  gem 'factory_girl', '~> 4.9.0'
+  gem 'factory_bot', '~> 4.8.2'
 end

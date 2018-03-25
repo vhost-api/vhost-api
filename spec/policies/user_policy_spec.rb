@@ -7,7 +7,7 @@ describe UserPolicy do
   subject { described_class.new(user, testuser) }
 
   let(:testuser) do
-    FactoryGirl.create(:user, name: 'Testuser', login: 'testuser')
+    FactoryBot.create(:user, name: 'Testuser', login: 'testuser')
   end
 
   context 'when being the user itself' do

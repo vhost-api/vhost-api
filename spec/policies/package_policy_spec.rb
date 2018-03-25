@@ -6,10 +6,10 @@ require File.expand_path('../spec_helper.rb', __dir__)
 describe PackagePolicy do
   subject { described_class.new(user, package) }
 
-  let(:package) { FactoryGirl.create(:package, name: 'testpackage') }
+  let(:package) { FactoryBot.create(:package, name: 'testpackage') }
 
   context 'when being a user' do
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryBot.create(:user) }
 
     context 'when user has booked this package' do
       let(:package) { user.packages.first }
@@ -27,7 +27,7 @@ describe PackagePolicy do
   end
 
   context 'when being a reseller' do
-    let(:user) { FactoryGirl.create(:reseller) }
+    let(:user) { FactoryBot.create(:reseller) }
 
     context 'when user has booked this package' do
       let(:package) { user.packages.first }
@@ -119,7 +119,7 @@ describe PackagePolicy do
   end
 
   context 'when being an admin' do
-    let(:user) { FactoryGirl.create(:admin) }
+    let(:user) { FactoryBot.create(:admin) }
 
     it { is_expected.to permit(:show)    }
     it { is_expected.to permit(:create)  }

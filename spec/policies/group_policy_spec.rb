@@ -5,10 +5,10 @@ require File.expand_path('../spec_helper.rb', __dir__)
 describe GroupPolicy do
   subject { described_class.new(user, group) }
 
-  let(:group) { FactoryGirl.create(:group, name: 'testgroup') }
+  let(:group) { FactoryBot.create(:group, name: 'testgroup') }
 
   context 'with a user' do
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryBot.create(:user) }
 
     it { is_expected.not_to permit(:show)    }
     it { is_expected.not_to permit(:create)  }
@@ -17,7 +17,7 @@ describe GroupPolicy do
   end
 
   context 'with a reseller' do
-    let(:user) { FactoryGirl.create(:reseller) }
+    let(:user) { FactoryBot.create(:reseller) }
 
     it { is_expected.not_to permit(:show)    }
     it { is_expected.not_to permit(:create)  }
@@ -26,7 +26,7 @@ describe GroupPolicy do
   end
 
   context 'with an admin' do
-    let(:user) { FactoryGirl.create(:admin) }
+    let(:user) { FactoryBot.create(:admin) }
 
     it { is_expected.to permit(:show)    }
     it { is_expected.to permit(:create)  }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-FactoryGirl.define do
+FactoryBot.define do
   sequence :forwarding_email do |n|
     "forwarding#{n}@example.com"
   end

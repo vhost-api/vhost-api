@@ -7,7 +7,7 @@ describe MailAliasPolicy do
   subject { described_class.new(user, mailalias) }
 
   let(:mailalias) do
-    FactoryGirl.create(:mailalias)
+    FactoryBot.create(:mailalias)
   end
 
   context 'when being the owner' do

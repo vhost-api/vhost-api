@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-FactoryGirl.define do
+FactoryBot.define do
   factory :shell, class: Shell do
     shell '/bin/bash'
     enabled true

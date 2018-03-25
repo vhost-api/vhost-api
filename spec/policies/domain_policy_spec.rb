@@ -7,7 +7,7 @@ describe DomainPolicy do
   subject { described_class.new(user, domain) }
 
   let(:domain) do
-    FactoryGirl.create(:domain)
+    FactoryBot.create(:domain)
   end
 
   context 'when being the owner' do

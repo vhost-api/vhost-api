@@ -1,16 +1,4 @@
 GIT
-  remote: https://github.com/vhost-api/do.git
-  revision: d87bac0f0b700876307db3aa9beba7ff0decbd2d
-  submodules: true
-  specs:
-    data_objects (0.10.17)
-      addressable (~> 2.1)
-    do_mysql (0.10.17)
-      data_objects (= 0.10.17)
-    do_postgres (0.10.17)
-      data_objects (= 0.10.17)
-
-GIT
   remote: https://github.com/vhost-api/sinatra-pundit.git
   revision: 3f63a53aa1ddc857c2e68f1c8cfc65c8d17a6a09
   specs:
@@ -53,6 +41,8 @@ GEM
       dm-transactions (~> 1.2.0)
       dm-types (~> 1.2.0)
       dm-validations (~> 1.2.0)
+    data_objects (0.10.17)
+      addressable (~> 2.1)
     database_cleaner (1.6.2)
     debug_inspector (0.0.3)
     diff-lcs (1.3)
@@ -93,9 +83,13 @@ GEM
       uuidtools (~> 2.1)
     dm-validations (1.2.0)
       dm-core (~> 1.2.0)
+    do_mysql (0.10.17)
+      data_objects (= 0.10.17)
+    do_postgres (0.10.17)
+      data_objects (= 0.10.17)
     docile (1.3.0)
     erubi (1.7.1)
-    factory_girl (4.9.0)
+    factory_bot (4.8.2)
       activesupport (>= 3.0.0)
     faker (1.8.7)
       i18n (>= 0.7)
@@ -220,14 +214,11 @@ DEPENDENCIES
   better_errors (~> 2.4.0)
   binding_of_caller (~> 0.8.0)
   data_mapper (~> 1.2.0)
-  data_objects!
   database_cleaner (~> 1.6.2)
   dm-constraints (~> 1.2.0)
   dm-mysql-adapter (~> 1.2.0)
   dm-postgres-adapter (~> 1.2.0)
-  do_mysql (~> 0.10.17)
-  do_postgres (~> 0.10.17)
-  factory_girl (~> 4.9.0)
+  factory_bot (~> 4.8.2)
   faker (~> 1.8.7)
   filesize (~> 0.1.1)
   guard (~> 2.14.2)

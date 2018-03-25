@@ -7,7 +7,7 @@ describe DkimPolicy do
   subject { described_class.new(user, dkim) }
 
   let(:dkim) do
-    FactoryGirl.create(:dkim)
+    FactoryBot.create(:dkim)
   end
 
   context 'when being the owner' do

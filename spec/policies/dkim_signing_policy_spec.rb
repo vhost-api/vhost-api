@@ -7,7 +7,7 @@ describe DkimSigningPolicy do
   subject { described_class.new(user, dkimsigning) }
 
   let(:dkimsigning) do
-    FactoryGirl.create(:dkimsigning)
+    FactoryBot.create(:dkimsigning)
   end
 
   context 'when being the owner' do

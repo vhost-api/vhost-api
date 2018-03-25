@@ -7,7 +7,7 @@ describe MailForwardingPolicy do
   subject { described_class.new(user, mailforwarding) }
 
   let(:mailforwarding) do
-    FactoryGirl.create(:mailforwarding)
+    FactoryBot.create(:mailforwarding)
   end
 
   context 'when being the owner' do

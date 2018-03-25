@@ -7,7 +7,7 @@ describe ApikeyPolicy do
   subject { described_class.new(user, apikey) }
 
   let(:apikey) do
-    FactoryGirl.create(:apikey)
+    FactoryBot.create(:apikey)
   end
 
   context 'when being the owner' do

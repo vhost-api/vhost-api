@@ -7,7 +7,7 @@ describe MailAccountPolicy do
   subject { described_class.new(user, mailaccount) }
 
   let(:mailaccount) do
-    FactoryGirl.create(:mailaccount)
+    FactoryBot.create(:mailaccount)
   end
 
   context 'when being the owner' do

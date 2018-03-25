@@ -7,7 +7,7 @@ describe MailSourcePolicy do
   subject { described_class.new(user, mailsource) }
 
   let(:mailsource) do
-    FactoryGirl.create(:mailsource)
+    FactoryBot.create(:mailsource)
   end
 
   context 'when being the owner' do

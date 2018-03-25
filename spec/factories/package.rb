@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/BlockLength
-FactoryGirl.define do
+FactoryBot.define do
   sequence :package_name do |n|
     "Package #{n}"
   end

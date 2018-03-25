@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/BlockLength
-FactoryGirl.define do
+FactoryBot.define do
   sequence :shell_username do |n|
     "customer#{n}"
   end
