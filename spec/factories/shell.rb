@@ -2,11 +2,11 @@
 
 FactoryBot.define do
   factory :shell, class: Shell do
-    shell '/bin/bash'
-    enabled true
+    shell { '/bin/bash' }
+    enabled { true }
 
     factory :invalid_shell do
-      shell nil
+      shell { nil }
     end
   end
 end

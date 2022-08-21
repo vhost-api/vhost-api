@@ -7,10 +7,10 @@ FactoryBot.define do
 
   factory :mailsource, class: MailSource do
     address { generate(:source_email) }
-    enabled true
+    enabled { true }
 
     transient do
-      domain_name 'example.com'
+      domain_name { 'example.com' }
     end
 
     domain_id do
@@ -22,7 +22,7 @@ FactoryBot.define do
     end
 
     factory :invalid_mailsource, parent: :mailsource do
-      address nil
+      address { nil }
     end
   end
 end

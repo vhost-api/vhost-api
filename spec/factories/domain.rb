@@ -7,12 +7,12 @@ FactoryBot.define do
 
   factory :domain, class: Domain do
     name { generate(:domain_name) }
-    mail_enabled true
-    dns_enabled true
-    enabled true
+    mail_enabled { true }
+    dns_enabled { true }
+    enabled { true }
 
     transient do
-      user_login 'user'
+      user_login { 'user' }
     end
 
     user_id do
@@ -24,7 +24,7 @@ FactoryBot.define do
     end
 
     factory :invalid_domain do
-      name nil
+      name { nil }
     end
   end
 end

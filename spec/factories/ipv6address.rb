@@ -6,10 +6,10 @@ FactoryBot.define do
       IPAddr.new('fe80::1')
     end
 
-    enabled true
+    enabled { true }
 
     factory :invalid_ipv6address do
-      address nil
+      address { nil }
     end
   end
 end

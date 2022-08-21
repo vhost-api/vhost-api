@@ -11,14 +11,14 @@ FactoryBot.define do
   end
 
   factory :user, class: User do
-    name 'Customer'
+    name { 'Customer' }
     login { generate(:user_login) }
-    password 'customer'
-    enabled true
+    password { 'customer' }
+    enabled { true }
 
     transient do
-      group_name 'user'
-      package_count 1
+      group_name { 'user' }
+      package_count { 1 }
     end
 
     group_id do
@@ -35,24 +35,24 @@ FactoryBot.define do
     end
 
     factory :invalid_user do
-      name nil
-      login nil
+      name { nil }
+      login { nil }
     end
 
     factory :admin, parent: :user do
-      name 'Admin'
-      login 'admin'
-      password 'secret'
+      name { 'Admin' }
+      login { 'admin' }
+      password { 'secret' }
 
       transient do
-        group_name 'admin'
+        group_name { 'admin' }
       end
     end
 
     factory :reseller, parent: :user do
-      name 'Reseller'
+      name { 'Reseller' }
       login { generate(:reseller_login) }
-      password 'reseller'
+      password { 'reseller' }
 
       after(:create) do |user, evaluator|
         user.packages = create_list(:reseller_package,
@@ -61,7 +61,7 @@ FactoryBot.define do
       end
 
       transient do
-        group_name 'reseller'
+        group_name { 'reseller' }
       end
     end
 
@@ -148,7 +148,7 @@ FactoryBot.define do
 
     factory :reseller_with_customers, parent: :reseller do
       transient do
-        customer_count 3
+        customer_count { 3 }
       end
 
       after(:create) do |user, evaluator|
@@ -168,8 +168,8 @@ FactoryBot.define do
 
     factory :reseller_with_customers_and_apikeys, parent: :reseller do
       transient do
-        customer_count 3
-        apikey_count 1
+        customer_count { 3 }
+        apikey_count { 1 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -190,8 +190,8 @@ FactoryBot.define do
 
     factory :reseller_with_customers_and_domains, parent: :reseller do
       transient do
-        customer_count 3
-        domain_count 3
+        customer_count { 3 }
+        domain_count { 3 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -218,7 +218,7 @@ FactoryBot.define do
     factory :reseller_with_customers_and_mailaccounts,
             parent: :reseller_with_customers_and_domains do
       transient do
-        mailaccount_count 3
+        mailaccount_count { 3 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -247,7 +247,7 @@ FactoryBot.define do
     factory :reseller_with_customers_and_mailforwardings,
             parent: :reseller_with_customers_and_domains do
       transient do
-        mailforwarding_count 3
+        mailforwarding_count { 3 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -276,7 +276,7 @@ FactoryBot.define do
     factory :reseller_with_customers_and_mailaliases,
             parent: :reseller_with_customers_and_mailaccounts do
       transient do
-        mailalias_count 3
+        mailalias_count { 3 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -309,7 +309,7 @@ FactoryBot.define do
     factory :reseller_with_customers_and_mailsources,
             parent: :reseller_with_customers_and_mailaccounts do
       transient do
-        mailsource_count 3
+        mailsource_count { 3 }
       end
 
       after(:create) do |reseller, evaluator|
@@ -511,7 +511,7 @@ FactoryBot.define do
 
     factory :user_with_apikeys, parent: :user do
       transient do
-        apikey_count 1
+        apikey_count { 1 }
       end
 
       after(:create) do |user, evaluator|
@@ -528,7 +528,7 @@ FactoryBot.define do
 
     factory :user_with_domains do
       transient do
-        domain_count 3
+        domain_count { 3 }
       end
 
       after(:create) do |user, evaluator|
@@ -608,7 +608,7 @@ FactoryBot.define do
 
     factory :user_with_mailaccounts, parent: :user_with_domains do
       transient do
-        mailaccount_count 3
+        mailaccount_count { 3 }
       end
 
       after(:create) do |user, evaluator|
@@ -629,7 +629,7 @@ FactoryBot.define do
 
     factory :user_with_mailforwardings, parent: :user_with_domains do
       transient do
-        mailforwarding_count 3
+        mailforwarding_count { 3 }
       end
 
       after(:create) do |user, evaluator|
@@ -650,7 +650,7 @@ FactoryBot.define do
 
     factory :user_with_mailaliases, parent: :user_with_mailaccounts do
       transient do
-        mailalias_count 3
+        mailalias_count { 3 }
       end
 
       after(:create) do |user, evaluator|
@@ -672,7 +672,7 @@ FactoryBot.define do
 
     factory :user_with_mailsources, parent: :user_with_mailaccounts do
       transient do
-        mailsource_count 3
+        mailsource_count { 3 }
       end
 
       after(:create) do |user, evaluator|

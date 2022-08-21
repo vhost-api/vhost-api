@@ -6,10 +6,10 @@ FactoryBot.define do
       IPAddr.new('127.0.0.1')
     end
 
-    enabled true
+    enabled { true }
 
     factory :invalid_ipv4address do
-      address nil
+      address { nil }
     end
   end
 end
