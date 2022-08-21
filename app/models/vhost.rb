@@ -21,10 +21,13 @@ class Vhost
   property :redirect_target, String, length: 3..255
   property :quota, Integer, required: true, min: 0, max: (2**63 - 1), default: 104_857_600 # 100MiB default
   property :auto_subdomain, String, length: 15, default: 'none'
+  property :own_errordocs, Boolean, default: true
   property :php_enabled, Boolean, default: false
   property :apache_directives, Text, lazy: false
   property :nginx_directives, Text, lazy: false
   property :php_fpm_overrides, Text, lazy: false
+  property :php_functions, Text, lazy: false
+  property :php_dirs, Text, lazy: false
   property :ssl_enabled, Boolean, default: false
   property :ssl_letsencrypt, Boolean, default: false
   property :force_ssl, Boolean, default: false
