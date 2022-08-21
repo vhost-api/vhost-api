@@ -203,7 +203,7 @@ describe 'VHost-API MailSource Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , address: \'foo, enabled:true}\''
                 post(
                   "/api/v#{api_version}/mailsources?verbose",
@@ -526,7 +526,7 @@ describe 'VHost-API MailSource Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , address: \'foo, enabled:true}\''
                 baseurl = "/api/v#{api_version}/mailsources"
                 patch(

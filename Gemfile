@@ -4,22 +4,23 @@ source 'https://rubygems.org'
 
 # core
 gem 'bcrypt', '~> 3.1', '>= 3.1.18'
+gem 'json', '~> 2.3', '>= 2.3.0'
+gem 'json_pure', '~> 2.3', '>= 2.3.0'
 gem 'sinatra', '~> 2.2', '>= 2.2.2'
 gem 'sinatra-contrib', '~> 2.2', '>= 2.2.2'
 gem 'sshkey', '~> 2.0'
-gem 'json_pure', '~> 2.3'
 
 # tools
 gem 'rake', '~> 13.0', require: false
 
 # authorization
 gem 'sinatra-pundit', '~> 0.2'
-# gem 'sinatra-pundit', git: 'https://github.com/vhost-api/sinatra-pundit.git'
 
 # database
 gem 'data_mapper', '~> 1.2'
 gem 'dm-constraints', '~> 1.2'
-gem 'dm-serializer', git: 'https://github.com/vhost-api/dm-serializer.git'
+gem 'dm-serializer', git: 'https://github.com/vhost-api/dm-serializer.git', branch: 'new_json'
+gem 'dm-types', git: 'https://github.com/vhost-api/dm-types.git', branch: 'new_json'
 
 group :mysql do
   gem 'dm-mysql-adapter', '~> 1.2'

@@ -222,7 +222,7 @@ describe 'VHost-API User Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , name: \'foo, enabled: true }\''
                 post(
                   "/api/v#{api_version}/users?verbose",
@@ -511,7 +511,7 @@ describe 'VHost-API User Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , name: \'foo, enabled: true }\''
                 patch(
                   "/api/v#{api_version}/users/#{testuser.id}?verbose",

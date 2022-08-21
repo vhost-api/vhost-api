@@ -214,7 +214,7 @@ describe 'VHost-API Apikey Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , name: \'foo, enabled: true }\''
                 post(
                   "/api/v#{api_version}/apikeys?verbose",
@@ -462,7 +462,7 @@ describe 'VHost-API Apikey Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{, comment:\'foo, enabled: true }\''
                 patch(
                   "/api/v#{api_version}/apikeys/#{testapikey.id}?verbose",

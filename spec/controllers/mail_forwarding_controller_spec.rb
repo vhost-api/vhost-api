@@ -204,7 +204,7 @@ describe 'VHost-API MailForwarding Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , address: \'foo, enabled:true}\''
                 post(
                   "#{baseurl}/mailforwardings?verbose",
@@ -532,7 +532,7 @@ describe 'VHost-API MailForwarding Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{ , address: \'foo, enabled:true}\''
                 patch(
                   "#{baseurl}/mailforwardings/#{testmailforwarding.id}?verbose",

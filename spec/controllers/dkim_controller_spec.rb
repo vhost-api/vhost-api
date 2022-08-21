@@ -228,7 +228,7 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{, selector: \'foo, enabled:true}\''
                 post(
                   "/api/v#{api_version}/dkims?verbose",
@@ -482,7 +482,7 @@ describe 'VHost-API Dkim Controller' do
               end
 
               it 'shows a format error message when using verbose param' do
-                error_msg = '784: unexpected token at '
+                error_msg = '859: unexpected token at '
                 error_msg += '\'{, selector: \'foo, enabled:true}\''
                 patch(
                   "/api/v#{api_version}/dkims/#{testdkim.id}?verbose",
