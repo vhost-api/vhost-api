@@ -15,7 +15,14 @@ end
 # @return [User]
 def authenticate!
   auth_header = request.env['HTTP_AUTHORIZATION']
-  method, value = auth_header.try(:split, %r{\s+}) || [nil, '']
+  raise AuthenticationError unless auth_header
+  method, value = [nil, '']
+  begin
+    method, value = auth_header.split(%r{\s+}) || [nil, '']
+  rescue => e
+    log_app('error', e)
+    raise AuthenticationError
+  end
   case method
   when 'Basic' then @user = authenticate_password(value)
   when 'VHOSTAPI-KEY' then @user = authenticate_apikey(value)
