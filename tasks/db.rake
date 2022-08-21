@@ -30,8 +30,11 @@ begin
         when 'POSTGRES'
           adapter = DataMapper.repository(:default).adapter
           adapter.execute('DROP VIEW IF EXISTS "dkim_lookup";')
+          adapter.execute('DROP VIEW IF EXISTS "dkim_lookup_signing";')
           adapter.execute('DROP VIEW IF EXISTS "mail_alias_maps";')
+          adapter.execute('DROP VIEW IF EXISTS "mail_forwarding_maps";')
           adapter.execute('DROP VIEW IF EXISTS "mail_sendas_maps";')
+          adapter.execute('DROP VIEW IF EXISTS "mail_user_maps";')
           adapter.execute('DROP VIEW IF EXISTS "sftp_user_maps";')
         end
         DataMapper.auto_migrate!

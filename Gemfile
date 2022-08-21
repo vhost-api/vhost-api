@@ -3,58 +3,60 @@
 source 'https://rubygems.org'
 
 # core
-gem 'bcrypt', '~> 3.1'
-gem 'sinatra', '~> 2.0.1'
-gem 'sinatra-contrib', '~> 2.0.1'
-gem 'sshkey', '~> 1.9.0'
+gem 'bcrypt', '~> 3.1', '>= 3.1.18'
+gem 'sinatra', '~> 2.2', '>= 2.2.2'
+gem 'sinatra-contrib', '~> 2.2', '>= 2.2.2'
+gem 'sshkey', '~> 2.0'
+gem 'json_pure', '~> 2.3'
 
 # tools
-gem 'rake', '~> 12.0', require: false
+gem 'rake', '~> 13.0', require: false
 
 # authorization
-# gem 'sinatra-pundit', '~> 0.1.0'
-gem 'sinatra-pundit', git: 'https://github.com/vhost-api/sinatra-pundit.git'
+gem 'sinatra-pundit', '~> 0.2'
+# gem 'sinatra-pundit', git: 'https://github.com/vhost-api/sinatra-pundit.git'
 
 # database
-gem 'data_mapper', '~> 1.2.0'
-gem 'dm-constraints', '~> 1.2.0'
+gem 'data_mapper', '~> 1.2'
+gem 'dm-constraints', '~> 1.2'
+gem 'dm-serializer', git: 'https://github.com/vhost-api/dm-serializer.git'
 
 group :mysql do
-  gem 'dm-mysql-adapter', '~> 1.2.0'
+  gem 'dm-mysql-adapter', '~> 1.2'
 end
 
 group :postgres do
-  gem 'dm-postgres-adapter', '~> 1.2.0'
+  gem 'dm-postgres-adapter', '~> 1.2'
 end
 
 # engine
-gem 'puma', '~> 3.11'
+gem 'puma', '~> 4.3', '>= 4.3.12'
 
 # style
-gem 'activesupport', '~> 5.1.5'
-gem 'filesize', '~> 0.1.1'
+gem 'activesupport', '~> 7.0'
+gem 'filesize', '~> 0.2'
 
 group :development do
-  gem 'better_errors', '~> 2.4.0'
-  gem 'binding_of_caller', '~> 0.8.0'
-  gem 'guard', '~> 2.14.2', require: false
-  gem 'guard-rspec', '~> 4.7.3', require: false
-  gem 'pry', '~> 0.11.3'
-  gem 'shotgun', '~> 0.9.2', require: false
+  gem 'better_errors', '~> 2.9', '>= 2.9.1'
+  gem 'binding_of_caller', '~> 1.0'
+  gem 'guard', '~> 2.18', require: false
+  gem 'guard-rspec', '~> 4.7', '>= 4.7.3', require: false
+  gem 'pry', '~> 0.14', '>= 0.14.1'
+  gem 'shotgun', '~> 0.9', '>= 0.9.2', require: false
 end
 
 group :test, :development do
-  gem 'astrolabe', '~> 1.3.1', require: false
-  gem 'faker', '~> 1.8.7', require: false
-  gem 'rack-test', '~> 0.8.3', require: false
-  gem 'rspec', '~> 3.7.0', require: false
-  gem 'rubocop', '~> 0.54.0', require: false
-  gem 'rubocop-rspec', '~> 1.24.0', require: false
-  gem 'simplecov', '~> 0.16.1', require: false
-  gem 'yard', '~> 0.9.12', require: false
+  gem 'astrolabe', '~> 1.3', '>= 1.3.1', require: false
+  gem 'faker', '~> 1.8', '>= 1.8.7', require: false
+  gem 'rack-test', '~> 0.8', '>= 0.8.3', require: false
+  gem 'rspec', '~> 3.7', require: false
+  gem 'rubocop', '~> 0.54', require: false
+  gem 'rubocop-rspec', '~> 1.24', require: false
+  gem 'simplecov', '~> 0.21', require: false
+  gem 'yard', '~> 0.9', require: false
 end
 
 group :test do
-  gem 'database_cleaner', '~> 1.6.2'
-  gem 'factory_bot', '~> 4.8.2'
+  gem 'database_cleaner', '~> 1.6'
+  gem 'factory_bot', '~> 4.8'
 end

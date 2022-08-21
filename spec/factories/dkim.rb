@@ -5,7 +5,7 @@ FactoryBot.define do
                             passphrase: nil)
 
   factory :dkim, class: Dkim do
-    selector 'mail'
+    selector { 'mail' }
 
     private_key do
       keypair.private_key
@@ -14,10 +14,10 @@ FactoryBot.define do
       keypair.public_key
     end
 
-    enabled true
+    enabled { true }
 
     transient do
-      domain_name 'example.com'
+      domain_name { 'example.com' }
     end
 
     domain_id do
@@ -29,7 +29,7 @@ FactoryBot.define do
     end
 
     factory :invalid_dkim, parent: :dkim do
-      selector nil
+      selector { nil }
     end
   end
 end

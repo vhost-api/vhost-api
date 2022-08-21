@@ -7,10 +7,10 @@ FactoryBot.define do
 
   factory :apikey, class: Apikey do
     apikey { generate(:random_apikey) }
-    enabled true
+    enabled { true }
 
     transient do
-      user_login 'user'
+      user_login { 'user' }
     end
 
     user_id do
@@ -22,7 +22,7 @@ FactoryBot.define do
     end
 
     factory :invalid_apikey do
-      apikey '1234'
+      apikey { '1234' }
     end
   end
 end

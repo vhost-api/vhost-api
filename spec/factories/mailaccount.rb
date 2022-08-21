@@ -8,13 +8,13 @@ FactoryBot.define do
 
   factory :mailaccount, class: MailAccount do
     email { generate(:account_email) }
-    realname 'Test User'
-    password 'foobar1234'
-    receiving_enabled true
-    enabled true
+    realname { 'Test User' }
+    password { 'foobar1234' }
+    receiving_enabled { true }
+    enabled { true }
 
     transient do
-      domain_name 'example.org'
+      domain_name { 'example.org' }
     end
 
     domain_id do
@@ -26,13 +26,13 @@ FactoryBot.define do
     end
 
     factory :invalid_mailaccount do
-      email nil
+      email { nil }
     end
 
     factory :mailaccount_with_aliases_and_sources do
       transient do
-        alias_count 3
-        source_count 3
+        alias_count { 3 }
+        source_count { 3 }
       end
 
       after(:create) do |mailaccount, evaluator|

@@ -2,11 +2,11 @@
 
 FactoryBot.define do
   factory :group, class: Group do
-    name 'user'
-    enabled true
+    name { 'user' }
+    enabled { true }
 
     factory :invalid_group do
-      name nil
+      name { nil }
     end
   end
 end

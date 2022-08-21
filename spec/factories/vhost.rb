@@ -8,13 +8,13 @@ FactoryBot.define do
 
   factory :vhost, class: Vhost do
     fqdn { generate(:random_fqdn) }
-    quota 104_857_600
-    enabled true
+    quota { 104_857_600 }
+    enabled { true }
 
     transient do
-      user_login 'user'
-      ipv4addr IPAddr.new('127.0.0.1')
-      ipv6addr IPAddr.new('fe80::1')
+      user_login { 'user' }
+      ipv4addr { IPAddr.new('127.0.0.1') }
+      ipv6addr { IPAddr.new('fe80::1') }
     end
 
     user_id do
@@ -42,7 +42,7 @@ FactoryBot.define do
     end
 
     factory :invalid_vhost do
-      fqdn nil
+      fqdn { nil }
     end
   end
 end

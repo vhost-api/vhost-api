@@ -7,11 +7,11 @@ FactoryBot.define do
 
   factory :mailforwarding, class: MailForwarding do
     address { generate(:forwarding_email) }
-    destinations "foo@bar.com\nherp@derp.com"
-    enabled true
+    destinations { "foo@bar.com\nherp@derp.com" }
+    enabled { true }
 
     transient do
-      domain_name 'example.com'
+      domain_name { 'example.com' }
     end
 
     domain_id do
@@ -23,8 +23,8 @@ FactoryBot.define do
     end
 
     factory :invalid_mailforwarding, parent: :mailforwarding do
-      address nil
-      destinations nil
+      address { nil }
+      destinations { nil }
     end
   end
 end
